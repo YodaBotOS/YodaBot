@@ -8,6 +8,7 @@ class TwemojiParser:
     parser = TwemojiParser()
     parser.parse_emoji("🤔") # {"url": "...", "indices": [...], "text": "...", "type": "emoji"}
     """
+
     def __init__(self):
         if not self.check_node_installed():
             raise Exception("Node.js is not installed.")
@@ -53,5 +54,5 @@ class TwemojiParser:
 
         return stdout.decode()
 
-    def parse_emoji(self, text: str) -> list[dict[str, str | list[int]]]:
+    def parse(self, text: str) -> list[dict[str, str | list[int]]]:
         return json.loads(self._run(f"\"{text}\""))
