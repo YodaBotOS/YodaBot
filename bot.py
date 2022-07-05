@@ -23,6 +23,10 @@ bot = commands.Bot(
     help_command=commands.MinimalHelpCommand(),
 )
 
+extensions = [
+    "extensions.ocr"
+]
+
 
 @bot.event
 async def setup_hook():
@@ -33,7 +37,6 @@ async def setup_hook():
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.GOOGLE_APPLICATION_CREDENTIALS_PATH
 
     # Init core modules
-    bot.ocr = OCR(session=bot.session)
     bot.translate = Translate(config.PROJECT_ID, session=bot.session)
     await bot.translate.get_languages(force_call=True, add_to_cache=True)
 
@@ -43,6 +46,9 @@ async def setup_hook():
 
     # Load cogs
     await bot.load_extension("jishaku")
+
+    for extension in extensions:
+        await bot.load_extension(extension)
 
 
 @bot.event
@@ -99,111 +105,6 @@ async def sync(ctx: commands.Context, guilds: commands.Greedy[discord.Object],
             ret += 1
 
     await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.")
-
-
-async def ocr(image) -> discord.ui.View | discord.Embed:
-    text = await bot.ocr.request(image)
-
-    if len(text) > 4096:
-        url = await bot.mystbin.post(text, syntax="text")
-
-        view = discord.ui.View()
-        view.add_item(discord.ui.Button(style=discord.ButtonStyle.url, label="View on mystb.in", url=url))
-
-        return view
-
-    embed = discord.Embed(color=bot.color)
-    embed.title = "Image to Text (OCR) Result:"
-    embed.description = text
-
-    return embed
-
-
-@bot.tree.command(name="image-to-text")
-@app_commands.describe(image="The attachment to be converted to text.", url="The URL to an image to be converted to "
-                                                                            "text.")
-async def image_to_text(interaction: discord.Interaction, image: discord.Attachment = None, url: str = None):
-    """
-    Convert an image to text, known as the phrase OCR (Optical Character Recognition).
-    """
-
-    if image is None and url is None:
-        return await interaction.response.send_message("Please provide an image or a URL!", ephemeral=True)
-
-    if image and url:
-        return await interaction.response.send_message("Please provide only one of image or url!", ephemeral=True)
-
-    if image is not None:
-        image = image.url
-    else:
-        if match := re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
-                                 url):
-            image = match.group(0)
-        else:
-            return await interaction.response.send_message("Please provide a valid URL!", ephemeral=True)
-
-    await interaction.response.defer()
-
-    resp = await ocr(image)
-
-    if isinstance(resp, discord.ui.View):
-        return await interaction.followup.send('Result too long.', view=resp)
-    else:
-        return await interaction.followup.send(embed=resp)
-
-
-@bot.command(name="image-to-text", aliases=["ocr", "itt", "i2t", "image2text", "image-2-text", "imagetotext"])
-async def image_to_text(ctx: commands.Context, *, image=None):
-    """
-    Convert an image to text, known as the phrase OCR (Optical Character Recognition).
-    """
-
-    if image is None:
-        image = await converter.ImageConverter().convert(ctx, image)
-    else:
-        image = image.url
-
-    if not image:
-        return await ctx.send("Please send a attachment/URL to a image!")
-
-    async with ctx.typing():
-        resp = await ocr(image)
-
-        if isinstance(resp, discord.ui.View):
-            return await ctx.send('Result too long.', view=resp)
-        else:
-            return await ctx.send(embed=resp)
-
-
-@bot.tree.context_menu(name="Image To Text (OCR)")
-async def image_to_text_context_menu(interaction: discord.Interaction, message: discord.Message):
-    url = None
-
-    if attach := message.attachments:
-        url = attach[0].url
-    elif embeds := message.embeds:
-        for embed in embeds:
-            if embed.image:
-                url = embed.image.url
-                break
-            elif embed.thumbnail:
-                url = embed.thumbnail.url
-                break
-    elif match := re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
-                               message.content):
-        url = match.group(0)
-
-    if not url:
-        return await interaction.response.send_message("There is no image to convert to text!", ephemeral=True)
-
-    await interaction.response.defer(ephemeral=True)
-
-    resp = await ocr(url)
-
-    if isinstance(resp, discord.ui.View):
-        return await interaction.followup.send('Result too long.', view=resp, ephemeral=True)
-    else:
-        return await interaction.followup.send(embed=resp, ephemeral=True)
 
 
 bot.run(config.TOKEN)
