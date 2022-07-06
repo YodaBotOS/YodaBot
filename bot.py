@@ -56,7 +56,7 @@ async def on_ready():
 
 @bot.event
 async def on_command_error(ctx, error):
-    await ctx.send(f"Error, please report: {error}")
+    await ctx.send(f"Error: {error}")
 
     raise error
 
@@ -64,9 +64,10 @@ async def on_command_error(ctx, error):
 @bot.tree.error
 async def on_tree_error(interaction, error):
     try:
-        await interaction.response.send_message(f"Error, please report: {error}", ephemeral=True)
+        await interaction.response.send_message(f"Error: {error}", ephemeral=True)
     except discord.InteractionResponded:
-        await interaction.followup.send(f"Error, please report: {error}", ephemeral=True)
+        await interaction.followup.send(f"Error: {error}", ephemeral=True)
+
     # try:
     #     await interaction.response.defer()
     # except:
