@@ -77,7 +77,7 @@ class Translate(commands.Cog):
 **From:** {from_lang["displayName"]}
 ```
 {text}
-```{f"Translating `{input_tools['choices'][0]}`" if input_tools['choices'][0] != text else ""}
+```{f"*Translating `{input_tools['choices'][0]}`" if input_tools['choices'][0] != text else ""}
 **To:** {to_lang["displayName"]}
 ```
 {input_tools["choices"][0]}
@@ -99,7 +99,7 @@ class Translate(commands.Cog):
 **From:** {from_lang["displayName"]}
 ```
 {original_text}
-```*{f"Translating `{input_tools['choices'][0]}`" if input_tools['choices'][0] != original_text else ""}
+```{f"*Translating `{input_tools['choices'][0]}`" if input_tools['choices'][0] != original_text else ""}
 **To:** {to_lang["displayName"]}
 ```
 {trans["translated"]}
