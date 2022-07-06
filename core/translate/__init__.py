@@ -1,4 +1,5 @@
 import json
+from urllib.parse import quote_plus as url_param_endcode
 from difflib import get_close_matches as find_one_difflib
 
 import aiohttp
@@ -148,14 +149,14 @@ class Translate:
             itc = f'{lang}-t-i0-und'
 
         url = self.INPUT_TOOLS_URI
+        url += '?text=' + url_param_endcode(text)
 
         params = {
-            'text': text,
             'itc': itc,
             'num': num_choices,
         }
 
-        async with self.session.get(url, params=params) as resp:
+        async with self.session.get(url, params=params, ) as resp:
             content = (await resp.read()).decode()
             data = json.loads(content)
 
