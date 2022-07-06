@@ -1,3 +1,4 @@
+import inspect
 import importlib
 
 import discord
@@ -372,7 +373,7 @@ class Translate(commands.Cog):
 
     @commands.group(name='translate', invoke_without_command=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def translate(self, ctx: commands.Context, lang: str, *, text: str):
+    async def translate(self, ctx: commands.Context, lang: str, *, text: str = None):
         """
         Tries to Translate a text to another language.
 
@@ -382,6 +383,13 @@ class Translate(commands.Cog):
             - `yoda translate "chinese (simplified)-English" 你好`
             - `yoda translate English-Spanish Hello!`
         """
+
+        if text is None:
+            if not (ref := ctx.message.reference):
+                raise commands.MissingRequiredArgument(inspect.Parameter('text', inspect.Parameter.KEYWORD_ONLY,
+                                                                         annotation=str))
+
+            text = ref.resolved.content
 
         if ctx.invoked_subcommand:
             return await ctx.send_help(ctx.command)
@@ -407,9 +415,9 @@ class Translate(commands.Cog):
             else:
                 return await ctx.send(f"An error occurred, please report this error: {result}")
 
-    @translate.command(name='from', usage='<from> <to> <text>')
+    @translate.command(name='from', usage='<from> <to> [text]')
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def translate_from(self, ctx: commands.Context, _from: str, to: str, *, text: str):
+    async def translate_from(self, ctx: commands.Context, _from: str, to: str, *, text: str = None):
         """
         Tries to Translate a text to another language, with the specified source (original text) language.
 
@@ -418,6 +426,13 @@ class Translate(commands.Cog):
             - `yoda translate from "chinese (simplified)" English 你好`
             - `yoda translate from English Spanish Hello!`
         """
+
+        if text is None:
+            if not (ref := ctx.message.reference):
+                raise commands.MissingRequiredArgument(inspect.Parameter('text', inspect.Parameter.KEYWORD_ONLY,
+                                                                         annotation=str))
+
+            text = ref.resolved.content
 
         async with ctx.typing():
             result = await self.translate_func(ctx, text, to, _from)
