@@ -483,8 +483,6 @@ class Translate(commands.Cog):
     async def translate_context_menu(self, interaction: discord.Interaction, message: discord.Message):
         text = message.content
 
-        await interaction.response.defer(ephemeral=True, thinking=True)
-
         from_lang = await self.translate.detect_language(text)
         from_lang = self.translate.get_language(from_lang["languageCode"])
 
