@@ -12,6 +12,11 @@ class Translate:
     URL = "https://translation.googleapis.com/v3/{parent}"
     SCORE_CUTOFF = 50  # For get_language. If the score is lower than this, return None.
     INPUT_TOOLS_URI = 'https://inputtools.google.com/request'  # ?text={text}&itc={language_code}-t-i0-und&num={num_choices}
+    INPUT_TOOLS_ITC = {
+        'zh-CN': 'zh-t-i0-pinyin',
+        'zh-TW': 'zh-t-i0-pinyin',
+        'zh': 'zh-t-i0-pinyin',
+    }
 
     def __init__(self, project_id: str, *, session: aiohttp.ClientSession):
         self.session = session
@@ -137,11 +142,16 @@ class Translate:
 
         lang = self.get_language(language)['languageCode']
 
+        if lang in self.INPUT_TOOLS_ITC:
+            itc = self.INPUT_TOOLS_ITC[lang]
+        else:
+            itc = f'{lang}-t-i0-und'
+
         url = self.INPUT_TOOLS_URI
 
         params = {
             'text': text,
-            'itc': f'{lang}-t-i0-und',
+            'itc': itc,
             'num': num_choices,
         }
 
