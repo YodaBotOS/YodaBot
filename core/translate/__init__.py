@@ -149,14 +149,21 @@ class Translate:
             itc = f'{lang}-t-i0-und'
 
         url = self.INPUT_TOOLS_URI
-        url += '?text=' + url_param_endcode(text)
 
         params = {
+            'text': text,
             'itc': itc,
             'num': num_choices,
         }
 
-        async with self.session.get(url, params=params, ) as resp:
+        for p_name, p_value in params.items():
+            p_name_final = f'&{p_name}'
+            if url == self.INPUT_TOOLS_URI:
+                p_name_final = f'?{p_name}'
+
+            url += p_name_final + url_param_endcode(p_value).replace('+', '%20')
+
+        async with self.session.get(url) as resp:
             content = (await resp.read()).decode()
             data = json.loads(content)
 
