@@ -43,6 +43,8 @@ class Translate(commands.Cog):
         self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
 
     async def translate_func(self, ctx, text, to, _from) -> discord.Embed | str:
+        newline = "\n"
+
         text = await commands.clean_content(fix_channel_mentions=True, escape_markdown=True).convert(ctx, text)
 
         if len(text) > 1024:
@@ -78,8 +80,7 @@ class Translate(commands.Cog):
 **From:** {from_lang["displayName"]}
 ```
 {text}
-```{f"*Translating `{input_tools['choices'][0]}`" if input_tools['choices'][0] != text else ""}
-
+```{f"*Translating `{input_tools['choices'][0]}`{newline}" if input_tools['choices'][0] != text else ""}
 **To:** {to_lang["displayName"]}
 ```
 {input_tools["choices"][0]}
@@ -101,8 +102,7 @@ class Translate(commands.Cog):
 **From:** {from_lang["displayName"]}
 ```
 {original_text}
-```{f"*Translating `{input_tools['choices'][0]}`" if input_tools['choices'][0] != original_text else ""}
-
+```{f"*Translating `{input_tools['choices'][0]}`{newline}" if input_tools['choices'][0] != original_text else ""}
 **To:** {to_lang["displayName"]}
 ```
 {trans["translated"]}
@@ -482,6 +482,8 @@ class Translate(commands.Cog):
 
     async def translate_context_menu(self, interaction: discord.Interaction, message: discord.Message):
         text = message.content
+
+        await interaction.response.defer(ephemeral=True, thinking=True)
 
         from_lang = await self.translate.detect_language(text)
         from_lang = self.translate.get_language(from_lang["languageCode"])
