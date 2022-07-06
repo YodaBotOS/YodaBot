@@ -23,8 +23,12 @@ bot = commands.Bot(
     help_command=commands.MinimalHelpCommand(),
 )
 
+bot.config = config
+
 extensions = [
-    "extensions.ocr"
+    "jishaku",
+    "extensions.ocr",
+    "extensions.translate",
 ]
 
 
@@ -36,17 +40,11 @@ async def setup_hook():
 
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.GOOGLE_APPLICATION_CREDENTIALS_PATH
 
-    # Init core modules
-    bot.translate = Translate(config.PROJECT_ID, session=bot.session)
-    await bot.translate.get_languages(force_call=True, add_to_cache=True)
-
     # Jishaku Environment Vars
     os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
     os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 
     # Load cogs
-    await bot.load_extension("jishaku")
-
     for extension in extensions:
         await bot.load_extension(extension)
 
@@ -54,6 +52,32 @@ async def setup_hook():
 @bot.event
 async def on_ready():
     print(f"Bot ({bot.user} with ID {bot.user.id}) is ready and online!")
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    await ctx.send(f"Error, please report: {error}")
+
+    raise error
+
+
+@bot.tree.error
+async def on_tree_error(interaction, error):
+    try:
+        await interaction.response.send_message(f"Error, please report: {error}", ephemeral=True)
+    except discord.InteractionResponded:
+        await interaction.followup.send(f"Error, please report: {error}", ephemeral=True)
+    # try:
+    #     await interaction.response.defer()
+    # except:
+    #     pass
+    #
+    # try:
+    #     await interaction.response.send_message(f"Error, please report: {error}", ephemeral=True)
+    # except:
+    #     await interaction.followup.send(f"Error, please report: {error}", ephemeral=True)
+
+    raise error
 
 
 @bot.hybrid_command(aliases=["latency"])

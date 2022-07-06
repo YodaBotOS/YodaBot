@@ -8,7 +8,12 @@ from discord import app_commands
 from utils import converter
 from core import ocr
 
+
 class OCR(commands.Cog):
+    """
+    OCR (Optical Character Recognition)
+    """
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
@@ -51,10 +56,14 @@ class OCR(commands.Cog):
     @app_commands.describe(image="The attachment to be converted to text.",
                            url="The URL to an image to be converted to "
                                "text.")
-    async def image_to_text(self, interaction: discord.Interaction, image: discord.Attachment = None, url: str = None):
+    @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
+    async def image_to_text_slash(self, interaction: discord.Interaction, image: discord.Attachment = None,
+                                  url: str = None):
         """
         Convert an image to text, known as the phrase OCR (Optical Character Recognition).
         """
+
+        url = url.strip()
 
         if image is None and url is None:
             return await interaction.response.send_message("Please provide an image or a URL!", ephemeral=True)
@@ -81,7 +90,8 @@ class OCR(commands.Cog):
             return await interaction.followup.send(embed=resp)
 
     @commands.command(name="image-to-text", aliases=["ocr", "itt", "i2t", "image2text", "image-2-text", "imagetotext"])
-    async def image_to_text(self, ctx: commands.Context, *, image=None):
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def image_to_text_command(self, ctx: commands.Context, *, image=None):
         """
         Convert an image to text, known as the phrase OCR (Optical Character Recognition).
         """
