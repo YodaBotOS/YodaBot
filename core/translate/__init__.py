@@ -157,6 +157,8 @@ class Translate:
         }
 
         for p_name, p_value in params.items():
+            p_value = str(p_value)
+
             p_name_final = f'&{p_name}'
             if url == self.INPUT_TOOLS_URI:
                 p_name_final = f'?{p_name}'
