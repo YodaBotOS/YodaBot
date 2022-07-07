@@ -13,17 +13,18 @@ from core.ocr import OCR
 from core.translate import Translate
 from utils import converter
 
-activity_name = f"\"{config.PREFIX}help\"" if isinstance(config.PREFIX, str) else f"\"{config.PREFIX[0]}help\""
+main_prefix = config.PREFIX if isinstance(config.PREFIX, str) else config.PREFIX[0]
 
 bot = commands.Bot(
-    command_prefix=config.PREFIX,
+    command_prefix=commands.when_mentioned_or(config.PREFIX),
     intents=discord.Intents.all(),
     description=config.DESCRIPTION,
-    activity=discord.Activity(type=discord.ActivityType.listening, name=activity_name),
+    activity=discord.Activity(type=discord.ActivityType.listening, name=f"\"{main_prefix}help\""),
     help_command=commands.MinimalHelpCommand(),
 )
 
 bot.config = config
+bot.main_prefix = main_prefix
 
 extensions = [
     "jishaku",
@@ -52,6 +53,25 @@ async def setup_hook():
 @bot.event
 async def on_ready():
     print(f"Bot ({bot.user} with ID {bot.user.id}) is ready and online!")
+
+
+@bot.event
+async def on_message(msg):
+    if msg.author.bot:
+        return
+
+    if re.fullmatch(rf'<@!?{bot.user.id}>', msg.content):
+        return await msg.channel.send(f"My prefix is `{main_prefix}`! You can also mention me!")
+
+    return await bot.process_commands(msg)
+
+
+@bot.event
+async def on_message_edit(b, a):
+    if b.content == a.content:
+        return
+
+    return await bot.process_commands(a)
 
 
 @bot.event
