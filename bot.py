@@ -16,7 +16,7 @@ from utils import converter
 main_prefix = config.PREFIX if isinstance(config.PREFIX, str) else config.PREFIX[0]
 
 bot = commands.Bot(
-    command_prefix=commands.when_mentioned_or(*config.PREFIX),
+    command_prefix=commands.when_mentioned_or(*list(config.PREFIX)),
     intents=discord.Intents.all(),
     description=config.DESCRIPTION,
     activity=discord.Activity(type=discord.ActivityType.listening, name=f"\"{main_prefix}help\""),
