@@ -165,6 +165,8 @@ class Translate:
 
             url += p_name_final + url_param_endcode(p_value).replace('+', '%20')
 
+        print(url)
+
         async with self.session.get(url) as resp:
             content = (await resp.read()).decode()
             data = json.loads(content)
