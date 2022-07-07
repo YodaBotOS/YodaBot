@@ -387,8 +387,6 @@ class Translate(commands.Cog):
         if ctx.subcommand_passed:
             return await ctx.send_help(ctx.command)
 
-        print([lang, text])
-
         if text is None:
             if not (ref := ctx.message.reference):
                 raise commands.MissingRequiredArgument(inspect.Parameter('text', inspect.Parameter.KEYWORD_ONLY,
@@ -400,7 +398,7 @@ class Translate(commands.Cog):
             langs = self.translate.get_all_languages()
             if lang not in langs:
                 _from, to = lang.split('-')
-                return await self.translate_from(ctx, _from, to)
+                return await self.translate_from(ctx, _from, to, text=text)
 
         async with ctx.typing():
             result = await self.translate_func(ctx, text, lang, None)
