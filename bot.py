@@ -21,6 +21,7 @@ bot = commands.Bot(
     description=config.DESCRIPTION,
     activity=discord.Activity(type=discord.ActivityType.listening, name=f"\"{main_prefix}help\""),
     help_command=commands.MinimalHelpCommand(),
+    strip_after_prefix=True,
 )
 
 bot.config = config
