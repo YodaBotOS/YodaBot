@@ -159,13 +159,11 @@ class Translate:
         for p_name, p_value in params.items():
             p_value = str(p_value)
 
-            p_name_final = f'&{p_name}'
+            p_name_final = f'&{p_name}='
             if url == self.INPUT_TOOLS_URI:
-                p_name_final = f'?{p_name}'
+                p_name_final = f'?{p_name}='
 
             url += p_name_final + url_param_endcode(p_value).replace('+', '%20')
-
-        print(url)
 
         async with self.session.get(url) as resp:
             content = (await resp.read()).decode()
