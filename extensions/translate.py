@@ -384,15 +384,15 @@ class Translate(commands.Cog):
             - `yoda translate English-Spanish Hello!`
         """
 
+        if ctx.subcommand_passed:
+            return await ctx.send_help(ctx.command)
+
         if text is None:
             if not (ref := ctx.message.reference):
                 raise commands.MissingRequiredArgument(inspect.Parameter('text', inspect.Parameter.KEYWORD_ONLY,
                                                                          annotation=str))
 
             text = ref.resolved.content
-
-        if ctx.invoked_subcommand:
-            return await ctx.send_help(ctx.command)
 
         if '-' in lang:
             langs = self.translate.get_all_languages()
