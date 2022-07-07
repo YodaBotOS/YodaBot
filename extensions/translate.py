@@ -387,6 +387,8 @@ class Translate(commands.Cog):
         if ctx.subcommand_passed:
             return await ctx.send_help(ctx.command)
 
+        print(lang, text)
+
         if text is None:
             if not (ref := ctx.message.reference):
                 raise commands.MissingRequiredArgument(inspect.Parameter('text', inspect.Parameter.KEYWORD_ONLY,
