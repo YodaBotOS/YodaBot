@@ -138,7 +138,7 @@ class Translate:
             return result
 
     async def input_tools(self, text: str, language: str, *,
-                          num_choices: int = 1) -> dict[str, str | int | float | list[str]]:
+                          num_choices: int = 1, raw=False) -> dict[str, str | int | float | list[str]]:
         # This method is just to explicitly use the language's keyboard (instead of ASCII text).
 
         lang = self.get_language(language)['languageCode']
@@ -169,6 +169,9 @@ class Translate:
             content = (await resp.read()).decode()
             data = json.loads(content)
 
+            if raw:
+                return data
+
             try:
                 if not (choices := data[1][0][1]):
                     choices = [text]
@@ -180,6 +183,7 @@ class Translate:
                 'sourceLanguageCode': lang,
                 'numChoices': num_choices,
                 'choices': choices,
+                'itc': itc,
             }
 
             return result
