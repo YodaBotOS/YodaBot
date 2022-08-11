@@ -15,6 +15,9 @@ class YodaMenuPages(ui.View, menus.MenuPages):
     async def start(self, ctx, *, channel=None, wait=False):
         await self._source._prepare_once()
         self.ctx = ctx
+
+        channel = channel or ctx.channel
+
         self.message = await self.send_initial_message(ctx, channel)
         await self.update_buttons()
 
@@ -27,7 +30,12 @@ class YodaMenuPages(ui.View, menus.MenuPages):
 
     async def interaction_check(self, interaction):
         """Only allow the author that invoke the command to be able to use the interaction"""
-        return interaction.user == self.ctx.author
+
+        if interaction.user != self.ctx.author:
+            await interaction.response.send_message("This is not your interaction!", ephemeral=True)
+            return False
+
+        return True
 
     async def update_buttons(self):
         if self.is_finished():
@@ -57,42 +65,47 @@ class YodaMenuPages(ui.View, menus.MenuPages):
 
         await self.message.edit(view=self)
 
-    @ui.button(emoji='<:doubleleft:943007192037068811>', style=discord.ButtonStyle.blurple)
+    @ui.button(emoji='<:doubleleft:943007192037068811>', style=discord.ButtonStyle.blurple, row=1)
     async def first_page(self, interaction, button):
         await self.show_page(0)
         await self.update_buttons()
         await interaction.response.defer()
 
-    @ui.button(emoji='<:arrowleft:943007180389498891>', style=discord.ButtonStyle.blurple)
+    @ui.button(emoji='<:arrowleft:943007180389498891>', style=discord.ButtonStyle.blurple, row=1)
     async def before_page(self, interaction, button):
         await self.show_checked_page(self.current_page - 1)
         await self.update_buttons()
         await interaction.response.defer()
 
-    @ui.button(emoji='<:StopButton:845592836116054017>', style=discord.ButtonStyle.danger)
+    @ui.button(emoji='<:StopButton:845592836116054017>', style=discord.ButtonStyle.danger, row=1)
     async def stop_page(self, interaction, button):
         await interaction.response.defer()
-        self.stop()
         if self.delete_message_after:
             await self.message.delete(delay=0)
         else:
             await self.update_buttons()
 
-    @ui.button(emoji='<:arrowright:943007165734604820>', style=discord.ButtonStyle.blurple)
+        self.stop()
+
+        await interaction.followup.send('Stopped.', ephemeral=True)
+
+    @ui.button(emoji='<:arrowright:943007165734604820>', style=discord.ButtonStyle.blurple, row=1)
     async def next_page(self, interaction, button):
         await self.show_checked_page(self.current_page + 1)
         await self.update_buttons()
         await interaction.response.defer()
 
-    @ui.button(emoji='<:doubleright:943007149917892658>', style=discord.ButtonStyle.blurple)
+    @ui.button(emoji='<:doubleright:943007149917892658>', style=discord.ButtonStyle.blurple, row=1)
     async def last_page(self, interaction, button):
         await self.show_page(self._source.get_max_pages() - 1)
         await self.update_buttons()
         await interaction.response.defer()
 
-    @ui.button(label='Go to page...', style=discord.ButtonStyle.gray)
+    @ui.button(label='Go to page...', style=discord.ButtonStyle.gray, row=2)
     async def go_to_page(self, interaction, button):
-        await interaction.send_message(
+        await interaction.response.defer()
+
+        m = await interaction.followup.send(
             embed=discord.Embed(
                 description='Enter the page number you want to go to.',
                 color=interaction.client.color
@@ -101,6 +114,11 @@ class YodaMenuPages(ui.View, menus.MenuPages):
 
         msg = await interaction.client.wait_for('message', check=lambda m: m.author == interaction.user and \
                                           m.channel == interaction.channel)
+
+        try:
+            await m.delete()
+        except:
+            pass
 
         try:
             await msg.delete()

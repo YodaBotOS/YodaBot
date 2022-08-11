@@ -2,6 +2,7 @@ import os
 import re
 import typing
 
+import boto3
 import aiohttp
 import mystbin
 import discord
@@ -11,15 +12,17 @@ from discord import app_commands
 import config
 from core.ocr import OCR
 from core.translate import Translate
+from core.openai import OpenAI
 from utils import converter
 
 main_prefix = config.PREFIX if isinstance(config.PREFIX, str) else config.PREFIX[0]
+is_selfhosted = os.environ.get("IS_SELFHOST", "1") == "1"
 
 bot = commands.Bot(
     command_prefix=commands.when_mentioned_or(*list(config.PREFIX)),
     intents=discord.Intents.all(),
     description=config.DESCRIPTION,
-    activity=discord.Activity(type=discord.ActivityType.listening, name=f"\"{main_prefix}help\""),
+    activity=discord.Activity(type=discord.ActivityType.listening, name=f"\"{main_prefix}help\"") if not is_selfhosted else None,
     help_command=commands.MinimalHelpCommand(),
     strip_after_prefix=True,
 )
@@ -31,6 +34,9 @@ extensions = [
     "jishaku",
     "extensions.ocr",
     "extensions.translate",
+    "extensions.grammar_correction",
+    "extensions.chat",
+    # "extensions.dalle",
 ]
 
 
@@ -40,20 +46,36 @@ async def setup_hook():
     bot.session = aiohttp.ClientSession()
     bot.mystbin = mystbin.Client(session=bot.session)
 
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.GOOGLE_APPLICATION_CREDENTIALS_PATH
+    bot.config = config
+
+    if google_credentials_path := getattr(config, "GOOGLE_APPLICATION_CREDENTIALS_PATH", None):
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = google_credentials_path
+
+    os.environ["OPENAI_API_KEY"] = config.OPENAI_KEY
+    bot.openai = OpenAI(config.OPENAI_KEY)
 
     # Jishaku Environment Vars
     os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
     os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 
+    # R2/S3/boto3 CDN
+    bot.cdn = boto3.client(
+        "s3",
+        endpoint_url=config.CDN_ENDPOINT_URL,
+        aws_access_key_id=config.CDN_ACCESS_KEY,
+        aws_secret_access_key=config.CDN_SECRET_KEY,
+    )
+
     # Load cogs
     for extension in extensions:
         await bot.load_extension(extension)
+        print("Loaded extension:", extension)
 
 
 @bot.event
 async def on_ready():
     print(f"Bot ({bot.user} with ID {bot.user.id}) is ready and online!")
+    print(f"Prefix is: \"{main_prefix}\"")
 
 
 @bot.event
@@ -77,6 +99,11 @@ async def on_message_edit(b, a):
 
 @bot.event
 async def on_command_error(ctx, error):
+    ignored = (commands.CommandNotFound,)
+
+    if isinstance(error, ignored):
+        raise error
+
     await ctx.send(f"Error: {error}")
 
     raise error

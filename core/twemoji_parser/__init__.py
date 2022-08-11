@@ -54,5 +54,17 @@ class TwemojiParser:
 
         return stdout.decode()
 
-    def parse(self, text: str) -> list[dict[str, str | list[int]]]:
-        return json.loads(self._run(f"\"{text}\""))
+    def parse(self, text: str, *, svg: bool = False) -> list[dict[str, str | list[int]]]:
+        js = json.loads(self._run(f"\"{text}\""))
+
+        if not svg:
+            for i in js:
+                i["url"] = i["url"].replace("svg/", "72x72/").replace(".svg", ".png")
+
+        return js
+
+    def full_parse(self, text: str, *, svg: bool = False) -> dict[str, str | list[int]] | None:
+        if len(text) == 1:
+            return self.parse(text, svg=svg)[0]
+
+        return None

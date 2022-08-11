@@ -1,3 +1,7 @@
+core/maps/maps_.py
+
+*dalle*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -130,6 +134,10 @@ dmypy.json
 
 # PyCharm
 .idea/
+
+.DS_CONFIG
+.DS_Store
+*/.DS_Store
 
 # Config
 config.py
