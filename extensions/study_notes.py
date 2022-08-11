@@ -50,7 +50,6 @@ class StudyNotes(commands.Cog):
     STUDY_NOTES_SLASH_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=False)
 
     @app_commands.command(name='study-notes')
-    @app_commands.choices(amount=[app_commands.Choice(name=str(x), value=str(x)) for x in range(1, 10+1)])
     @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
     async def study_notes_slash(self, interaction: discord.Interaction, topic: str,
                                 amount: app_commands.Range[int, 1, 10] = 5):
