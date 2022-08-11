@@ -37,6 +37,7 @@ extensions = [
     "extensions.grammar_correction",
     "extensions.chat",
     # "extensions.dalle",
+    "extensions.study_notes"
 ]
 
 
