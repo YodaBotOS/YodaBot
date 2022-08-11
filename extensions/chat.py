@@ -46,7 +46,7 @@ class Chat(commands.Cog):
 
             return await ctx.send(embed=embed)
 
-        view = ChatView(openai=self.openai, ephemeral=False)
+        view = ChatView(openai=self.openai, user=ctx.author, ephemeral=False)
 
         prev_msg = await ctx.send("YodaBot chat has started. Say `stop`, `goodbye`, `cancel`, `exit` or `end` to end "
                                   "the chat, or click the `Stop` button.", view=view)
@@ -119,7 +119,7 @@ class Chat(commands.Cog):
 
                 return await interaction.followup.send(embed=embed)
 
-            view = ChatView(openai=self.openai, ephemeral=True)
+            view = ChatView(openai=self.openai, user=ctx.author, ephemeral=True)
 
             await interaction.followup.send("YodaBot chat has started. click the `Stop` button to stop ",
                                             "chatting.", view=view)
