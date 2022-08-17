@@ -14,6 +14,7 @@ from core.ocr import OCR
 from core.translate import Translate
 from core.openai import OpenAI
 from utils import converter
+from utils.translator import Translator
 
 main_prefix = config.PREFIX if isinstance(config.PREFIX, str) else config.PREFIX[0]
 is_selfhosted = os.environ.get("IS_SELFHOST", "1") == "1"
@@ -66,6 +67,9 @@ async def setup_hook():
         aws_access_key_id=config.CDN_ACCESS_KEY,
         aws_secret_access_key=config.CDN_SECRET_KEY,
     )
+
+    print("Setting up translator")
+    await bot.tree.set_translator(Translator(bot))
 
     # Load cogs
     for extension in extensions:

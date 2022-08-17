@@ -31,6 +31,11 @@ class Translate:
             'Chinese': 'zh-CN',
             'Mandarin': 'zh-CN',
             # 'eng': 'en',
+            'en-US': 'en',
+            'en-GB': 'en',
+            'pt-BR': 'pt',
+            'es-ES': 'es',
+            'sv-SE': 'sv',
         }
 
     async def get_languages(self, *, force_call=False, add_to_cache=True) -> list[dict[str, str | bool]]:

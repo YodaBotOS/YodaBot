@@ -86,7 +86,7 @@ class Chat(commands.Cog):
                 embed.description = text
 
                 if view.prev_msg and view.prev_msg.components:
-                    await view.prev_msg.edit(view=view)
+                    await view.prev_msg.edit(view=None)
                 await prev_msg.edit(view=None)
 
                 prev_msg = await ctx.send(embed=embed, view=view)
