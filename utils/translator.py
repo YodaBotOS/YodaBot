@@ -32,7 +32,7 @@ class Translator(app_commands.Translator):
     async def translate(self, string: app_commands.locale_str, locale: discord.Locale,
                         context: app_commands.TranslationContext) -> typing.Optional[str]:
         message = string.message
-        target = locale.value
+        target = locale.value  # type: ignore
 
         try:
             trans = await self.translate.translate(message, target)
