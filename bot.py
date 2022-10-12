@@ -39,7 +39,7 @@ extensions = [
     "extensions.chat",
     # "extensions.dalle",
     "extensions.study_notes",
-    "extenions.music"
+    "extensions.music"
 ]
 
 
