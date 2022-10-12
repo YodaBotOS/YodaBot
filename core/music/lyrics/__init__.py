@@ -30,7 +30,7 @@ class Lyrics:
         self.CACHE_TTL_TASKS = []
 
     async def __call__(self, query: str, *, cache: bool = True, get_from_cache: bool | None = None):
-        return self.search(query)
+        return self.search(query, cache=cache, get_from_cache=get_from_cache)
 
     def set_cache(self, key, value, ttl=None):
         self.CACHE[key] = value

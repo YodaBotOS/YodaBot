@@ -51,7 +51,7 @@ class Music(commands.Cog):
         embed.title = "Genre Prediction"
 
         for genre, confidence in res.items():
-            embed.add_field(name=f"**Genre:** `{genre}`", value=f"**Confidence:** `{confidence}%`")
+            embed.add_field(name=f"**Genre:** `{genre.title()}`", value=f"**Confidence:** `{confidence}%`")
 
         embed.set_footer(text=f"Time Elapsed: {round(elapsed, 1)}s\nPowered by Yoda API")
 
