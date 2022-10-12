@@ -36,7 +36,7 @@ class Music(commands.Cog):
 
         menu = YodaMenuPages(source=source)
 
-        return await menu.start(ctx)
+        return await menu.start(ctx, channel=ctx)
 
     async def predict_genre(self, file: str | discord.Attachment, mode: str):
         if isinstance(file, discord.Attachment):
