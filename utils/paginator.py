@@ -37,8 +37,8 @@ class YodaMenuPages(ui.View, menus.MenuPages):
 
         return True
 
-    async def update_buttons(self):
-        if self.is_finished():
+    async def update_buttons(self, stopped: bool = False):
+        if self.is_finished() or stopped:
             self.first_page.disabled = True
             self.before_page.disabled = True
             self.stop_page.disabled = True
@@ -83,7 +83,7 @@ class YodaMenuPages(ui.View, menus.MenuPages):
         if self.delete_message_after:
             await self.message.delete(delay=0)
         else:
-            await self.update_buttons()
+            await self.update_buttons(stopped=True)
 
         self.stop()
 

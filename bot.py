@@ -68,8 +68,8 @@ async def setup_hook():
         aws_secret_access_key=config.CDN_SECRET_KEY,
     )
 
-    print("Setting up translator")
-    await bot.tree.set_translator(Translator(bot))
+    # print("Setting up translator")
+    # await bot.tree.set_translator(Translator(bot))
 
     # Load cogs
     for extension in extensions:
@@ -88,8 +88,12 @@ async def on_message(msg):
     if msg.author.bot:
         return
 
-    if re.fullmatch(rf'<@!?{bot.user.id}>', msg.content):
-        return await msg.channel.send(f"My prefix is `{main_prefix}`! You can also mention me!")
+    if is_selfhosted and not await bot.is_owner(msg.author):
+        return
+
+    if not is_selfhosted:
+        if re.fullmatch(rf'<@!?{bot.user.id}>', msg.content):
+            return await msg.channel.send(f"My prefix is `{main_prefix}`! You can also mention me!")
 
     return await bot.process_commands(msg)
 

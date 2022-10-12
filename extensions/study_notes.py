@@ -27,30 +27,36 @@ class StudyNotes(commands.Cog):
     async def cog_unload(self):
         del self.openai
 
+    STUDY_NOTES_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=False)
+
     @commands.command('study-notes')
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def study_notes(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5, *, topic: str):
         """
         Generate study notes about a certain topic
         """
 
+        await self.STUDY_NOTES_MAX_CONCURRENCY.acquire(ctx.message)
+
         try:
-            notes = self.openai.study_notes(topic, amount=amount)
-        except Exception as e:
-            return await ctx.send(f"Something went wrong, try again later.")
+            try:
+                notes = self.openai.study_notes(topic, amount=amount)
+            except Exception as e:
+                return await ctx.send(f"Something went wrong, try again later.")
 
-        embed = discord.Embed(color=self.bot.color)
-        embed.set_author(name="Study Notes:", icon_url=ctx.author.display_avatar.url)
-        embed.title = f"Study Notes about {topic}:"
-        embed.description = notes
+            embed = discord.Embed(color=self.bot.color)
+            embed.set_author(name="Study Notes:", icon_url=ctx.author.display_avatar.url)
+            embed.title = f"Study Notes about {topic}:"
+            embed.description = notes
 
-        return await ctx.send(embed=embed)
-
-    STUDY_NOTES_SLASH_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=False)
+            return await ctx.send(embed=embed)
+        finally:
+            await self.STUDY_NOTES_MAX_CONCURRENCY.release(ctx.message)
 
     @app_commands.command(name='study-notes')
     @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(topic='The text to be checked for grammar.',
+                           amount='The amount of study notes to be generated. Minimal 1, maximum 10.')
     async def study_notes_slash(self, interaction: discord.Interaction, topic: str,
                                 amount: app_commands.Range[int, 1, 10] = 5):
         """
@@ -60,7 +66,7 @@ class StudyNotes(commands.Cog):
         # As of right now, app_commands does not support max_concurrency, so we need to handle it ourselves in the
         # callback.
         ctx = await commands.Context.from_interaction(interaction)
-        await self.STUDY_NOTES_SLASH_MAX_CONCURRENCY.acquire(ctx.message)
+        await self.STUDY_NOTES_MAX_CONCURRENCY.acquire(ctx.message)
 
         await interaction.response.defer()
 
@@ -77,7 +83,7 @@ class StudyNotes(commands.Cog):
 
             return await interaction.followup.send(embed=embed)
         finally:
-            await self.STUDY_NOTES_SLASH_MAX_CONCURRENCY.release(ctx.message)
+            await self.STUDY_NOTES_MAX_CONCURRENCY.release(ctx.message)
 
 
 async def setup(bot):

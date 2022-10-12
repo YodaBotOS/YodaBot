@@ -96,3 +96,24 @@ class ImageConverter(Converter):
 
                 if msgreplyembed[0].thumbnail:
                     return msgreplyembed[0].thumbnail.url
+
+
+class AttachmentConverter(Converter):
+    URL_REGEX = re.compile(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
+
+    async def convert(self, ctx: commands.Context, argument: str) -> str:
+        if match := self.URL_REGEX.fullmatch(argument):
+            return match.group(0)
+
+        if msgattach := ctx.message.attachments:
+            return msgattach[0].url
+
+        if reply := ctx.message.reference:
+            msgreply = reply.resolved
+
+            if msgreplycontent := msgreply.content:
+                if match := self.URL_REGEX.fullmatch(msgreplycontent):
+                    return match.group(0)
+
+            if msgreplyattach := msgreply.attachments:
+                return msgreplyattach[0].url

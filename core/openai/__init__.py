@@ -1,7 +1,7 @@
+import re
 import typing
 
 import openai
-import discord
 
 
 class OpenAI:
@@ -186,4 +186,8 @@ Human:"""
         if raw:
             return response
 
-        return '1. ' + response["choices"][0]["text"].strip()
+        text = '1. ' + response["choices"][0]["text"].strip()
+        
+        text = re.sub('\n+', '\n', text)
+
+        return text

@@ -8,18 +8,12 @@ FAST_BEST = typing.Literal["fast", "best"]
 
 
 class GenrePrediction:
-    URL = "https://api.yodabot.xyz/v/{}/predict-genre"  # Use Yoda API
+    URL = "https://api.yodabot.xyz/v/{}/music/predict-genre"  # Use Yoda API
 
     def __init__(self, *, session: aiohttp.ClientSession = None, api_version='1'):
         self.session: aiohttp.ClientSession = session or aiohttp.ClientSession()
 
         self.url = self.URL.format(api_version)  # Yoda API v1
-
-    async def __aenter__(self, *args, **kwargs):
-        pass
-
-    async def __aexit__(self, *args, **kwargs):
-        pass
 
     async def __call__(self, file: bytes | str, *,
                        mode: FAST_BEST = "fast") -> tuple[dict[str, int | float], float, float, int | float]:
