@@ -16,7 +16,7 @@ class YodaMenuPages(ui.View, menus.MenuPages):
         await self._source._prepare_once()
         self.ctx = ctx
 
-        channel = channel or ctx.channel
+        channel = channel or ctx
 
         self.message = await self.send_initial_message(ctx, channel)
         await self.update_buttons()
