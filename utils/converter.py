@@ -42,7 +42,7 @@ class ImageConverter(Converter):
         self.with_member = with_member
         self.with_emoji = with_emoji
 
-    async def convert(self, ctx: commands.Context, argument: str) -> str | None:
+    async def convert(self, ctx: commands.Context, argument: str | None) -> str | None:
         if argument:
             if match := re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", argument):
                 return match.group(0)
@@ -117,3 +117,10 @@ class AttachmentConverter(Converter):
 
             if msgreplyattach := msgreply.attachments:
                 return msgreplyattach[0].url
+
+            if msgreplyembed := msgreply.embeds:
+                if msgreplyembed[0].image:
+                    return msgreplyembed[0].image.url
+
+                if msgreplyembed[0].thumbnail:
+                    return msgreplyembed[0].thumbnail.url
