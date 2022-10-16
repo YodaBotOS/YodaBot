@@ -379,7 +379,7 @@ class OCR(commands.Cog):
 
                 await interaction.response.defer(ephemeral=True)
                 
-                embed = await self.cls.translate_ocr(url, language)
+                embed = await self.cls.translate_ocr(url, lang["code"])
 
                 return await interaction.followup.send(embed=embed, ephemeral=True)
 
