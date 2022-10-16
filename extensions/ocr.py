@@ -91,7 +91,7 @@ class OCR(commands.Cog):
 
             embed.description += f"**Translated Text:**\n{url} (result is too long to be displayed)"
         else:
-            embed.description += f"**Translated Text:**\n{res.original_text}"
+            embed.description += f"**Translated Text:**\n{res.translated_text}"
 
         embed.set_image(url=res.url)
 
