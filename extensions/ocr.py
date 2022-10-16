@@ -20,11 +20,17 @@ class OCR(commands.Cog):
         self.trocr: trocr.TranslateOCR = None
 
         # https://github.com/Rapptz/discord.py/issues/7823#issuecomment-1086830458
-        self.ctx_menu = app_commands.ContextMenu(
+        self.ctx_menu_ocr = app_commands.ContextMenu(
             name="Image To Text (OCR)",
             callback=self.image_to_text_context_menu
         )
-        self.bot.tree.add_command(self.ctx_menu)
+        self.bot.tree.add_command(self.ctx_menu_ocr)
+
+        self.ctx_menu_trocr = app_commands.ContextMenu(
+            name="Translate Image (Translate OCR)",
+            callback=self.trocr_context_menu
+        )
+        self.bot.tree.add_command(self.ctx_menu_trocr)
 
     async def cog_load(self):
         importlib.reload(ocr)
@@ -42,7 +48,8 @@ class OCR(commands.Cog):
         del self.bot.ocr
         del self.bot.trocr
 
-        self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
+        self.bot.tree.remove_command(self.ctx_menu_ocr.name, type=self.ctx_menu_ocr.type)
+        self.bot.tree.remove_command(self.ctx_menu_trocr.name, type=self.ctx_menu_trocr.type)
 
     async def ocr_image(self, image) -> discord.ui.View | discord.Embed:
         text = await self.ocr.request(image)
