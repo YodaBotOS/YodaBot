@@ -225,13 +225,13 @@ class OCR(commands.Cog):
         return await interaction.followup.send(embed=embed)
 
     @trocr_slash.autocomplete('language')
-    async def trocr_autocomplete_language(self, interaction: discord.Interaction, language: str):
+    async def trocr_autocomplete_language(self, interaction: discord.Interaction, current: str):
         amount = 25
 
-        if not language:
+        if not current:
             langs = await self.trocr.get_languages()
         else:
-            langs = await self.trocr.search_language(language, amount)
+            langs = await self.trocr.search_language(current, amount)
 
         langs = langs[amount:]
 
@@ -298,17 +298,49 @@ class OCR(commands.Cog):
         return await menu.start(ctx, channel=interaction.followup)
 
     @trocr_languages_slash.autocomplete('query')
-    async def trocr_languages_autocomplete_query(self, interaction: discord.Interaction, query: str):
+    async def trocr_languages_autocomplete_query(self, interaction: discord.Interaction, current: str):
         amount = 25
 
-        if not language:
+        if not current:
             langs = await self.trocr.get_languages()
         else:
-            langs = await self.trocr.search_language(query, amount)
+            langs = await self.trocr.search_language(current, amount)
 
         langs = langs[amount:]
 
         return [app_commands.Choice(name=lang['name'], value=lang['name']) for lang in langs][amount:]
+
+    @trocr_command.command(name="languages")
+    async def trocr_languages_slash(self, ctx: commands.Context, query: str = None):
+        """
+        Shows a list of languages that can be translated to.
+        """
+
+        if query:
+            query = query.strip()
+
+            lang = await self.trocr.search_language(query)
+
+            if not lang:
+                return await ctx.send(f"Language `{query}` not found.")
+
+            lang = lang[0]
+
+            lang_code = lang['code']
+            lang_name = lang['name']
+
+            embed = discord.Embed(color=self.bot.color)
+            embed.title = lang_name
+
+            embed.description = f"**Language Name:** {lang_name}\n**Language Code:** {lang_code}"
+
+            return await ctx.send(embed=embed)
+
+        langs = await self.trocr.get_languages()
+
+        source = TranslateOCRLanguagesPaginator(langs, per_page=10)
+        menu = YodaMenuPages(source, delete_message_after=True)
+        return await menu.start(ctx)
 
     async def trocr_context_menu(self, interaction: discord.Interaction, message: discord.Message):
         url = None
