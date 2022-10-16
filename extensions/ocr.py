@@ -280,7 +280,7 @@ class OCR(commands.Cog):
                 
             async def on_submit(self, interaction: discord.Interaction):
                 language = self.language.value
-                
+
                 lang = await self.cls.trocr.get_language(language)
 
                 if not lang:
@@ -290,7 +290,7 @@ class OCR(commands.Cog):
                 
                 embed = await self.cls.translate_ocr(url, language)
 
-                return await interaction.followup.send(embed=resp, ephemeral=True)
+                return await interaction.followup.send(embed=embed, ephemeral=True)
 
         return await interaction.response.send_modal(Modal(self))
 
