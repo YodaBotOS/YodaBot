@@ -80,14 +80,14 @@ class OCR(commands.Cog):
 
         if with_original_text:
             if len(res.original_text) > 2000:
-                url = await self.bot.mystbin.create_paste("original-text.txt", res.original_text, syntax="txt")
+                url = await self.bot.mystbin.create_paste(filename="original-text.txt", content=res.original_text)
 
                 embed.description += f"**Original Text:**\n{url} (result is too long to be displayed)\n\n"
             else:
                 embed.description += f"**Original Text:**\n{res.original_text}\n\n"
 
         if len(res.translated_text) > 2000:
-            url = await self.bot.mystbin.create_paste("translated-text.txt", res.translated_text, syntax="txt")
+            url = await self.bot.mystbin.create_paste(filename="translated-text.txt", content=res.translated_text)
 
             embed.description += f"**Translated Text:**\n{url} (result is too long to be displayed)"
         else:
