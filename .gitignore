@@ -1,7 +1,5 @@
 core/maps/maps_.py
 
-*dalle*
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

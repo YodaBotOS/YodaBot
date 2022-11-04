@@ -50,6 +50,10 @@ class ImageConverter(Converter):
         # Please ignore the variable names, thx!
         if msgattach := ctx.message.attachments:
             return msgattach[0].url
+        
+        if msgsticker := ctx.message.stickers:
+            if msgsticker[0].format == discord.StickerFormatType.png:
+                return msgsticker[0].url
 
         if self.with_member:
             if mention := re.fullmatch(r'<@!?(\d+)>', argument):
@@ -89,6 +93,10 @@ class ImageConverter(Converter):
 
             if msgreplyattach := msgreply.attachments:
                 return msgreplyattach[0].url
+
+            if msgsticker := msgreply.stickers:
+                if msgsticker[0].format == discord.StickerFormatType.png:
+                    return msgsticker[0].url
 
             if msgreplyembed := msgreply.embeds:
                 if msgreplyembed[0].image:
