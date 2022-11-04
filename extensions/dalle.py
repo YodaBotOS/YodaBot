@@ -145,7 +145,7 @@ class Dalle2(commands.Cog):
             if m:
                 await m.delete()
 
-            return await ctx.send(f"Something went wrong, try again later.")
+            return await ctx.send(f"Something went wrong, try again later.", ephemeral=True)
 
         if m:
             await m.delete()
@@ -184,7 +184,7 @@ class Dalle2(commands.Cog):
             elif size == "large":
                 size = Size.LARGE
 
-            return await self.generate_image(ctx, amount, prompt, size)
+            return await self.generate_image(ctx, prompt, amount, size)
 
     @gen_art.command('image', aliases=['img'])
     @app_commands.describe(amount="Amount of images to generate",
@@ -216,9 +216,9 @@ class Dalle2(commands.Cog):
             return await self.generate_image(ctx, prompt, amount, size)
 
     @gen_art.command('variations', aliases=['variation', 'var', 'similar'], with_app_command=False)
-    async def variations(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
-                         size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *,
-                         image: str = None):
+    async def gen_art_variations(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
+                                 size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *,
+                                 image: str = None):
         """
         Gets a list of variations of an image provided.
 
@@ -233,7 +233,7 @@ class Dalle2(commands.Cog):
         - `yoda generate-art variations 5 large <attachment>`
         """
 
-        image = image or await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image)
+        image = image or await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or '')
 
         if not image:
             return await ctx.send("Image not found.", ephemeral=True)
