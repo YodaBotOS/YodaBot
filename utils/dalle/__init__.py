@@ -15,11 +15,11 @@ class DalleImagesPaginator(MenuSource):
     async def format_page(self, menu, image: Image):
         embed = discord.Embed(color=menu.ctx.bot.color)
         embed.set_image(url=image.url)
-        embed.set_author(name=f"Dall·E 2 {(self.text + ' ') if self.text else ''}Result:",
-                         icon_url='https://cdn.openai.com/API/images/dalle-icon-1024.png')
-        embed.set_footer(text=f'\U000026a0 Warning \U000026a0: All DALL·E images and prompts are logged for security '
-                              f'purposes. You will get banned from using DALL·E in this bot if you are using DALL·E '
-                              'in a malicious/inappropriate (pretty much anything bad) way.')
+        embed.set_author(name=f"{(self.text + ' ') if self.text else ''}Result:",
+                         icon_url=menu.ctx.author.display_avatar.url)
+        embed.set_footer(text=f'All images and prompts are logged for security purposes. You will get banned from '
+                              f'using this feature in this bot if you are using it in a malicious/inappropriate '
+                              '(pretty much anything bad) way.')
 
         if self.prompt:
             embed.description = self.prompt
