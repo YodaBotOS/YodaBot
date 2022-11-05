@@ -108,8 +108,15 @@ async def on_message_edit(b, a):
 
 
 @bot.event
-async def on_command_error(ctx, error):
+async def on_command_error(ctx, error, *, force=False):
     ignored = (commands.CommandNotFound,)
+
+    if not force:
+        if ctx.command.has_error_handler():
+            return
+
+        if ctx.cog.has_error_handler():
+            return
 
     if isinstance(error, ignored):
         raise error

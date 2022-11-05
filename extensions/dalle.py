@@ -94,7 +94,8 @@ class Dalle2(commands.Cog):
         importlib.reload(core_dalle2)
         from core.dalle2 import GenerateArt
 
-        self.dalle: GenerateArt = GenerateArt(config.OPENAI_KEY)
+        self.dalle: GenerateArt = GenerateArt((self.bot.cdn, "yodabot", "https://cdn.yodabot.xyz"),
+                                              self.bot.session, config.OPENAI_KEY)
 
     async def cog_unload(self):
         del self.dalle
@@ -216,9 +217,9 @@ class Dalle2(commands.Cog):
             return await self.generate_image(ctx, prompt, amount, size)
 
     @gen_art.command('variations', aliases=['variation', 'var', 'similar'], with_app_command=False)
-    async def gen_art_variations(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
-                                 size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *,
-                                 image: str = None):
+    async def gen_art_variations_cmd(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
+                                     size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *,
+                                     image: str = None):
         """
         Gets a list of variations of an image provided.
 
@@ -236,7 +237,7 @@ class Dalle2(commands.Cog):
         image = image or await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or '')
 
         if not image:
-            return await ctx.send("Image not found.", ephemeral=True)
+            return await ctx.send("Please send an image or provide a URL.", ephemeral=True)
 
         if size == "small":
             size = Size.SMALL
@@ -246,6 +247,53 @@ class Dalle2(commands.Cog):
             size = Size.LARGE
 
         return await self.variations(ctx, image, amount, size)
+
+    @gen_art.command('variations', hidden=True)
+    @app_commands.describe(amount="Amount of images to generate")
+    async def gen_art_variations_slash(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
+                                     size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *,
+                                     image: discord.Attachment = None, url: str = None):
+        """
+        Gets a list of variations of an image provided.
+
+        If amount is not provided, it would default to 5. Maximum is 10.
+
+        Image can be an attachment, a reply to another person, a sticker, a link, etc.
+
+        Usage: `yoda generate-art variations [amount] [size] <image>`.
+
+        - `yoda generate-art variations <url>`
+        - `yoda generate-art variations 2 <url>`
+        - `yoda generate-art variations 5 large <attachment>`
+        """
+
+        # This command is slash only. Hacky way to do this, but idc.
+        if ctx.interaction is None:
+            raise commands.CommandError("slash only") from None
+
+        if image is None and url is None:
+            return await ctx.send("Please send an image or provide a URL.")
+
+        if image and url:
+            return await ctx.send("Please only send either an image or a URL.")
+
+        image = url or image.url
+
+        if size == "small":
+            size = Size.SMALL
+        elif size == "medium":
+            size = Size.MEDIUM
+        elif size == "large":
+            size = Size.LARGE
+
+        return await self.variations(ctx, image, amount, size)
+
+    @gen_art_variations_slash.error
+    async def gen_art_variations_slash_error(self, ctx: commands.Context, error):
+        if ctx.interaction is None:
+            return
+
+        self.bot.dispatch('command_error', ctx, error, force=True)
 
 
 async def setup(bot: commands.Bot):
