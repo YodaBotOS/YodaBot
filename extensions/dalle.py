@@ -115,7 +115,7 @@ class Dalle2(commands.Cog):
                 return await ctx.send("Text seems inappropriate. Aborting.", ephemeral=True)
 
         try:
-            result = self.dalle.create_image(prompt, amount, size=size, user=str(ctx.author.id))
+            result = await self.dalle.create_image(prompt, amount, size=size, user=str(ctx.author.id))
         except Exception as e:
             if m:
                 await m.delete()
@@ -141,7 +141,7 @@ class Dalle2(commands.Cog):
             m = await ctx.send(f"⌛ Generating `{amount}` variation(s)...")
 
         try:
-            result = self.dalle.create_image_variations(img, amount, size=size, user=str(ctx.author.id))
+            result = await self.dalle.create_image_variations(img, amount, size=size, user=str(ctx.author.id))
         except Exception as e:
             if m:
                 await m.delete()
@@ -156,14 +156,28 @@ class Dalle2(commands.Cog):
 
         await menu.start(ctx)
 
-    @commands.hybrid_group('generate-art', aliases=['generate-image', 'generate-img', 'generate-images', 'dalle',
-                                                    'dalle2', 'image-generator', 'imgen'],
-                           invoke_without_command=True)
-    @app_commands.describe(amount="Amount of images to generate",
-                           size="Size of the image",
-                           prompt="Prompt to generate images from")
-    async def gen_art(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
-                      size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *, prompt: str):
+    MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=False)
+
+    async def handle(self, ctx, func, *args, **kwargs):
+        if isinstance(ctx, discord.Interaction):
+            ctx = await self.bot.get_context(ctx)
+
+        try:
+            await self.MAX_CONCURRENCY.acquire(ctx)
+
+            try:
+                await func(ctx, *args, **kwargs)
+            finally:
+                await self.MAX_CONCURRENCY.release(ctx)
+        except commands.MaxConcurrencyReached:
+            await ctx.send("You are already generating an image. Please wait until it's done.", ephemeral=True)
+            return
+
+    @commands.group('generate-art', aliases=['generate-image', 'generate-img', 'generate-images', 'dalle', 'dalle2',
+                                             'image-generator', 'imgen'],
+                    invoke_without_command=True)
+    async def gen_art_cmd(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
+                          size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *, prompt: str):
         """
         Generate an image from a prompt.
 
@@ -177,20 +191,20 @@ class Dalle2(commands.Cog):
         - `yoda generate-art 5 large A dog sleeping on a bed`
         """
 
-        if ctx.subcommand_passed is None:
-            if size == "small":
-                size = Size.SMALL
-            elif size == "medium":
-                size = Size.MEDIUM
-            elif size == "large":
-                size = Size.LARGE
+        async def main(ctx, prompt, amount, size):
+            if ctx.subcommand_passed is None:
+                if size == "small":
+                    size = Size.SMALL
+                elif size == "medium":
+                    size = Size.MEDIUM
+                elif size == "large":
+                    size = Size.LARGE
 
-            return await self.generate_image(ctx, prompt, amount, size)
+                return await self.generate_image(ctx, prompt, amount, size)
 
-    @gen_art.command('image', aliases=['img'])
-    @app_commands.describe(amount="Amount of images to generate",
-                           size="Size of the image",
-                           prompt="Prompt to generate images from")
+        await self.handle(ctx, main, prompt, amount, size)
+
+    @gen_art_cmd.command('image')
     async def gen_art2(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
                        size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *, prompt: str):
         """
@@ -206,17 +220,20 @@ class Dalle2(commands.Cog):
         - `yoda generate-art image 5 large A dog sleeping on a bed`
         """
 
-        if ctx.subcommand_passed is None:
-            if size == "small":
-                size = Size.SMALL
-            elif size == "medium":
-                size = Size.MEDIUM
-            elif size == "large":
-                size = Size.LARGE
+        async def main(ctx, prompt, amount, size):
+            if ctx.subcommand_passed is None:
+                if size == "small":
+                    size = Size.SMALL
+                elif size == "medium":
+                    size = Size.MEDIUM
+                elif size == "large":
+                    size = Size.LARGE
 
-            return await self.generate_image(ctx, prompt, amount, size)
+                return await self.generate_image(ctx, prompt, amount, size)
 
-    @gen_art.command('variations', aliases=['variation', 'var', 'similar'], with_app_command=False)
+        await self.handle(ctx, main, prompt, amount, size)
+
+    @gen_art_cmd.command('variations', aliases=['variation', 'var', 'similar'])
     async def gen_art_variations_cmd(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
                                      size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *,
                                      image: str = None):
@@ -234,23 +251,65 @@ class Dalle2(commands.Cog):
         - `yoda generate-art variations 5 large <attachment>`
         """
 
-        image = image or await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or '')
+        async def main(ctx, amount, size, image):
+            image = image or await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or '')
 
-        if not image:
-            return await ctx.send("Please send an image or provide a URL.", ephemeral=True)
+            if not image:
+                return await ctx.send("Please send an image or provide a URL.", ephemeral=True)
 
-        if size == "small":
-            size = Size.SMALL
-        elif size == "medium":
-            size = Size.MEDIUM
-        elif size == "large":
-            size = Size.LARGE
+            if size == "small":
+                size = Size.SMALL
+            elif size == "medium":
+                size = Size.MEDIUM
+            elif size == "large":
+                size = Size.LARGE
 
-        return await self.variations(ctx, image, amount, size)
+            return await self.variations(ctx, image, amount, size)
 
-    @gen_art.command('variations', hidden=True)
-    @app_commands.describe(amount="Amount of images to generate")
-    async def gen_art_variations_slash(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
+        await self.handle(ctx, main, amount, size, image)
+
+    gen_art_slash = app_commands.Group(name="generate-art", description="Generate an image from a prompt.")
+
+    @gen_art_slash.command(name='image')
+    @app_commands.describe(amount="Amount of images to generate",
+                           size="Size of the image",
+                           prompt="Prompt to generate images from")
+    async def gen_art2_slash(self, interaction: discord.Interaction,
+                             amount: typing.Optional[app_commands.Range[int, 1, 10]] = 5,
+                             size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *,
+                             prompt: str):
+        """
+        Generate an image from a prompt.
+
+        If amount is not provided, it would default to 5. Maximum is 10.
+
+        Usage: `/generate-art image [amount] [size] <prompt>`.
+
+        - `/generate-art image 2 A cute dog standing next to a person`
+        - `/generate-art image A cat fighting with a dog`
+        - `/generate-art image small A person sitting in a brown bench`
+        - `/generate-art image 5 large A dog sleeping on a bed`
+        """
+
+        async def main(ctx, prompt, amount, size):
+            if size == "small":
+                size = Size.SMALL
+            elif size == "medium":
+                size = Size.MEDIUM
+            elif size == "large":
+                size = Size.LARGE
+
+            return await self.generate_image(ctx, prompt, amount, size)
+
+        await self.handle(interaction, main, prompt, amount, size)  # type: ignore
+
+    @gen_art_slash.command(name='variations')
+    @app_commands.describe(amount="Amount of images to generate",
+                           size="The size of the image",
+                           image="Image to generate variations from",
+                           url="URL of the image to generate variations from")
+    async def gen_art_variations_slash(self, interaction: discord.Interaction,
+                                       amount: typing.Optional[app_commands.Range[int, 1, 10]] = 5,
                                        size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *,
                                        image: discord.Attachment = None, url: str = None):
         """
@@ -260,40 +319,32 @@ class Dalle2(commands.Cog):
 
         Image can be an attachment, a reply to another person, a sticker, a link, etc.
 
-        Usage: `yoda generate-art variations [amount] [size] <image>`.
+        Usage: `/generate-art variations [amount] [size] <image>`.
 
-        - `yoda generate-art variations <url>`
-        - `yoda generate-art variations 2 <url>`
-        - `yoda generate-art variations 5 large <attachment>`
+        - `/generate-art variations <url>`
+        - `/generate-art variations 2 <url>`
+        - `/generate-art variations 5 large <attachment>`
         """
 
-        # This command is slash only. Hacky way to do this, but idc.
-        if ctx.interaction is None:
-            raise commands.CommandError("slash only") from None
+        async def main(ctx, amount, size, image, url):
+            if image is None and url is None:
+                return await ctx.send("Please send an image or provide a URL.", ephemeral=True)
 
-        if image is None and url is None:
-            return await ctx.send("Please send an image or provide a URL.")
+            if image and url:
+                return await ctx.send("Please only send either an image or a URL.", ephemeral=True)
 
-        if image and url:
-            return await ctx.send("Please only send either an image or a URL.")
+            image = url or image.url
 
-        image = url or image.url
+            if size == "small":
+                size = Size.SMALL
+            elif size == "medium":
+                size = Size.MEDIUM
+            elif size == "large":
+                size = Size.LARGE
 
-        if size == "small":
-            size = Size.SMALL
-        elif size == "medium":
-            size = Size.MEDIUM
-        elif size == "large":
-            size = Size.LARGE
+            return await self.variations(ctx, image, amount, size)
 
-        return await self.variations(ctx, image, amount, size)
-
-    @gen_art_variations_slash.error
-    async def gen_art_variations_slash_error(self, ctx: commands.Context, error):
-        if ctx.interaction is None:
-            return
-
-        self.bot.dispatch('command_error', ctx, error, force=True)
+        await self.handle(interaction, main, amount, size, image, url)  # type: ignore
 
 
 async def setup(bot: commands.Bot):

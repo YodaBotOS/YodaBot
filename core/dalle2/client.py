@@ -48,7 +48,7 @@ class GenerateArt:
 
             counter += 1
 
-    def create_image(self, prompt: str, n: int, *, size: Size, user: str = None) -> GeneratedImages:
+    async def create_image(self, prompt: str, n: int, *, size: Size, user: str = None) -> GeneratedImages:
         if 1 > n or n > 10:
             raise ValueError("n must be between 1 and 10")
 
@@ -66,7 +66,7 @@ class GenerateArt:
 
         return gen
 
-    def create_image_variations(self, image: str | bytes | io.BytesIO, n: int, *,
+    async def create_image_variations(self, image: str | bytes | io.BytesIO, n: int, *,
                                 size: Size, user: str = None) -> GeneratedImages:
         if 1 > n or n > 10:
             raise ValueError("n must be between 1 and 10")
