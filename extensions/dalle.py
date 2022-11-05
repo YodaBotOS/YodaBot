@@ -251,8 +251,8 @@ class Dalle2(commands.Cog):
     @gen_art.command('variations', hidden=True)
     @app_commands.describe(amount="Amount of images to generate")
     async def gen_art_variations_slash(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
-                                     size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *,
-                                     image: discord.Attachment = None, url: str = None):
+                                       size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *,
+                                       image: discord.Attachment = None, url: str = None):
         """
         Gets a list of variations of an image provided.
 
