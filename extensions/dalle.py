@@ -24,12 +24,6 @@ class Art(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    async def cog_check(self, ctx) -> bool:
-        if ctx.author.id == 993492028300218388:
-            return True
-
-        return await self.bot.is_owner(ctx.author)
-
     async def text_check(self, text: str, *, raw: bool = False) -> dict | bool | None:
         """
         Just to be safe.
@@ -122,7 +116,7 @@ class Art(commands.Cog):
                 await m.delete()
 
             if isinstance(e, openai.error.InvalidRequestError):
-                return await ctx.send(f"Invalid image. {e}", ephemeral=True)
+                return await ctx.send(f"Invalid prompt. {e}", ephemeral=True)
 
             return await ctx.send(f"Something went wrong, try again later.", ephemeral=True)
 
