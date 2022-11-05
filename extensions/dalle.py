@@ -3,6 +3,7 @@ import asyncio
 import importlib
 import typing
 
+import openai
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -120,6 +121,9 @@ class Dalle2(commands.Cog):
             if m:
                 await m.delete()
 
+            if isinstance(e, openai.error.InvalidRequestError):
+                return await ctx.send(f"Invalid image. {e}", ephemeral=True)
+
             return await ctx.send(f"Something went wrong, try again later.", ephemeral=True)
 
         if m:
@@ -145,6 +149,9 @@ class Dalle2(commands.Cog):
         except Exception as e:
             if m:
                 await m.delete()
+
+            if isinstance(e, openai.error.InvalidRequestError):
+                return await ctx.send(f"Invalid image. {e}", ephemeral=True)
 
             return await ctx.send(f"Something went wrong, try again later.", ephemeral=True)
 
