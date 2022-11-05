@@ -355,4 +355,4 @@ class Art(commands.Cog):
 
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Dalle2(bot))
+    await bot.add_cog(Art(bot)) 
