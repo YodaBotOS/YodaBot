@@ -16,9 +16,9 @@ from utils.dalle import DalleImagesPaginator
 from utils.converter import ImageConverter
 
 
-class Dalle2(commands.Cog):
+class Art(commands.Cog):
     """
-    OpenAI Dalle 2
+    Generate Art from prompts or images! 
     """
 
     def __init__(self, bot: commands.Bot):
