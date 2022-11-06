@@ -12,8 +12,8 @@ import config
 from core import dalle2 as core_dalle2
 from core.dalle2 import GeneratedImages, Size
 from utils.paginator import YodaMenuPages
-from utils.dalle import DalleImagesPaginator
-from utils.converter import ImageConverter
+from utils.dalle import DalleImagesPaginator, DalleArtPaginator
+from utils.converter import ImageConverter, SizeConverter
 
 
 class Art(commands.Cog):
@@ -85,7 +85,7 @@ class Art(commands.Cog):
 
         return True
 
-    async def cog_load(self):
+    async def init(self):
         importlib.reload(core_dalle2)
         from core.dalle2 import GenerateArt
 
@@ -156,6 +156,36 @@ class Art(commands.Cog):
         menu = YodaMenuPages(source)
 
         await menu.start(ctx)
+
+    async def generate_image_style(self, ctx, prompt, style, amount, width, height):
+        if ctx.interaction:
+            await ctx.defer()
+            m = None
+        else:
+            m = await ctx.send(f"⌛ Generating `{amount}` image(s) with style `{style.name}`...")
+
+        if not await self.bot.is_owner(ctx.author):
+            check = await self.text_check(prompt)
+
+            if not check:
+                await m.delete()
+                return await ctx.send("Text seems inappropriate. Aborting.", ephemeral=True)
+
+        try:
+            result = await self.dalle.style.generate(prompt, style, amount, height=height, width=width)
+        except Exception as e:
+            if m:
+                await m.delete()
+
+            return await ctx.send(f"Something went wrong, try again later.", ephemeral=True)
+
+        if m:
+            await m.delete()
+
+        source = DalleArtPaginator(result, prompt)
+        menu = YodaMenuPages(source)
+
+        return await menu.start(ctx)
 
     MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=False)
 
@@ -269,16 +299,59 @@ class Art(commands.Cog):
 
         await self.handle(ctx, main, amount, size, image)
 
+    @gen_art_cmd.command('style')
+    async def gen_art_style(self, ctx: commands.Context, style: str = None,
+                            amount: typing.Optional[commands.Range[int, 1, 5]] = 1,
+                            size: typing.Optional[SizeConverter] = None, *, prompt: str = None):
+        """
+        Generate an image from a prompt with styles applied.
+
+        To get the list of styles available, use `yoda generate-art style`
+
+        If amount is not provided, it would default to 1. Maximum is 5.
+
+        Usage: `yoda generate-art style <style> [amount] [width x height] <prompt>`.
+
+        - `yoda generate-art style Synthwave Racing Car`
+        - `yoda generate-art style HD Forest`
+        - `yoda generate-art style "Van Gogh" 1024x1024 A person sitting in a brown bench`
+        - `yoda generate-art style Mystical 5 Tall buildings`
+        """
+
+        async def main(ctx, prompt, style, amount, size):
+            style = await self.dalle.style.get_style_from_name(style or '')
+
+            if not style:
+                styles = await self.dalle.style.get_styles(raw=True)
+                embed = discord.Embed(title="Styles", description="Here are the available styles:\n\n",
+                                      color=self.bot.color)
+
+                for style in styles:
+                    embed.description += f"- {style.name}\n"
+
+                return await ctx.send("Style not found.", embed=embed, ephemeral=True)
+
+            if not prompt:
+                return await ctx.send("Please provide a prompt.", ephemeral=True)
+
+            width, height = size
+
+            if width > 1024 or height > 1024:
+                return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
+
+            return await self.generate_image_style(ctx, prompt, style, amount, width, height)
+
+        await self.handle(ctx, main, prompt, style, amount, size)
+
     gen_art_slash = app_commands.Group(name="generate-art", description="Generate an image from a prompt.")
 
     @gen_art_slash.command(name='image')
     @app_commands.describe(amount="Amount of images to generate",
                            size="Size of the image",
                            prompt="Prompt to generate images from")
-    async def gen_art2_slash(self, interaction: discord.Interaction,
+    async def gen_art2_slash(self, interaction: discord.Interaction, prompt: str,
                              amount: typing.Optional[app_commands.Range[int, 1, 10]] = 5,
-                             size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *,
-                             prompt: str):
+                             size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large"):
         """
         Generate an image from a prompt.
 
@@ -309,10 +382,9 @@ class Art(commands.Cog):
                            size="The size of the image",
                            image="Image to generate variations from",
                            url="URL of the image to generate variations from")
-    async def gen_art_variations_slash(self, interaction: discord.Interaction,
-                                       amount: typing.Optional[app_commands.Range[int, 1, 10]] = 5,
-                                       size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *,
-                                       image: discord.Attachment = None, url: str = None):
+    async def gen_art_variations_slash(self, interaction: discord.Interaction, image: discord.Attachment = None,
+                                       url: str = None, amount: typing.Optional[app_commands.Range[int, 1, 10]] = 5,
+                                       size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large"):
         """
         Gets a list of variations of an image provided.
 
@@ -347,6 +419,57 @@ class Art(commands.Cog):
 
         await self.handle(interaction, main, amount, size, image, url)  # type: ignore
 
+    @gen_art_slash.command(name='style')
+    @app_commands.describe(style="Style to apply to the image",
+                           amount="Amount of images to generate",
+                           size="Size of the image e.g 1024x1024",
+                           prompt="Prompt to generate images from")
+    async def gen_art_style_slash(self, ctx: commands.Context, prompt: str = None, style: str = None,
+                                  amount: typing.Optional[commands.Range[int, 1, 5]] = 1,
+                                  size: typing.Optional[SizeConverter] = None):
+        """
+        Generate an image from a prompt with styles applied.
+
+        To get the list of styles available, use `yoda generate-art style`
+
+        If amount is not provided, it would default to 1. Maximum is 5.
+
+        Usage: `yoda generate-art style <style> [amount] [width x height] <prompt>`.
+
+        - `yoda generate-art style Synthwave Racing Car`
+        - `yoda generate-art style HD Forest`
+        - `yoda generate-art style "Van Gogh" 1024x1024 A person sitting in a brown bench`
+        - `yoda generate-art style Mystical 5 Tall buildings`
+        """
+
+        async def main(ctx, prompt, style, amount, size):
+            style = await self.dalle.style.get_style_from_name(style or '')
+
+            if not style:
+                styles = await self.dalle.style.get_styles(raw=True)
+                embed = discord.Embed(title="Styles", description="Here are the available styles:\n\n",
+                                      color=self.bot.color)
+
+                for style in styles:
+                    embed.description += f"- {style.name}\n"
+
+                return await ctx.send("Style not found.", embed=embed, ephemeral=True)
+
+            if not prompt:
+                return await ctx.send("Please provide a prompt.", ephemeral=True)
+
+            width, height = size
+
+            if width > 1024 or height > 1024:
+                return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
+
+            return await self.generate_image_style(ctx, prompt, style, amount, width, height)
+
+        await self.handle(ctx, main, prompt, style, amount, size)
+
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Art(bot)) 
+    cog = Art(bot)
+    await cog.init()
+
+    await bot.add_cog(cog)

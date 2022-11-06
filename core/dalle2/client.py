@@ -6,22 +6,25 @@ import aiohttp
 
 from .enums import *
 from .image import *
+from .style import *
 
 
 class GenerateArt:
-    def __init__(self, s3, session: aiohttp.ClientSession, cdn_url: str, key: str = None):
-        if key is not None:
-            self.key = key
-            openai.api_key = key
-        else:
-            self.key = openai.api_key
+    def __init__(self, s3, session: aiohttp.ClientSession, keys: list[str]):
+        self.openai_key = keys[0]
+        openai.api_key = keys[0]
+        self.dream_key = keys[1]
 
         self.s3, self.bucket, self.host = s3
         self.session = session
 
+    @property
+    def style(self):
+        return GenerateStyleArt(self.s3, self.session, self.dream_key)
+
     def _get_headers(self):
         return {
-            "Authorization": f"Bearer {self.key}",
+            "Authorization": f"Bearer {self.openai_key}",
             "Content-Type": "application/json"
         }
 
