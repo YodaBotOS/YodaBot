@@ -90,7 +90,7 @@ class Art(commands.Cog):
         from core.dalle2 import GenerateArt
 
         self.dalle: GenerateArt = GenerateArt((self.bot.cdn, "yodabot", "https://cdn.yodabot.xyz"),
-                                              self.bot.session, config.OPENAI_KEY)
+                                              self.bot.session, (config.OPENAI_KEY, config.DREAM_KEY))
 
     async def cog_unload(self):
         del self.dalle
