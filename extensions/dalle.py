@@ -339,6 +339,9 @@ class Art(commands.Cog):
 
             if not prompt:
                 return await ctx.send("Please provide a prompt.", ephemeral=True)
+            
+            if not size:
+                return await ctx.send("Please provide a size.", ephemeral=True)
 
             width, height = size
 
@@ -432,7 +435,7 @@ class Art(commands.Cog):
                            prompt="Prompt to generate images from")
     async def gen_art_style_slash(self, ctx: commands.Context, prompt: str = None, style: str = None,
                                   amount: typing.Optional[app_commands.Range[int, 1, 5]] = 1,
-                                  size: typing.Optional[str] = commands.param(converter=SizeConverter, default=None)):
+                                  size: typing.Optional[str] = None):
         """
         Generate an image from a prompt with styles applied.
 
@@ -463,8 +466,14 @@ class Art(commands.Cog):
 
             if not prompt:
                 return await ctx.send("Please provide a prompt.", ephemeral=True)
+            
+            if not size:
+                return await ctx.send("Please provide a size.", ephemeral=True)
 
-            width, height = size
+            try:
+                width, height = await SizeConverter().convert(ctx, size)
+            except:
+                return await ctx.send("Please provide a size.", ephemeral=True)
 
             if width > 1024 or height > 1024:
                 return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
