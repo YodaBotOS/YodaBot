@@ -432,8 +432,7 @@ class Art(commands.Cog):
                            prompt="Prompt to generate images from")
     async def gen_art_style_slash(self, ctx: commands.Context, prompt: str = None, style: str = None,
                                   amount: typing.Optional[app_commands.Range[int, 1, 5]] = 1,
-                                  size: typing.Optional[str] = commands.param(converter=SizeConverter,
-                                            default=None)):
+                                  size: typing.Optional[str] = commands.param(converter=SizeConverter, default=None)):
         """
         Generate an image from a prompt with styles applied.
 
