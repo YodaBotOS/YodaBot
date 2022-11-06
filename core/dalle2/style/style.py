@@ -21,7 +21,7 @@ class GenerateStyleArt:
         }
 
     async def get_styles(self, *, raw: bool = False) -> list[Style] | dict[str, Style]:
-        async with self.session.get(self.URL + "/styles", headers=self._get_headers()) as resp:
+        async with self.session.get(self.URL + "/styles", headers=self._get_headers(), ssl=False) as resp:
             js = await resp.json()
 
         if raw:
@@ -49,7 +49,7 @@ class GenerateStyleArt:
     async def create_task(self):
         data = {"use_target_image", False}
 
-        async with self.session.post(self.URL + "/tasks", json=data, headers=self._get_headers()) as resp:
+        async with self.session.post(self.URL + "/tasks", json=data, headers=self._get_headers(), ssl=False) as resp:
             js = await resp.json()
 
         return js
@@ -64,13 +64,14 @@ class GenerateStyleArt:
             "target_image_weight": target_image_weight
         }
 
-        async with self.session.put(self.URL + f"/tasks/{task_id}", json=data, headers=self._get_headers()) as resp:
+        async with self.session.put(self.URL + f"/tasks/{task_id}", json=data, headers=self._get_headers(),
+                                    ssl=False) as resp:
             js = await resp.json()
 
         return js
 
     async def get_task(self, task_id: str):
-        async with self.session.get(self.URL + f"/tasks/{task_id}", headers=self._get_headers()) as resp:
+        async with self.session.get(self.URL + f"/tasks/{task_id}", headers=self._get_headers(), ssl=False) as resp:
             js = await resp.json()
 
         return js
