@@ -93,7 +93,7 @@ class Art(commands.Cog):
                                               self.bot.session, (config.OPENAI_KEY, config.DREAM_KEY))
         
         # Hacky way, ik, idk how to do it the proper/better way.
-        styles = [x.name for x in self.dalle.style.get_styles(raw=True)]
+        styles = [x.name for x in await self.dalle.style.get_styles(raw=True)]
         choices = [app_commands.Choice(name=x, value=x) for x in styles]
         
         app_commands.choices(style=choices)(self.gen_art_style_slash)
