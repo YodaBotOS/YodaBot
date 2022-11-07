@@ -307,8 +307,8 @@ class Art(commands.Cog):
 
     @gen_art_cmd.command('style')
     async def gen_art_style(self, ctx: commands.Context, style: str = None,
-                            amount: typing.Optional[commands.Range[int, 1, 5]] = 1, size: str = None, *,
-                            prompt: str = None):
+                            amount: typing.Optional[commands.Range[int, 1, 5]] = 1,
+                            size: typing.Optional[SizeConverter] = None, *, prompt: str = None):
         """
         Generate an image from a prompt with styles applied.
 
@@ -340,17 +340,16 @@ class Art(commands.Cog):
             if not prompt:
                 return await ctx.send("Please provide a prompt.", ephemeral=True)
 
-            try:
-                width, height = await SizeConverter().convert(ctx, size)
+            if not size:
+                return await ctx.send("Please provide a size.", ephemeral=True)
 
-                if width > 1024 or height > 1024:
-                    return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
-            except:
-                if size:
-                    return await ctx.send("Invalid size provided. Please enter a valid size e.g `1024x1024`",
-                                          ephemeral=True)
-
+            if size is not None:
+                width, height = size
+            else:
                 width, height = None, None
+
+            if width > 1024 or height > 1024:
+                return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
 
             return await self.generate_image_style(ctx, prompt, style, amount, width, height)
 
@@ -470,6 +469,9 @@ class Art(commands.Cog):
 
             if not prompt:
                 return await ctx.send("Please provide a prompt.", ephemeral=True)
+
+            if not size:
+                return await ctx.send("Please provide a size.", ephemeral=True)
 
             try:
                 width, height = await SizeConverter().convert(ctx, size)
