@@ -342,11 +342,11 @@ class Art(commands.Cog):
 
             if size is not None:
                 width, height = size
+                
+                if width > 1024 or height > 1024:
+                    return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
             else:
                 width, height = None, None
-
-            if width > 1024 or height > 1024:
-                return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
 
             return await self.generate_image_style(ctx, prompt, style, amount, width, height)
 
