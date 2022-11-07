@@ -107,7 +107,7 @@ class GenerateStyleArt:
 
         for i in range(n):
             task = await self.create_task()
-            print(await self.update_task(task["id"], prompt, style, height=height, width=width))
+            await self.update_task(task["id"], prompt, style, height=height, width=width)
 
             while task["state"] not in ["completed", "failed"]:
                 task = await self.get_task(task["id"])
