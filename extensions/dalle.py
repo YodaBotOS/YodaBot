@@ -325,6 +325,7 @@ class Art(commands.Cog):
         """
 
         async def main(ctx, prompt, style, amount, size):
+            original_style = style
             style = await self.dalle.style.get_style_from_name(style or '')
 
             if not style:
@@ -335,7 +336,10 @@ class Art(commands.Cog):
                 for style in styles:
                     embed.description += f"- {style.name}\n"
 
-                return await ctx.send("Style not found.", embed=embed, ephemeral=True)
+                if original_style:
+                    return await ctx.send("Style not found.", embed=embed, ephemeral=True)
+                else:
+                    return await ctx.send(embed=embed, ephemeral=True)
 
             if not prompt:
                 return await ctx.send("Please provide a prompt.", ephemeral=True)
@@ -452,6 +456,7 @@ class Art(commands.Cog):
         """
 
         async def main(ctx, prompt, style, amount, size):
+            original_style = style
             style = await self.dalle.style.get_style_from_name(style or '')
 
             if not style:
@@ -462,7 +467,10 @@ class Art(commands.Cog):
                 for style in styles:
                     embed.description += f"- {style.name}\n"
 
-                return await ctx.send("Style not found.", embed=embed, ephemeral=True)
+                if original_style:
+                    return await ctx.send("Style not found.", embed=embed, ephemeral=True)
+                else:
+                    return await ctx.send(embed=embed, ephemeral=True)
 
             if not prompt:
                 return await ctx.send("Please provide a prompt.", ephemeral=True)
