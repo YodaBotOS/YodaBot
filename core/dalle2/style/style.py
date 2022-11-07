@@ -1,3 +1,4 @@
+import asyncio
 import io
 
 import aiohttp
@@ -10,6 +11,7 @@ class GenerateStyleArt:
 
     def __init__(self, s3, session: aiohttp.ClientSession, key: str):
         self.s3, self.bucket, self.host = s3
+
         self.session = session
 
         self.key = key
@@ -17,11 +19,11 @@ class GenerateStyleArt:
     def _get_headers(self):
         return {
             "Authorization": f"Bearer {self.key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
     async def get_styles(self, *, raw: bool = False) -> list[Style] | dict[str, Style]:
-        async with self.session.get(self.URL + "/styles", headers=self._get_headers(), ssl=False) as resp:
+        async with self.session.get(self.URL + "/styles/", headers=self._get_headers()) as resp:
             js = await resp.json()
 
         if raw:
@@ -47,31 +49,35 @@ class GenerateStyleArt:
         return None
 
     async def create_task(self):
-        data = {"use_target_image", False}
+        data = {"use_target_image": False}
 
-        async with self.session.post(self.URL + "/tasks", json=data, headers=self._get_headers(), ssl=False) as resp:
+        async with self.session.post(self.URL + "/tasks/", json=data, headers=self._get_headers()) as resp:
             js = await resp.json()
 
         return js
 
     async def update_task(self, task_id: str, prompt: str, style: Style, *, height: int = None, width: int = None,
                           target_image_weight: float = 0.5):
+        height = height or 1568
+        width = width or 960
+
         data = {
-            "prompt": prompt,
-            "style": style.id,
-            "height": height,
-            "width": width,
-            "target_image_weight": target_image_weight
+            "input_spec": {
+                "prompt": prompt,
+                "style": style.id,
+                "height": height,
+                "width": width,
+                "target_image_weight": target_image_weight
+            }
         }
 
-        async with self.session.put(self.URL + f"/tasks/{task_id}", json=data, headers=self._get_headers(),
-                                    ssl=False) as resp:
+        async with self.session.put(self.URL + f"/tasks/{task_id}", json=data, headers=self._get_headers()) as resp:
             js = await resp.json()
 
         return js
 
     async def get_task(self, task_id: str):
-        async with self.session.get(self.URL + f"/tasks/{task_id}", headers=self._get_headers(), ssl=False) as resp:
+        async with self.session.get(self.URL + f"/tasks/{task_id}", headers=self._get_headers()) as resp:
             js = await resp.json()
 
         return js
@@ -101,10 +107,11 @@ class GenerateStyleArt:
 
         for i in range(n):
             task = await self.create_task()
-            task = await self.update_task(task["id"], prompt, style, height=height, width=width)
+            print(await self.update_task(task["id"], prompt, style, height=height, width=width))
 
             while task["state"] not in ["completed", "failed"]:
                 task = await self.get_task(task["id"])
+                await asyncio.sleep(1)
 
             images.append(GeneratedImage(**task))
 

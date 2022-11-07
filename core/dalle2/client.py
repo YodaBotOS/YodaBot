@@ -20,7 +20,7 @@ class GenerateArt:
 
     @property
     def style(self):
-        return GenerateStyleArt((self.s3, self.bucket, self.host), self.session, self.dream_key)
+        return GenerateStyleArt((self.s3, self.bucket, self.host), self.dream_key)
 
     def _get_headers(self):
         return {
