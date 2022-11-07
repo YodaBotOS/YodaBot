@@ -340,9 +340,6 @@ class Art(commands.Cog):
             if not prompt:
                 return await ctx.send("Please provide a prompt.", ephemeral=True)
 
-            if not size:
-                return await ctx.send("Please provide a size.", ephemeral=True)
-
             if size is not None:
                 width, height = size
             else:
