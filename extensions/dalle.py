@@ -472,11 +472,15 @@ class Art(commands.Cog):
 
             try:
                 width, height = await SizeConverter().convert(ctx, size)
-            except:
-                return await ctx.send("Please provide a size.", ephemeral=True)
 
-            if width > 1024 or height > 1024:
-                return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
+                if width > 1024 or height > 1024:
+                    return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
+            except:
+                if size:
+                    return await ctx.send("Invalid size provided. Please enter a valid size e.g `1024x1024`",
+                                          ephemeral=True)
+
+                width, height = None, None
 
             return await self.generate_image_style(ctx, prompt, style, amount, width, height)
 
