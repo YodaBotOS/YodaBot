@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 
 def fromisoformat(s=None):
-    if s == None:
+    if s is None:
         return None
 
     return datetime.datetime.fromisoformat(s)
