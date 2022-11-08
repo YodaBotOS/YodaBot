@@ -22,6 +22,7 @@ class Art(commands.Cog):
     """
 
     def __init__(self, bot: commands.Bot):
+        self.dalle = None
         self.bot = bot
 
     async def text_check(self, text: str, *, raw: bool = False) -> dict | bool | None:
@@ -271,7 +272,8 @@ class Art(commands.Cog):
         await self.handle(ctx, main, prompt, amount, size)
 
     @gen_art_cmd.command('variations', aliases=['variation', 'var', 'similar'])
-    async def gen_art_variations_cmd(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
+    async def gen_art_variations_cmd(self, ctx: commands.Context,
+                                     amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
                                      size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *,
                                      image: str = None):
         """

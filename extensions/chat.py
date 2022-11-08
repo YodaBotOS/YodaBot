@@ -16,6 +16,7 @@ class Chat(commands.Cog):
     """
 
     def __init__(self, bot: commands.Bot):
+        self.openai = None
         self.bot = bot
 
     async def cog_load(self):

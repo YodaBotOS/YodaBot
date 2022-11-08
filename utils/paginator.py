@@ -112,8 +112,8 @@ class YodaMenuPages(ui.View, menus.MenuPages):
             )
         )
 
-        msg = await interaction.client.wait_for('message', check=lambda m: m.author == interaction.user and \
-                                          m.channel == interaction.channel)
+        msg = await interaction.client.wait_for('message', check=lambda m: m.author == interaction.user and
+                                                m.channel == interaction.channel)
 
         try:
             await m.delete()

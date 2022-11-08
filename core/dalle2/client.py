@@ -10,7 +10,7 @@ from .style import *
 
 
 class GenerateArt:
-    def __init__(self, s3, session: aiohttp.ClientSession, keys: list[str]):
+    def __init__(self, s3, session: aiohttp.ClientSession, keys: tuple[str]):
         self.openai_key = keys[0]
         openai.api_key = keys[0]
         self.dream_key = keys[1]
@@ -70,7 +70,7 @@ class GenerateArt:
         return gen
 
     async def create_image_variations(self, image: str | bytes | io.BytesIO, n: int, *,
-                                size: Size, user: str = None) -> GeneratedImages:
+                                      size: Size, user: str = None) -> GeneratedImages:
         if 1 > n or n > 10:
             raise ValueError("n must be between 1 and 10")
 

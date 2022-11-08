@@ -16,6 +16,7 @@ class StudyNotes(commands.Cog):
     """
 
     def __init__(self, bot: commands.Bot):
+        self.openai = None
         self.bot = bot
 
     async def cog_load(self):
@@ -31,7 +32,8 @@ class StudyNotes(commands.Cog):
 
     @commands.command('study-notes')
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def study_notes(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5, *, topic: str):
+    async def study_notes(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5, *,
+                          topic: str):
         """
         Generate study notes about a certain topic
         """

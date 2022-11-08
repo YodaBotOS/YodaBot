@@ -7,7 +7,7 @@ from core.dalle2.style import GeneratedImage
 
 
 class DalleImagesPaginator(MenuSource):
-    def __init__(self, entries, text, prompt = None):
+    def __init__(self, entries, text, prompt=None):
         super().__init__(entries, per_page=1)
 
         self.text = text
@@ -29,7 +29,7 @@ class DalleImagesPaginator(MenuSource):
 
 
 class DalleArtPaginator(MenuSource):
-    def __init__(self, entries, prompt = None):
+    def __init__(self, entries, prompt=None):
         super().__init__(entries, per_page=1)
 
         self.prompt = prompt

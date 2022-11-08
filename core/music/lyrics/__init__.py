@@ -20,7 +20,8 @@ class Lyrics:
     CACHE = {}
     URL = "https://api.yodabot.xyz/v/{}/lyrics/search"  # Use Yoda API
 
-    def __init__(self, *, loop: asyncio.AbstractEventLoop = None, session: aiohttp.ClientSession = None, api_version='latest'):
+    def __init__(self, *, loop: asyncio.AbstractEventLoop = None, session: aiohttp.ClientSession = None,
+                 api_version='latest'):
         self.session: aiohttp.ClientSession = session or aiohttp.ClientSession()
 
         self.url = self.URL.format(api_version)  # Yoda API latest

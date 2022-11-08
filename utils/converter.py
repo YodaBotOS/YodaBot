@@ -33,7 +33,8 @@ class _ImageConverter(Converter):
             Raise error saying that argument is not valid.
     """
     async def convert(self, ctx: commands.Context, argument: str) -> str | None:
-        if match := re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", argument):
+        if match := re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+                                 argument):
             return match.group(0)
 
 
@@ -44,7 +45,8 @@ class ImageConverter(Converter):
 
     async def convert(self, ctx: commands.Context, argument: str | None) -> str | None:
         if argument:
-            if match := re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", argument):
+            if match := re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+                                     argument):
                 return match.group(0)
 
         # Please ignore the variable names, thx!

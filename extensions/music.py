@@ -61,8 +61,9 @@ class Music(commands.Cog):
 
     @commands.command('predict-genre', aliases=['genre-predict', 'genre-prediction', 'pg', 'gp', 'predictgenre',
                                                 'genrepredict', 'genreprediction'])
-    async def predict_genre_cmd(self, ctx: commands.Context, mode: typing.Optional[typing.Literal["fast", "best"]] = "best",
-                            *, file: AttachmentConverter):
+    async def predict_genre_cmd(self, ctx: commands.Context,
+                                mode: typing.Optional[typing.Literal["fast", "best"]] = "best", *,
+                                file: AttachmentConverter):
         """
         Predict the genre of a song.
         """
