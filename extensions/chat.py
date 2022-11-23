@@ -115,7 +115,7 @@ class Chat(commands.Cog):
                     text = self.openai.chat(text)
                 except Exception as e:
                     await interaction.followup.send(f"Something went wrong, try again later.", ephemeral=True)
-                    await self.bot.tree.on_error(interaction, e, send_msg=False)  # type: ignore
+                    await self.bot.tree.on_error(interaction, (e, False))  # type: ignore
 
                 embed = discord.Embed(color=interaction.client.color)
                 embed.set_author(name="Chat:", icon_url=interaction.user.display_avatar.url)

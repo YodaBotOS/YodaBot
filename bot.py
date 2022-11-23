@@ -141,7 +141,13 @@ async def on_command_error(ctx, error, *, force=False, send_msg=True):
 
 
 @bot.tree.error
-async def on_tree_error(interaction, error, *, send_msg=True):
+async def on_tree_error(interaction, error):
+    if isinstance(error, tuple):  # type: ignore
+        send_msg = error[1]
+        error = error[0]
+    else:
+        send_msg = True
+
     if send_msg:
         try:
             await interaction.response.send_message(f"Error: {error}", ephemeral=True)
