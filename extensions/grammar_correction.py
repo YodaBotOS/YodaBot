@@ -83,6 +83,7 @@ class GrammarCorrection(commands.Cog):
                     embed = await self.func(interaction.user, original_text)
 
                     if isinstance(embed, tuple):
+                        interaction.client.tree.on_error(interaction, embed[1], send_msg=False)  # type: ignore
                         return await interaction.followup.send(f"Something went wrong. Try again later.",
                                                                ephemeral=True)
 
@@ -100,6 +101,7 @@ class GrammarCorrection(commands.Cog):
         embed = await self.grammar_correction(interaction.user, original_text)
 
         if isinstance(embed, tuple):
+            self.bot.tree.on_error(interaction, embed[1], send_msg=False)  # type: ignore
             return await interaction.followup.send(f"Something went wrong. Try again later.", ephemeral=True)
 
         return await interaction.followup.send(embed=embed)
@@ -131,6 +133,7 @@ class GrammarCorrection(commands.Cog):
         embed = await self.grammar_correction(ctx.author, text)
 
         if isinstance(embed, tuple):
+            self.bot.dispatch("command_error", ctx, embed[1], force=True, send_msg=False)
             return await ctx.send(f"Something went wrong. Try again later.")
 
         return await ctx.send(embed=embed)
@@ -150,6 +153,7 @@ class GrammarCorrection(commands.Cog):
         embed = await self.grammar_correction(interaction.user, original_text)
 
         if isinstance(embed, tuple):
+            self.bot.tree.on_error(interaction, embed[1], send_msg=False)  # type: ignore
             return await interaction.followup.send(f"Something went wrong. Try again later.", ephemeral=True)
 
         return await interaction.response.send(embed=embed)

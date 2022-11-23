@@ -1,11 +1,14 @@
 import os
 import re
+import sys
 import typing
+import traceback
 
 import boto3
 import aiohttp
 import mystbin
 import discord
+import sentry_sdk
 from discord.ext import commands
 from discord import app_commands
 
@@ -76,6 +79,8 @@ async def setup_hook():
     for extension in extensions:
         await bot.load_extension(extension)
         print("Loaded extension:", extension)
+        
+    sentry_sdk.init(config.SENTRY_DSN, traces_sample_rate=1.0)
 
 
 @bot.event
@@ -108,7 +113,7 @@ async def on_message_edit(b, a):
 
 
 @bot.event
-async def on_command_error(ctx, error, *, force=False):
+async def on_command_error(ctx, error, *, force=False, send_msg=True):
     ignored = (commands.CommandNotFound,)
 
     if not force:
@@ -121,17 +126,27 @@ async def on_command_error(ctx, error, *, force=False):
     if isinstance(error, ignored):
         raise error
 
-    await ctx.send(f"Error: {error}")
+    if send_msg:
+        await ctx.send(f"Error: {error}")
 
-    raise error
+    print(f'Ignoring exception in command {ctx.command}:', file=sys.stderr)
+    traceback.print_exception(error)
+
+    with sentry_sdk.push_scope() as scope:
+        scope.set_user({"id": ctx.author.id, "username": ctx.author.name})
+        scope.set_tag("command-type", "message")
+        scope.set_extra("command", str(ctx.command))
+
+        sentry_sdk.capture_exception(error, scope=scope)
 
 
 @bot.tree.error
-async def on_tree_error(interaction, error):
-    try:
-        await interaction.response.send_message(f"Error: {error}", ephemeral=True)
-    except discord.InteractionResponded:
-        await interaction.followup.send(f"Error: {error}", ephemeral=True)
+async def on_tree_error(interaction, error, *, send_msg=True):
+    if send_msg:
+        try:
+            await interaction.response.send_message(f"Error: {error}", ephemeral=True)
+        except discord.InteractionResponded:
+            await interaction.followup.send(f"Error: {error}", ephemeral=True)
 
     # try:
     #     await interaction.response.defer()
@@ -143,7 +158,14 @@ async def on_tree_error(interaction, error):
     # except:
     #     await interaction.followup.send(f"Error, please report: {error}", ephemeral=True)
 
-    raise error
+    traceback.print_exception(error)
+
+    with sentry_sdk.push_scope() as scope:
+        scope.set_user({"id": interaction.user.id, "username": interaction.user.name})
+        scope.set_tag("command-type", interaction.type.value)
+        scope.set_extra("command", interaction.command.name)
+
+        sentry_sdk.capture_exception(error, scope=scope)
 
 
 @bot.hybrid_command(aliases=["latency"])

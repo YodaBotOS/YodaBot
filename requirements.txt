@@ -8,3 +8,4 @@ thefuzz[speedup]
 openai
 wand
 boto3
+sentry-sdk

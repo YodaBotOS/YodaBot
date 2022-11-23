@@ -1,4 +1,5 @@
 core/maps/maps_.py
+core/ping/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

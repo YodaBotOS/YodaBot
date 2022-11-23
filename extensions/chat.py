@@ -39,7 +39,9 @@ class Chat(commands.Cog):
             try:
                 text = self.openai.chat(text)
             except Exception as e:
-                return await ctx.send(f"Something went wrong, try again later.")
+                await ctx.send(f"Something went wrong, try again later.")
+                self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
+                return
 
             embed = discord.Embed(color=self.bot.color)
             embed.set_author(name="Chat:", icon_url=ctx.author.display_avatar.url)
@@ -78,9 +80,9 @@ class Chat(commands.Cog):
                 try:
                     text = self.openai.chat(text, user=ctx.author.id, channel=ctx.channel.id)
                 except Exception as e:
-                    print(e)
                     await ctx.send(f"Something went wrong. Try again later.", view=view)
-                    continue
+                    self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
+                    return
 
                 embed = discord.Embed(color=self.bot.color)
                 embed.set_author(name="Chat:", icon_url=ctx.author.display_avatar.url)
@@ -112,7 +114,8 @@ class Chat(commands.Cog):
                 try:
                     text = self.openai.chat(text)
                 except Exception as e:
-                    return await interaction.followup.send(f"Something went wrong, try again later.", ephemeral=True)
+                    await interaction.followup.send(f"Something went wrong, try again later.", ephemeral=True)
+                    await self.bot.tree.on_error(interaction, e, send_msg=False)  # type: ignore
 
                 embed = discord.Embed(color=interaction.client.color)
                 embed.set_author(name="Chat:", icon_url=interaction.user.display_avatar.url)

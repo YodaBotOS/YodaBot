@@ -44,6 +44,7 @@ class StudyNotes(commands.Cog):
             try:
                 notes = self.openai.study_notes(topic, amount=amount)
             except Exception as e:
+                self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
                 return await ctx.send(f"Something went wrong, try again later.")
 
             embed = discord.Embed(color=self.bot.color)
@@ -76,6 +77,7 @@ class StudyNotes(commands.Cog):
             try:
                 notes = self.openai.study_notes(topic, amount=amount)
             except Exception as e:
+                self.bot.tree.on_error(interaction, e, send_msg=False)  # type: ignore
                 return await interaction.followup.send(f"Something went wrong, try again later.", ephemeral=True)
 
             embed = discord.Embed(color=self.bot.color)

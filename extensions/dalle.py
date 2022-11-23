@@ -122,6 +122,8 @@ class Art(commands.Cog):
             if m:
                 await m.delete()
 
+            self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
+
             if isinstance(e, openai.error.InvalidRequestError):
                 return await ctx.send(f"Invalid prompt. {e}", ephemeral=True)
 
@@ -150,6 +152,8 @@ class Art(commands.Cog):
         except Exception as e:
             if m:
                 await m.delete()
+
+            self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
 
             if isinstance(e, openai.error.InvalidRequestError):
                 return await ctx.send(f"Invalid image. {e}", ephemeral=True)
@@ -183,6 +187,8 @@ class Art(commands.Cog):
         except Exception as e:
             if m:
                 await m.delete()
+
+            self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
 
             return await ctx.send(f"Something went wrong, try again later.", ephemeral=True)
 
