@@ -14,7 +14,7 @@ Human: Who are you?
 AI: I am a bot.
 Human:"""
     CHAT_PARAMS = {
-        "model": "text-davinci-002",
+        "model": "text-davinci-003",
         "temperature": 0.9,
         "max_tokens": 150,
         "top_p": 1,
@@ -25,7 +25,7 @@ Human:"""
 
     GRAMMAR_CORRECTION_START_STRING = "Correct this to standard English:\n\n"
     GRAMMAR_CORRECTION_PARAMS = {
-        "model": "text-davinci-002",
+        "model": "text-davinci-003",
         "temperature": 0,
         "max_tokens": 400,
         "top_p": 1.0,
@@ -35,7 +35,7 @@ Human:"""
 
     STUDY_NOTES_START_STRING = "What are {amount} key points I should know when studying {topic}?\n\n1."
     STUDY_NOTES_PARAMS = {
-        "model": "text-davinci-002",
+        "model": "text-davinci-003",
         "temperature": 0.3,
         "max_tokens": 400,
         "top_p": 1.0,
