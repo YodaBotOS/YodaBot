@@ -97,7 +97,7 @@ class Image(commands.Cog):
                                                      self.bot.session, (config.OPENAI_KEY, config.DREAM_KEY))
         
         # Hacky way, ik, idk how to do it the proper/better way.
-        styles = [x.name for x in await self.image.style.get_styles(raw=True)]
+        # styles = [x.name for x in await self.image.style.get_styles(raw=True)]
         # choices = [app_commands.Choice(name=x, value=x) for x in styles]
         
         # app_commands.choices(style=choices)(self.gen_art_style_slash)
@@ -528,6 +528,9 @@ class Image(commands.Cog):
         
     @gen_art_style_slash.autocomplete('style')
     async def gen_art_style_slash_autocomplete(self, interaction: discord.Interaction, cureent: str):
+        if not current:
+            return await self.image.style.get_styles(raw=True)[:25]
+        
         styles = []
         
         for style in await self.image.style.get_styles(raw=True):
