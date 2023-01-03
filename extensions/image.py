@@ -581,7 +581,7 @@ class Image(commands.Cog):
             embed.add_field(name="Image Type:", value=f"""
     **Is Clip Art:** `{'True' if result.image_type.is_clip_art else 'False'}`
     **Is Line Drawing:** `{'True' if result.image_type.is_line_drawing else 'False'}`
-    **Clip Art Type:** `{result.image_type.clip_art_type.replace("-", " ").title()}`
+    **Clip Art Type:** `{result.image_type.clip_art_type_describe.replace("-", " ").title()}`
             """, inline=False)
 
             embed.add_field(name="Brands:", value=f", ".join(
