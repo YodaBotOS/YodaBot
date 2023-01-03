@@ -542,16 +542,17 @@ class Image(commands.Cog):
 
         return styles
 
-    async def analyze_image(self, url):
-        async with self.bot.session.get(url) as resp:
-            image = await resp.read()
+    async def analyze_image(self, ctx, url):
+        async with ctx.typing():
+            async with self.bot.session.get(url) as resp:
+                image = await resp.read()
 
-        result = await self.image.analyze(image)
+            result = await self.image.analyze(image)
 
-        embed = discord.Embed()
-        embed.set_image(url=url)
+            embed = discord.Embed()
+            embed.set_image(url=url)
 
-        embed.add_field(name="Adult Score:", value=f"""
+            embed.add_field(name="Adult Score:", value=f"""
 **Is Adult Content:** `{'True' if result.adult.is_adult_content else 'False'}`
 **Is Racy Content:** `{'True' if result.adult.is_racy_content else 'False'}`
 **Is Gory Content:** `{'True' if result.adult.is_gory_content else 'False'}`
@@ -559,43 +560,43 @@ class Image(commands.Cog):
 **Adult Score:** `{round(result.adult.adult_score, 1)}%`
 **Racy Score:** `{round(result.adult.racy_score, 1)}%`
 **Gore Score:** `{round(result.adult.gore_score, 1)}%`
-        """, inline=False)
-        
-        embed.add_field(name="Categories/Tags:", value="- " + "\n- ".join(
-            [f"`{x.name}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.tags]
-        ) if result.tags else "None", inline=False)
-        
-        embed.add_field(name="Description/Caption:", value="- " + "\n- ".join(
-            [f"`{x.text}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.captions]
-        ) if result.captions else "None", inline=False)
+            """, inline=False)
 
-        embed.add_field(name="Color:", value=f"""
+            embed.add_field(name="Categories/Tags:", value="- " + "\n- ".join(
+                [f"`{x.name}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.tags]
+            ) if result.tags else "None", inline=False)
+
+            embed.add_field(name="Description/Caption:", value="- " + "\n- ".join(
+                [f"`{x.text}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.captions]
+            ) if result.captions else "None", inline=False)
+
+            embed.add_field(name="Color:", value=f"""
 **Dominant Color Foreground:** `{result.color.dominant_color_foreground}`
 **Dominant Color Background:** `{result.color.dominant_color_background}`
 **Dominant Colors:** {', '.join([f'`{x}`' for x in result.color.dominant_colors]) if result.color.dominant_colors else 'None'}
 **Accent Color:** `#{result.color.accent_color}`
 **Is Black & White:** `{'True' if result.color.is_bw_img else 'False'}`
-        """, inline=False)
+            """, inline=False)
 
-        embed.add_field(name="Image Type:", value=f"""
-**Is Clip Art:** `{'True' if result.image_type.clip_art_type else 'False'}`
-**Is Line Drawing:** `{'True' if result.image_type.line_drawing_type else 'False'}`
-**Clip Art Type:** `{result.image_type.clip_art_type.replace("-", " ").title()}`
-        """, inline=False)
-        
-        embed.add_field(name="Brands:", value=f", ".join(
-            [f"`{x.name}`" for x in result.brands]
-        ) if result.brands else "None", inline=False)
+            embed.add_field(name="Image Type:", value=f"""
+    **Is Clip Art:** `{'True' if result.image_type.clip_art_type else 'False'}`
+    **Is Line Drawing:** `{'True' if result.image_type.line_drawing_type else 'False'}`
+    **Clip Art Type:** `{result.image_type.clip_art_type.replace("-", " ").title()}`
+            """, inline=False)
 
-        embed.add_field(name="Objects:", value="- " + "\n- ".join(
-            [f"`{x.object}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.objects]
-        ) if result.objects else "None", inline=False)
+            embed.add_field(name="Brands:", value=f", ".join(
+                [f"`{x.name}`" for x in result.brands]
+            ) if result.brands else "None", inline=False)
 
-        embed.add_field(name="Image Metadata/Properties:", value=f"""
+            embed.add_field(name="Objects:", value="- " + "\n- ".join(
+                [f"`{x.object}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.objects]
+            ) if result.objects else "None", inline=False)
+
+            embed.add_field(name="Image Metadata/Properties:", value=f"""
 **Width:** `{result.metadata.width}`
 **Height:** `{result.metadata.height}`
 **Format:** `{result.metadata.format.upper()}`
-        """, inline=False)
+            """, inline=False)
         
         return embed
 
@@ -635,7 +636,7 @@ class Image(commands.Cog):
             if not image:
                 return await ctx.send("Please send an image or provide a URL.")
         
-            embed = await self.analyze_image(image)
+            embed = await self.analyze_image(ctx, image)
             
             return await ctx.send(embed=embed)
         
@@ -662,7 +663,7 @@ class Image(commands.Cog):
 
             image = url or image.url
 
-            embed = await self.analyze_image(image)
+            embed = await self.analyze_image(ctx, image)
 
             return await ctx.send(embed=embed)
 
