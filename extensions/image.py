@@ -579,8 +579,8 @@ class Image(commands.Cog):
             """, inline=False)
 
             embed.add_field(name="Image Type:", value=f"""
-    **Is Clip Art:** `{'True' if result.image_type.clip_art_type else 'False'}`
-    **Is Line Drawing:** `{'True' if result.image_type.line_drawing_type else 'False'}`
+    **Is Clip Art:** `{'True' if result.image_type.is_clip_art else 'False'}`
+    **Is Line Drawing:** `{'True' if result.image_type.is_line_drawing else 'False'}`
     **Clip Art Type:** `{result.image_type.clip_art_type.replace("-", " ").title()}`
             """, inline=False)
 
