@@ -80,7 +80,7 @@ class AnalyzeResult:
 
         self.captions = [AnalyzeResultCaptions(**i) for i in data["captions"]]
 
-        self.colors = AnalyzeResultColor(**{
+        self.color = AnalyzeResultColor(**{
             "dominant_color_foreground": data["color"]["dominantColorForeground"],
             "dominant_color_background": data["color"]["dominantColorBackground"],
             "dominant_colors": data["color"]["dominantColors"],

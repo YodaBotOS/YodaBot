@@ -569,7 +569,7 @@ class Image(commands.Cog):
             [f"`{x.text}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.captions]
         ) if result.captions else "None", inline=False)
 
-        embed.add_field(name="Colors:", value=f"""
+        embed.add_field(name="Color:", value=f"""
 **Dominant Color Foreground:** `{result.color.dominant_color_foreground}`
 **Dominant Color Background:** `{result.color.dominant_color_background}`
 **Dominant Colors:** {', '.join([f'`{x}`' for x in result.color.dominant_colors]) if result.color.dominant_colors else 'None'}
