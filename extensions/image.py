@@ -98,9 +98,9 @@ class Image(commands.Cog):
         
         # Hacky way, ik, idk how to do it the proper/better way.
         styles = [x.name for x in await self.image.style.get_styles(raw=True)]
-        choices = [app_commands.Choice(name=x, value=x) for x in styles]
+        # choices = [app_commands.Choice(name=x, value=x) for x in styles]
         
-        app_commands.choices(style=choices)(self.gen_art_style_slash)
+        # app_commands.choices(style=choices)(self.gen_art_style_slash)
 
     async def cog_unload(self):
         del self.image
@@ -525,6 +525,18 @@ class Image(commands.Cog):
             return await self.generate_image_style(ctx, prompt, style, amount, width, height)
 
         await self.handle(ctx, main, prompt, style, amount, size)
+        
+    @gen_art_style_slash.autocomplete('style')
+    async def gen_art_style_slash_autocomplete(self, interaction: discord.Interaction, cureent: str):
+        styles = []
+        
+        for style in await self.image.style.get_styles(raw=True):
+            if current.lower() in style.name.lower():
+                styles.append(app_commands.Choice(name=style.name, value=style.name))
+
+        styles = styles[:25]
+
+        return styles
 
     async def analyze_image(self, url):
         async with self.bot.session.get(url) as resp:
