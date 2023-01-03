@@ -9,3 +9,4 @@ openai
 wand
 boto3
 sentry-sdk
+Pillow
