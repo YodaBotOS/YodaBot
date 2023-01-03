@@ -38,6 +38,9 @@ class Music(commands.Cog):
 
     @lyrics.autocomplete('query')
     async def lyrics_query_autocomplete(self, interaction: discord.Interaction, current: str):
+        if not current:
+            return []
+
         suggestions = await self.lyrics.autocomplete(current, slash_autocomplete=True)
 
         return suggestions
