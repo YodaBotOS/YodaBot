@@ -120,7 +120,7 @@ async def on_command_error(ctx, error, *, force=False, send_msg=True):
         if ctx.command.has_error_handler():
             return
 
-        if ctx.cog.has_error_handler():
+        if ctx.cog and ctx.cog.has_error_handler():
             return
 
     if isinstance(error, ignored):
