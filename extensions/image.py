@@ -2,27 +2,30 @@ import json
 import asyncio
 import importlib
 import typing
+from io import BytesIO
 
 import openai
 import discord
 from discord.ext import commands
 from discord import app_commands
+from PIL import Image as PILImg
+from jishaku.functools import executor_function
 
 import config
-from core import dalle2 as core_dalle2
-from core.dalle2 import GeneratedImages, Size
+from core import image as core_image
+from core.image import GeneratedImages, Size
 from utils.paginator import YodaMenuPages
-from utils.dalle import DalleImagesPaginator, DalleArtPaginator
+from utils.image import DalleImagesPaginator, DalleArtPaginator
 from utils.converter import ImageConverter, SizeConverter
 
 
-class Art(commands.Cog):
+class Image(commands.Cog):
     """
-    Generate Art from prompts or images! 
+    Image utilities such as generating art from prompts or images!
     """
 
     def __init__(self, bot: commands.Bot):
-        self.dalle = None
+        self.image = None
         self.bot = bot
 
     async def text_check(self, text: str, *, raw: bool = False) -> dict | bool | None:
@@ -87,20 +90,39 @@ class Art(commands.Cog):
         return True
 
     async def init(self):
-        importlib.reload(core_dalle2)
-        from core.dalle2 import GenerateArt
+        importlib.reload(core_image)
+        from core.image import ImageUtilities
 
-        self.dalle: GenerateArt = GenerateArt((self.bot.cdn, "yodabot", "https://cdn.yodabot.xyz"),
-                                              self.bot.session, (config.OPENAI_KEY, config.DREAM_KEY))
+        self.image: ImageUtilities = ImageUtilities((self.bot.cdn, "yodabot", "https://cdn.yodabot.xyz"),
+                                                     self.bot.session, (config.OPENAI_KEY, config.DREAM_KEY))
         
         # Hacky way, ik, idk how to do it the proper/better way.
-        styles = [x.name for x in await self.dalle.style.get_styles(raw=True)]
+        styles = [x.name for x in await self.image.style.get_styles(raw=True)]
         choices = [app_commands.Choice(name=x, value=x) for x in styles]
         
         app_commands.choices(style=choices)(self.gen_art_style_slash)
 
     async def cog_unload(self):
-        del self.dalle
+        del self.image
+
+    @executor_function
+    def _convert_img(self, img):
+        # idk tbh
+        p_img = PILImg.open(BytesIO(img))
+        if len(img) > 1024 * 1024 * 4:
+            if p_img.size[0] > 1024 and p_img.size[1] > 1024:
+                p_img = p_img.resize((1024, 1024))
+            elif p_img.size[0] > 512 and p_img.size[1] > 512:
+                p_img = p_img.resize((512, 512))
+            else:
+                p_img = p_img.resize((256, 256))
+
+        new_img = BytesIO()
+        p_img.save(new_img, format="PNG")
+        new_img.seek(0)
+        new_img = img.getvalue()
+
+        return new_img
 
     async def generate_image(self, ctx, prompt, amount, size):
         if ctx.interaction:
@@ -117,7 +139,7 @@ class Art(commands.Cog):
                 return await ctx.send("Text seems inappropriate. Aborting.", ephemeral=True)
 
         try:
-            result = await self.dalle.create_image(prompt, amount, size=size, user=str(ctx.author.id))
+            result = await self.image.create_image(prompt, amount, size=size, user=str(ctx.author.id))
         except Exception as e:
             if m:
                 await m.delete()
@@ -139,7 +161,9 @@ class Art(commands.Cog):
 
     async def variations(self, ctx, url, amount, size):
         async with self.bot.session.get(url) as resp:
-            img = await resp.read()
+            ori_img = await resp.read()
+
+        img = await self._convert_img(ori_img)
 
         if ctx.interaction:
             await ctx.defer()
@@ -148,7 +172,7 @@ class Art(commands.Cog):
             m = await ctx.send(f"⌛ Generating `{amount}` variation(s)...")
 
         try:
-            result = await self.dalle.create_image_variations(img, amount, size=size, user=str(ctx.author.id))
+            result = await self.image.create_image_variations(img, amount, size=size, user=str(ctx.author.id))
         except Exception as e:
             if m:
                 await m.delete()
@@ -183,7 +207,7 @@ class Art(commands.Cog):
                 return await ctx.send("Text seems inappropriate. Aborting.", ephemeral=True)
 
         try:
-            result = await self.dalle.style.generate(prompt, style, amount, height=height, width=width)
+            result = await self.image.style.generate(prompt, style, amount, height=height, width=width)
         except Exception as e:
             if m:
                 await m.delete()
@@ -334,10 +358,10 @@ class Art(commands.Cog):
 
         async def main(ctx, prompt, style, amount, size):
             original_style = style
-            style = await self.dalle.style.get_style_from_name(style or '')
+            style = await self.image.style.get_style_from_name(style or '')
 
             if not style:
-                styles = await self.dalle.style.get_styles(raw=True)
+                styles = await self.image.style.get_styles(raw=True)
                 embed = discord.Embed(title="Styles", description="Here are the available styles:\n\n",
                                       color=self.bot.color)
 
@@ -455,20 +479,20 @@ class Art(commands.Cog):
 
         If amount is not provided, it would default to 1. Maximum is 5.
 
-        Usage: `yoda generate-art style <style> [amount] [width x height] <prompt>`.
+        Usage: `/generate-art style <style> [amount] [width x height] <prompt>`.
 
-        - `yoda generate-art style Synthwave Racing Car`
-        - `yoda generate-art style HD Forest`
-        - `yoda generate-art style "Van Gogh" 1024x1024 A person sitting in a brown bench`
-        - `yoda generate-art style Mystical 5 Tall buildings`
+        - `/generate-art style:Synthwave prompt:Racing Car`
+        - `/generate-art style:HD prompt:Forest`
+        - `/generate-art style:Van Gogh size:1024x1024 prompt:A person sitting in a brown bench`
+        - `/generate-art style:Mystical amount:5 prompt:Tall buildings`
         """
 
         async def main(ctx, prompt, style, amount, size):
             original_style = style
-            style = await self.dalle.style.get_style_from_name(style or '')
+            style = await self.image.style.get_style_from_name(style or '')
 
             if not style:
-                styles = await self.dalle.style.get_styles(raw=True)
+                styles = await self.image.style.get_styles(raw=True)
                 embed = discord.Embed(title="Styles", description="Here are the available styles:\n\n",
                                       color=self.bot.color)
 
@@ -502,9 +526,135 @@ class Art(commands.Cog):
 
         await self.handle(ctx, main, prompt, style, amount, size)
 
+    async def analyze_image(self, url):
+        async with self.bot.session.get(url) as resp:
+            image = await resp.read()
+
+        result = await self.image.analyze(image)
+
+        embed = discord.Embed()
+        embed.set_image(url=url)
+
+        embed.add_field(name="Adult Score:", value=f"""
+**Is Adult Content:** `{'True' if result.adult.is_adult_content else 'False'}`
+**Is Racy Content:** `{'True' if result.adult.is_racy_content else 'False'}`
+**Is Gory Content:** `{'True' if result.adult.is_gory_content else 'False'}`
+
+**Adult Score:** `{round(result.adult.adult_score, 1)}%`
+**Racy Score:** `{round(result.adult.racy_score, 1)}%`
+**Gore Score:** `{round(result.adult.gore_score, 1)}%`
+        """, inline=False)
+        
+        embed.add_field(name="Categories/Tags:", value="- " + "\n- ".join(
+            [f"`{x.name}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.tags]
+        ) if result.tags else "None", inline=False)
+        
+        embed.add_field(name="Description/Caption:", value="- " + "\n- ".join(
+            [f"`{x.text}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.captions]
+        ) if result.captions else "None", inline=False)
+
+        embed.add_field(name="Colors:", value=f"""
+**Dominant Color Foreground:** `{result.color.dominant_color_foreground}`
+**Dominant Color Background:** `{result.color.dominant_color_background}`
+**Dominant Colors:** {', '.join([f'`{x}`' for x in result.color.dominant_colors]) if result.color.dominant_colors else 'None'}
+**Accent Color:** `#{result.color.accent_color}`
+**Is Black & White:** `{'True' if result.color.is_bw_img else 'False'}`
+        """, inline=False)
+
+        embed.add_field(name="Image Type:", value=f"""
+**Is Clip Art:** `{'True' if result.image_type.clip_art_type else 'False'}`
+**Is Line Drawing:** `{'True' if result.image_type.line_drawing_type else 'False'}`
+**Clip Art Type:** `{result.image_type.clip_art_type.replace("-", " ").title()}`
+        """, inline=False)
+        
+        embed.add_field(name="Brands:", value=f", ".join(
+            [f"`{x.name}`" for x in result.brands]
+        ) if result.brands else "None", inline=False)
+
+        embed.add_field(name="Objects:", value="- " + "\n- ".join(
+            [f"`{x.object}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.objects]
+        ) if result.objects else "None", inline=False)
+
+        embed.add_field(name="Image Metadata/Properties:", value=f"""
+**Width:** `{result.metadata.width}`
+**Height:** `{result.metadata.height}`
+**Format:** `{result.metadata.format.upper()}`
+        """, inline=False)
+        
+        return embed
+
+    MAX_CONCURRENCY_ANALYZE = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=False)
+
+    async def handle_analyze(self, ctx, func, *args, **kwargs):
+        if isinstance(ctx, discord.Interaction):
+            ctx = await self.bot.get_context(ctx)
+
+        try:
+            await self.MAX_CONCURRENCY_ANALYZE.acquire(ctx)
+
+            try:
+                await func(ctx, *args, **kwargs)
+            finally:
+                await self.MAX_CONCURRENCY_ANALYZE.release(ctx)
+        except commands.MaxConcurrencyReached:
+            await ctx.send("You are already analyzing an image. Please wait until it's done.", ephemeral=True)
+            return
+
+    @commands.command('analyze-image', aliases=['analyze-img', 'analyze_img', 'analyze_image'])
+    async def analyze_image_cmd(self, ctx, image: str = None):
+        """
+        Analyze an image including its colors, categories, brands, and more!
+
+        Usage: `yoda analyze-image <image>`.
+
+        - `yoda analyze-image <Attachment>`
+        - `yoda analyze-image <URL>`
+        - `yoda analyze-image <Emoji>`
+        - `yoda analyze-image @Someone`
+        """
+        
+        async def main(ctx, self, image):
+            image = image or await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or '')
+            
+            if not image:
+                return await ctx.send("Please send an image or provide a URL.")
+        
+            embed = await self.analyze_image(image)
+            
+            return await ctx.send(embed=embed)
+        
+        return await self.handle_analyze(ctx, main, self, image)
+
+    @app_commands.command(name='analyze-image')
+    async def analyze_image_slash(self, interaction: discord.Interaction, image: discord.Attachment = None,
+                                  url: str = None):
+        """
+        Analyze an image including its colors, categories, brands, and more!
+
+        Usage: `/analyze-image <image>`.
+
+        - `/analyze-image <Attachment>`
+        - `/analyze-image url:<URL>`
+        """
+
+        async def main(ctx, self, image):
+            if image is None and url is None:
+                return await ctx.send("Please send an image or provide a URL.", ephemeral=True)
+
+            if image and url:
+                return await ctx.send("Please only send either an image or a URL.", ephemeral=True)
+
+            image = url or image.url
+
+            embed = await self.analyze_image(image)
+
+            return await ctx.send(embed=embed)
+
+        return await self.handle_analyze(interaction, main, self, image)  # type: ignore
+
 
 async def setup(bot: commands.Bot):
-    cog = Art(bot)
+    cog = Image(bot)
     await cog.init()
 
     await bot.add_cog(cog)

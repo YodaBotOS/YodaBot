@@ -3,14 +3,14 @@ import typing
 import datetime
 
 
-class Image:
+class GeneratedImage:
     def __init__(self, gen: "GeneratedImages", data: dict):
         self._gen = gen
 
         self.url: str = data["url"]
 
     def __eq__(self, other):
-        return isinstance(other, Image) and self.url == other.url
+        return isinstance(other, GeneratedImage) and self.url == other.url
 
     async def read(self, *, io_type=None) -> bytes | typing.Any:
         io_type = io_type or bytes
@@ -42,9 +42,7 @@ class GeneratedImages:
         self.created = datetime.datetime.utcfromtimestamp(self._created)
 
         self._images = data["data"]
-        self.images = [Image(self, d) for d in self._images]
-
-        # print(data)
+        self.images = [GeneratedImage(self, d) for d in self._images]
 
     def __getitem__(self, item):
         return self._data[item]
@@ -58,12 +56,9 @@ class GeneratedImages:
     async def read_all(self, *, io_type=None) -> list[bytes | typing.Any]:
         io_type = io_type or bytes
 
-        urls = self.get_urls()
-
         imgs = []
 
-        for url in urls:
-            async with self._client.session.get(url) as resp:
-                imgs.append(io_type(await resp.read()))
+        for img in self.images:
+            imgs.append(await img.read(io_type=io_type))
 
         return imgs

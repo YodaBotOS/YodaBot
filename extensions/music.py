@@ -22,21 +22,25 @@ class Music(commands.Cog):
         Search for lyrics of a song.
         """
 
-        if ctx.interaction:
-            await ctx.interaction.response.defer()
+        async with ctx.typing():
+            res = await self.lyrics.search(query)
 
-        res = await self.lyrics.search(query)
+            if res == LyricResult.empty() or not res.lyrics:
+                return await ctx.send("No results found.")
 
-        if res == LyricResult.empty() or not res.lyrics:
-            return await ctx.send("No results found.")
+            pages = paginate_lyric_result(res)
 
-        pages = paginate_lyric_result(res)
+            source = LyricsPaginator(pages)
 
-        source = LyricsPaginator(pages)
+            menu = YodaMenuPages(source=source)
 
-        menu = YodaMenuPages(source=source)
+            return await menu.start(ctx)
 
-        return await menu.start(ctx)
+    @lyrics.autocomplete('query')
+    async def lyrics_query_autocomplete(self, interaction: discord.Interaction, current: str):
+        suggestions = await self.lyrics.autocomplete(current, slash_autocomplete=True)
+
+        return suggestions
 
     async def predict_genre(self, file: str | discord.Attachment, mode: str):
         if isinstance(file, discord.Attachment):

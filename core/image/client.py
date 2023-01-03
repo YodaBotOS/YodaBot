@@ -7,9 +7,10 @@ import aiohttp
 from .enums import *
 from .image import *
 from .style import *
+from .dataclass import AnalyzeResult
 
 
-class GenerateArt:
+class ImageUtilities:
     def __init__(self, s3, session: aiohttp.ClientSession, keys: tuple[str]):
         self.openai_key = keys[0]
         openai.api_key = keys[0]
@@ -92,3 +93,17 @@ class GenerateArt:
         await self._upload_to_cdn(gen)
 
         return gen
+
+    async def analyze(self, image: str | bytes | io.BytesIO) -> AnalyzeResult:
+        if isinstance(image, str):
+            image = open(image, "rb").read()
+        elif isinstance(image, io.BytesIO):
+            image = image.getvalue()
+
+        data = aiohttp.FormData()
+        data.add_field("image", image)
+
+        async with self.session.post("https://api.yodabot.xyz/api/image/analyze", data=data) as resp:
+            js = await resp.json()
+
+        return AnalyzeResult(js)

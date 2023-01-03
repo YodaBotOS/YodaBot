@@ -40,7 +40,7 @@ extensions = [
     "extensions.translate",
     "extensions.grammar_correction",
     "extensions.chat",
-    "extensions.dalle",
+    "extensions.image",
     "extensions.study_notes",
     "extensions.music"
 ]
@@ -133,7 +133,7 @@ async def on_command_error(ctx, error, *, force=False, send_msg=True):
     traceback.print_exception(error)
 
     with sentry_sdk.push_scope() as scope:
-        scope.set_user({"id": ctx.author.id, "username": ctx.author.name})
+        scope.set_user({"username": str(ctx.author), "id": ctx.author.id})
         scope.set_tag("command-type", "message")
         scope.set_extra("command", str(ctx.command))
 
@@ -167,7 +167,7 @@ async def on_tree_error(interaction, error):
     traceback.print_exception(error)
 
     with sentry_sdk.push_scope() as scope:
-        scope.set_user({"id": interaction.user.id, "username": interaction.user.name})
+        scope.set_user({"username": str(interaction.user), "id": interaction.user.id})
         scope.set_tag("command-type", interaction.type.value)
         scope.set_extra("command", interaction.command.name)
 

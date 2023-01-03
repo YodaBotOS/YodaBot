@@ -105,7 +105,7 @@ class GenerateStyleArt:
                        width: int = None) -> list[GeneratedImage]:
         images = []
 
-        for i in range(n):
+        async def func(self):
             task = await self.create_task()
             await self.update_task(task["id"], prompt, style, height=height, width=width)
 
@@ -114,6 +114,8 @@ class GenerateStyleArt:
                 await asyncio.sleep(1)
 
             images.append(GeneratedImage(**task))
+
+        await asyncio.gather(*[func(self) for _ in range(n)])
 
         images = await self._upload_to_cdn(images)
 

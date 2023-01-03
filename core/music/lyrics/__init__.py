@@ -2,6 +2,7 @@ import asyncio
 from dataclasses import dataclass, field
 
 import aiohttp
+from discord.app_commands import Choice
 
 
 @dataclass(frozen=True, eq=True)
@@ -16,9 +17,18 @@ class LyricResult:
         return LyricResult()
 
 
+@dataclass(frozen=True, eq=True)
+class LyricAutocompleteSuggestions:
+    title: str
+    artists: list[str] = field(default_factory=list)
+
+    def __str__(self):
+        return f"{self.title} - {', '.join(self.artists)}"
+
+
 class Lyrics:
     CACHE = {}
-    URL = "https://api.yodabot.xyz/v/{}/lyrics/search"  # Use Yoda API
+    URL = "https://api.yodabot.xyz/v/{}/lyrics"  # Use Yoda API
 
     def __init__(self, *, loop: asyncio.AbstractEventLoop = None, session: aiohttp.ClientSession = None,
                  api_version='latest'):
@@ -50,7 +60,7 @@ class Lyrics:
     async def call_api(self, query: str) -> dict:
         params = {'q': query}
 
-        async with self.session.get(self.url, params=params) as resp:
+        async with self.session.get(self.url + '/search', params=params) as resp:
             d = await resp.json()
 
         return d
@@ -75,3 +85,19 @@ class Lyrics:
             self.set_cache(q_lower, res)
 
         return res
+
+    async def autocomplete(self, query: str, amount: int = 10, *, slash_autocomplete: bool = False):
+        if 1 > amount or amount > 20:
+            raise ValueError("Amount must be between 1 and 20")
+
+        params = {'q': query, 'amount': amount}
+
+        async with self.session.get(self.url + '/suggest', params=params) as resp:
+            d = await resp.json()
+
+        suggestions = [LyricAutocompleteSuggestions(**suggestion) for suggestion in d]
+
+        if slash_autocomplete:
+            return [Choice(name=str(suggestion), value=str(suggestion)) for suggestion in suggestions]
+
+        return suggestions
