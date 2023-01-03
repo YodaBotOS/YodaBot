@@ -529,7 +529,7 @@ class Image(commands.Cog):
     @gen_art_style_slash.autocomplete('style')
     async def gen_art_style_slash_autocomplete(self, interaction: discord.Interaction, current: str):
         if not current:
-            return (await self.image.style.get_styles(raw=True)[:25]
+            return (await self.image.style.get_styles(raw=True))[:25]
         
         styles = []
         
