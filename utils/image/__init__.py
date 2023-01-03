@@ -2,8 +2,8 @@ import discord
 from discord.ext import commands
 from discord.ext.menus import ListPageSource as MenuSource
 
-from core.dalle2 import Image
-from core.dalle2.style import GeneratedImage
+from core.image import GeneratedImage as Image
+from core.image.style import GeneratedImage as StyleImage
 
 
 class DalleImagesPaginator(MenuSource):
@@ -34,7 +34,7 @@ class DalleArtPaginator(MenuSource):
 
         self.prompt = prompt
 
-    async def format_page(self, menu, image: GeneratedImage):
+    async def format_page(self, menu, image: StyleImage):
         embed = discord.Embed(color=menu.ctx.bot.color)
         embed.set_image(url=image.result)
         embed.set_author(name=f"Image Generation (Style) Result:",
