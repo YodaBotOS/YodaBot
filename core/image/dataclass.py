@@ -60,7 +60,6 @@ class AnalyzeResultObjects:
 class AnalyzeResultMetadata:
     width: int
     height: int
-    format: str
 
 
 class AnalyzeResult:
