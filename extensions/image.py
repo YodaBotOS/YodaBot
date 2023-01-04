@@ -587,7 +587,7 @@ class Image(commands.Cog):
 **Clip Art Type:** `{result.image_type.clip_art_type_describe.replace("-", " ").title()}`
             """, inline=False)
 
-            embed.add_field(name="Brands:", value=f", ".join(
+            embed.add_field(name="Brands:", value="- " + "\n- ".join(
                 [f"`{x.name}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.brands]
             ) if result.brands else "None", inline=False)
 
