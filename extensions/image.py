@@ -588,7 +588,7 @@ class Image(commands.Cog):
             """, inline=False)
 
             embed.add_field(name="Brands:", value=f", ".join(
-                [f"`{x.name}`" for x in result.brands]
+                [f"`{x.name}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.brands]
             ) if result.brands else "None", inline=False)
 
             embed.add_field(name="Objects:", value="- " + "\n- ".join(

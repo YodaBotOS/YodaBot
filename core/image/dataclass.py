@@ -46,6 +46,7 @@ class AnalyzeResultImageType:
 @dataclass
 class AnalyzeResultBrands:
     name: str
+    confidence: int | float
     rectangle: dict[str, int]
 
 
