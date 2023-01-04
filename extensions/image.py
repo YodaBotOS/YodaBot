@@ -549,7 +549,10 @@ class Image(commands.Cog):
 
             result = await self.image.analyze(image)
 
-            embed = discord.Embed()
+            embed = discord.Embed(
+                title="Image Analysis Result:",
+                color=self.bot.color
+            )
             embed.set_image(url=url)
 
             embed.add_field(name="Adult Score:", value=f"""
@@ -642,6 +645,7 @@ class Image(commands.Cog):
         return await self.handle_analyze(ctx, main, self, image)
 
     @app_commands.command(name='analyze-image')
+    @app_commands.describe(image="The image to analyze.", url="The URL of the image to analyze.")
     async def analyze_image_slash(self, interaction: discord.Interaction, image: discord.Attachment = None,
                                   url: str = None):
         """
