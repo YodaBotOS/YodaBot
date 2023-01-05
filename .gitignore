@@ -131,9 +131,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# JetBrains (PyCharm & Fleet)
+# JetBrains (PyCharm & Fleet), VSCode
 .idea/
 .fleet/
+.vscode/
 
 .DS_CONFIG
 .DS_Store

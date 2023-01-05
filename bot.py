@@ -168,7 +168,8 @@ async def on_tree_error(interaction, error):
 
     with sentry_sdk.push_scope() as scope:
         scope.set_user({"username": str(interaction.user), "id": interaction.user.id})
-        scope.set_tag("command-type", interaction.type.value)
+        scope.set_tag("command-type", f"interaction")
+        scope.set_tag("interaction-type", interaction.type.value.name.replace("_", "-"))
         scope.set_extra("command", interaction.command.name)
 
         sentry_sdk.capture_exception(error, scope=scope)
