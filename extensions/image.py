@@ -321,7 +321,7 @@ class Image(commands.Cog):
         """
 
         async def main(ctx, amount, size, image):
-            image = image or await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or '')
+            image = await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or '')
 
             if not image:
                 return await ctx.send("Please send an image or provide a URL.", ephemeral=True)
@@ -633,7 +633,7 @@ class Image(commands.Cog):
         """
         
         async def main(ctx, self, image):
-            image = image or await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or '')
+            image = await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or '')
             
             if not image:
                 return await ctx.send("Please send an image or provide a URL.")
