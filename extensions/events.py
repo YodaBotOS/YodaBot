@@ -40,8 +40,6 @@ class Events(commands.Cog):
             if re.fullmatch(rf"<@!?{self.bot.user.id}>", msg.content):
                 return await msg.channel.send(f"My prefix is `{self.bot.main_prefix}`! You can also mention me!")
 
-        return await self.bot.process_commands(msg)
-
     @commands.Cog.listener()
     async def on_message_edit(self, b, a):
         if b.content == a.content:
