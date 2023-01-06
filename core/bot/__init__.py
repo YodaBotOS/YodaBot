@@ -77,7 +77,7 @@ class Bot(commands.Bot):
             activity=activity,
             help_command=help_command,
             strip_after_prefix=strip_after_prefix,
-            tree_cls=tree_cls * args,
+            tree_cls=tree_cls,
             **kwargs,
         )
 
