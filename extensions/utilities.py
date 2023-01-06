@@ -37,6 +37,7 @@ class Utilities(commands.Cog):
     @commands.guild_only()
     @commands.is_owner()
     async def sync(
+        self,
         ctx: Context,
         guilds: commands.Greedy[discord.Object],
         spec: Optional[Literal["~", "*", "^"]] = None,
