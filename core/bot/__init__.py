@@ -32,7 +32,7 @@ EXTENSIONS = [
     "extensions.study_notes",
     "extensions.music",
     "extensions.events",
-    "extensions.utilities"
+    "extensions.utilities",
 ]
 
 
