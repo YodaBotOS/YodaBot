@@ -1,14 +1,21 @@
-import inspect
+from __future__ import annotations
+
 import importlib
+import inspect
+from typing import TYPE_CHECKING
 
 import discord
-from discord.ext import commands
 from discord import app_commands
+from discord.ext import commands
 from discord.utils import as_chunks as chunker
 
 from core import translate
-from utils.translate import TranslateLanguagesPaginator
+from core.context import Context
 from utils.paginator import YodaMenuPages
+from utils.translate import TranslateLanguagesPaginator
+
+if TYPE_CHECKING:
+    from core.bot import Bot
 
 
 class Translate(commands.Cog):
@@ -16,8 +23,8 @@ class Translate(commands.Cog):
     Translates a text
     """
 
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
+    def __init__(self, bot: Bot):
+        self.bot: Bot = bot
         self.translate: translate.Translate = None
 
         self.ctx_menu = app_commands.ContextMenu(
@@ -69,9 +76,9 @@ class Translate(commands.Cog):
             from_lang = await self.translate.detect_language(text)
             from_lang = self.translate.get_language(from_lang["languageCode"])
 
-        if from_lang['languageCode'] == to_lang['languageCode']:
+        if from_lang["languageCode"] == to_lang["languageCode"]:
             # Do input tools instead
-            input_tools = await self.translate.input_tools(text, from_lang['languageCode'])
+            input_tools = await self.translate.input_tools(text, from_lang["languageCode"])
 
             embed = discord.Embed(color=self.bot.color)
             embed.title = "Translation Result:"
@@ -89,11 +96,10 @@ class Translate(commands.Cog):
 
             return embed
 
-        input_tools = await self.translate.input_tools(text, from_lang['languageCode'])
+        input_tools = await self.translate.input_tools(text, from_lang["languageCode"])
         original_text = text
-        text = input_tools['choices'][0]
-        trans = await self.translate.translate(text, to_lang['languageCode'],
-                                               source_language=from_lang['languageCode'])
+        text = input_tools["choices"][0]
+        trans = await self.translate.translate(text, to_lang["languageCode"], source_language=from_lang["languageCode"])
 
         embed = discord.Embed(color=self.bot.color)
         embed.title = "Translation Result:"
@@ -111,17 +117,20 @@ class Translate(commands.Cog):
 
         return embed
 
-    @app_commands.command(name='translate')
+    @app_commands.command(name="translate")
     @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.rename(_from="from")
-    @app_commands.describe(text="The text to be translated", to="The language to translate to",
-                           _from="The language to translate from")
+    @app_commands.describe(
+        text="The text to be translated",
+        to="The language to translate to",
+        _from="The language to translate from",
+    )
     async def translate_slash(self, interaction: discord.Interaction, text: str, to: str, _from: str = None):
         """
         Tries to Translate a text to another language.
         """
 
-        ctx = await commands.Context.from_interaction(interaction)
+        ctx = await Context.from_interaction(interaction)
 
         await interaction.response.defer()
 
@@ -139,7 +148,7 @@ class Translate(commands.Cog):
         else:
             return await interaction.followup.send(f"An error occurred, please report this error: {result}")
 
-    @translate_slash.autocomplete('to')
+    @translate_slash.autocomplete("to")
     async def translate_to_autocomplete(self, interaction: discord.Interaction, current: str):
         langs = self.translate.get_all_languages(only="displayName")
 
@@ -153,7 +162,7 @@ class Translate(commands.Cog):
         match = self.translate.get_language(current)
 
         if match:
-            choices.append(app_commands.Choice(name=match['displayName'], value=match['displayName']))
+            choices.append(app_commands.Choice(name=match["displayName"], value=match["displayName"]))
 
         for lang in langs:
             if len(choices) >= 25:
@@ -206,7 +215,7 @@ class Translate(commands.Cog):
 
         return choices[:25]
 
-    @translate_slash.autocomplete('_from')
+    @translate_slash.autocomplete("_from")
     async def translate_from_autocomplete(self, interaction: discord.Interaction, current: str):
         langs = self.translate.get_all_languages()
 
@@ -218,7 +227,7 @@ class Translate(commands.Cog):
         match = self.translate.get_language(current)
 
         if match:
-            choices.append(app_commands.Choice(name=match['displayName'], value=match['displayName']))
+            choices.append(app_commands.Choice(name=match["displayName"], value=match["displayName"]))
 
         for lang in langs:
             if len(choices) >= 25:
@@ -288,8 +297,8 @@ class Translate(commands.Cog):
             if not lang:
                 return await interaction.followup.send(f"Language `{query}` not found.", ephemeral=True)
 
-            lang_code = lang['languageCode']
-            lang_name = lang['displayName']
+            lang_code = lang["languageCode"]
+            lang_name = lang["displayName"]
 
             embed = discord.Embed(color=self.bot.color)
             embed.title = lang_name
@@ -298,13 +307,13 @@ class Translate(commands.Cog):
 
             return await interaction.followup.send(embed=embed)
 
-        ctx = await commands.Context.from_interaction(interaction)
+        ctx = await Context.from_interaction(interaction)
 
         source = TranslateLanguagesPaginator(self.translate.languages, per_page=10)
         menu = YodaMenuPages(source, delete_message_after=True)
         return await menu.start(ctx, channel=interaction.followup)
 
-    @translate_languages_slash.autocomplete('query')
+    @translate_languages_slash.autocomplete("query")
     async def translate_languages_slash_query_autocomplete(self, interaction: discord.Interaction, current: str):
         langs = self.translate.get_all_languages(only="displayName")
 
@@ -318,7 +327,7 @@ class Translate(commands.Cog):
         match = self.translate.get_language(current)
 
         if match:
-            choices.append(app_commands.Choice(name=match['displayName'], value=match['displayName']))
+            choices.append(app_commands.Choice(name=match["displayName"], value=match["displayName"]))
 
         for lang in langs:
             if len(choices) >= 25:
@@ -371,9 +380,9 @@ class Translate(commands.Cog):
 
         return choices[:25]
 
-    @commands.group(name='translate', invoke_without_command=True)
+    @commands.group(name="translate", invoke_without_command=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def translate(self, ctx: commands.Context, lang: str, *, text: str = None):
+    async def translate(self, ctx: Context, lang: str, *, text: str = None):
         """
         Tries to Translate a text to another language.
 
@@ -389,15 +398,16 @@ class Translate(commands.Cog):
 
         if text is None:
             if not (ref := ctx.message.reference):
-                raise commands.MissingRequiredArgument(inspect.Parameter('text', inspect.Parameter.KEYWORD_ONLY,
-                                                                         annotation=str))
+                raise commands.MissingRequiredArgument(
+                    inspect.Parameter("text", inspect.Parameter.KEYWORD_ONLY, annotation=str)
+                )
 
             text = ref.resolved.content
 
-        if '-' in lang:
+        if "-" in lang:
             langs = self.translate.get_all_languages()
             if lang not in langs:
-                _from, to = lang.split('-')
+                _from, to = lang.split("-")
                 return await self.translate_from(ctx, _from, to, text=text)
 
         async with ctx.typing():
@@ -415,9 +425,9 @@ class Translate(commands.Cog):
             else:
                 return await ctx.send(f"An error occurred, please report this error: {result}")
 
-    @translate.command(name='from', usage='<from> <to> [text]')
+    @translate.command(name="from", usage="<from> <to> [text]")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def translate_from(self, ctx: commands.Context, _from: str, to: str, *, text: str = None):
+    async def translate_from(self, ctx: Context, _from: str, to: str, *, text: str = None):
         """
         Tries to Translate a text to another language, with the specified source (original text) language.
 
@@ -429,8 +439,9 @@ class Translate(commands.Cog):
 
         if text is None:
             if not (ref := ctx.message.reference):
-                raise commands.MissingRequiredArgument(inspect.Parameter('text', inspect.Parameter.KEYWORD_ONLY,
-                                                                         annotation=str))
+                raise commands.MissingRequiredArgument(
+                    inspect.Parameter("text", inspect.Parameter.KEYWORD_ONLY, annotation=str)
+                )
 
             text = ref.resolved.content
 
@@ -450,7 +461,7 @@ class Translate(commands.Cog):
                 return await ctx.send(f"An error occurred, please report this error: {result}")
 
     @translate.command(name="languages")
-    async def translate_languages(self, ctx: commands.Context, *, query: str = None):
+    async def translate_languages(self, ctx: Context, *, query: str = None):
         """
         Shows a list of languages that can be translated to.
 
@@ -466,8 +477,8 @@ class Translate(commands.Cog):
                 if not lang:
                     return await ctx.send(f"Language `{query}` not found.", ephemeral=True)
 
-                lang_code = lang['languageCode']
-                lang_name = lang['displayName']
+                lang_code = lang["languageCode"]
+                lang_name = lang["displayName"]
 
                 embed = discord.Embed(color=self.bot.color)
                 embed.title = lang_name
@@ -487,12 +498,16 @@ class Translate(commands.Cog):
         from_lang = self.translate.get_language(from_lang["languageCode"])
 
         class Modal(discord.ui.Modal):
-            _from = discord.ui.TextInput(label="Source Language",
-                                         placeholder="Enter the language for the specific message sent",
-                                         default=from_lang["displayName"],
-                                         required=False)
-            to = discord.ui.TextInput(label="Destination Language", placeholder="Enter the language you want to "
-                                                                                "translate to")
+            _from = discord.ui.TextInput(
+                label="Source Language",
+                placeholder="Enter the language for the specific message sent",
+                default=from_lang["displayName"],
+                required=False,
+            )
+            to = discord.ui.TextInput(
+                label="Destination Language",
+                placeholder="Enter the language you want to " "translate to",
+            )
 
             def __init__(self, *args, **kwargs):
                 self.cls = kwargs.pop("translate")
@@ -502,7 +517,7 @@ class Translate(commands.Cog):
             async def on_submit(self, interaction: discord.Interaction):
                 await interaction.response.defer(ephemeral=True, thinking=True)
 
-                ctx = await commands.Context.from_interaction(self.inter)
+                ctx = await Context.from_interaction(self.inter)
 
                 to = self.to.value
                 _from = self._from.value

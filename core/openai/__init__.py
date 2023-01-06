@@ -58,18 +58,18 @@ Human:"""
     def _create_chat(self, user, channel, *, force=False):
         if (user, channel) in self.chat_ids:
             if force:
-                self.chat_ids[(user, channel)] = {'text': self.CHAT_START_STRING}
+                self.chat_ids[(user, channel)] = {"text": self.CHAT_START_STRING}
 
             return self.chat_ids[(user, channel)]
 
-        self.chat_ids[(user, channel)] = {'text': self.CHAT_START_STRING}
+        self.chat_ids[(user, channel)] = {"text": self.CHAT_START_STRING}
 
         return self.chat_ids[(user, channel)]
 
     def _set_chat(self, text, user, channel):
         chat_id = self._create_chat(user, channel)
 
-        chat_id['text'] = text
+        chat_id["text"] = text
 
         return chat_id
 
@@ -83,13 +83,13 @@ Human:"""
             x = "AI"
             y = "Human"
 
-        chat_id['text'] += f' {text}\n{y}:'
+        chat_id["text"] += f" {text}\n{y}:"
 
         return chat_id
 
     def _strip_chat(self, user, channel, *, force=True):
         chat_id = self._create_chat(user, channel)
-        text = chat_id['text']
+        text = chat_id["text"]
 
         if self.strip_strings:
             text = text.strip()
@@ -97,7 +97,7 @@ Human:"""
             if force:
                 text = text.strip()
 
-        chat_id['text'] = text
+        chat_id["text"] = text
 
         return chat_id
 
@@ -115,7 +115,14 @@ Human:"""
         except KeyError:
             pass
 
-    def chat(self, text: str, *, user: int = None, channel: int = None, force_return_data: bool = False) -> str:
+    def chat(
+        self,
+        text: str,
+        *,
+        user: int = None,
+        channel: int = None,
+        force_return_data: bool = False,
+    ) -> str:
         text = self.clean_chat(text)
 
         if user and channel:
@@ -123,12 +130,9 @@ Human:"""
 
             chat_id = self._create_chat(user, channel)
 
-            text = chat_id['text']
+            text = chat_id["text"]
 
-            response = openai.Completion.create(
-                prompt=text,
-                **self.CHAT_PARAMS
-            )
+            response = openai.Completion.create(prompt=text, **self.CHAT_PARAMS)
 
             if force_return_data:
                 return response
@@ -146,10 +150,7 @@ Human:"""
         else:
             start_string = self.CHAT_START_STRING.strip() + f"Human: {text}\n"
 
-            response = openai.Completion.create(
-                prompt=text,
-                **self.CHAT_PARAMS
-            )
+            response = openai.Completion.create(prompt=text, **self.CHAT_PARAMS)
 
             ai_resps = response["choices"][0]["text"].strip()
 
@@ -162,10 +163,7 @@ Human:"""
     def grammar_correction(self, text: str, *, raw: bool = False) -> str | typing.Any:
         prompt = self.GRAMMAR_CORRECTION_START_STRING + text
 
-        response = openai.Completion.create(
-            prompt=prompt,
-            **self.GRAMMAR_CORRECTION_PARAMS
-        )
+        response = openai.Completion.create(prompt=prompt, **self.GRAMMAR_CORRECTION_PARAMS)
 
         if raw:
             return response
@@ -178,16 +176,13 @@ Human:"""
 
         prompt = self.STUDY_NOTES_START_STRING.format(topic=topic, amount=amount)
 
-        response = openai.Completion.create(
-            prompt=prompt,
-            **self.STUDY_NOTES_PARAMS
-        )
+        response = openai.Completion.create(prompt=prompt, **self.STUDY_NOTES_PARAMS)
 
         if raw:
             return response
 
-        text = '1. ' + response["choices"][0]["text"].strip()
-        
-        text = re.sub('\n+', '\n', text)
+        text = "1. " + response["choices"][0]["text"].strip()
+
+        text = re.sub("\n+", "\n", text)
 
         return text

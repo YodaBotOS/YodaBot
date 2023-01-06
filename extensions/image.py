@@ -1,22 +1,29 @@
-import json
+from __future__ import annotations
+
 import asyncio
 import importlib
+import json
 import typing
 from io import BytesIO
+from typing import TYPE_CHECKING
 
-import openai
 import discord
-from discord.ext import commands
+import openai
 from discord import app_commands
-from PIL import Image as PILImg
+from discord.ext import commands
 from jishaku.functools import executor_function
+from PIL import Image as PILImg
 
 import config
 from core import image as core_image
+from core.context import Context
 from core.image import GeneratedImages, Size
-from utils.paginator import YodaMenuPages
-from utils.image import DalleImagesPaginator, DalleArtPaginator
 from utils.converter import ImageConverter, SizeConverter
+from utils.image import DalleArtPaginator, DalleImagesPaginator
+from utils.paginator import YodaMenuPages
+
+if TYPE_CHECKING:
+    from core.bot import Bot
 
 
 class Image(commands.Cog):
@@ -24,9 +31,9 @@ class Image(commands.Cog):
     Image utilities such as generating art from prompts or images!
     """
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Bot):
         self.image = None
-        self.bot = bot
+        self.bot: Bot = bot
 
     async def text_check(self, text: str, *, raw: bool = False) -> dict | bool | None:
         """
@@ -39,43 +46,43 @@ class Image(commands.Cog):
         - etc.
         """
 
-        url = 'https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze'
+        url = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze"
 
         body = {
-            'comment': {
-                'text': text,
+            "comment": {
+                "text": text,
             },
-            'requestedAttributes': {
-                'TOXICITY': {
-                    'scoreThreshold': 0.75,
+            "requestedAttributes": {
+                "TOXICITY": {
+                    "scoreThreshold": 0.75,
                 },
-                'SEVERE_TOXICITY': {
-                    'scoreThreshold': 0.75,
+                "SEVERE_TOXICITY": {
+                    "scoreThreshold": 0.75,
                 },
-                'IDENTITY_ATTACK': {
-                    'scoreThreshold': 0.75,
+                "IDENTITY_ATTACK": {
+                    "scoreThreshold": 0.75,
                 },
-                'INSULT': {
-                    'scoreThreshold': 0.75,
+                "INSULT": {
+                    "scoreThreshold": 0.75,
                 },
-                'PROFANITY': {
-                    'scoreThreshold': 0.75,
+                "PROFANITY": {
+                    "scoreThreshold": 0.75,
                 },
-                'THREAT': {
-                    'scoreThreshold': 0.75,
+                "THREAT": {
+                    "scoreThreshold": 0.75,
                 },
-                'SEXUALLY_EXPLICIT': {
-                    'scoreThreshold': 0.75,
+                "SEXUALLY_EXPLICIT": {
+                    "scoreThreshold": 0.75,
                 },
-                'FLIRTATION': {
-                    'scoreThreshold': 0.75,
-                }
+                "FLIRTATION": {
+                    "scoreThreshold": 0.75,
+                },
             },
             "languages": ["en"],
         }
 
         params = {
-            'key': config.PERSPECTIVE_KEY,
+            "key": config.PERSPECTIVE_KEY,
         }
 
         async with self.bot.session.post(url, data=json.dumps(body), params=params) as resp:
@@ -84,7 +91,7 @@ class Image(commands.Cog):
             if raw:
                 return js
 
-            if js.get('attributeScores'):
+            if js.get("attributeScores"):
                 return False
 
         return True
@@ -93,13 +100,16 @@ class Image(commands.Cog):
         importlib.reload(core_image)
         from core.image import ImageUtilities
 
-        self.image: ImageUtilities = ImageUtilities((self.bot.cdn, "yodabot", "https://cdn.yodabot.xyz"),
-                                                     self.bot.session, (config.OPENAI_KEY, config.DREAM_KEY))
-        
+        self.image: ImageUtilities = ImageUtilities(
+            (self.bot.cdn, "yodabot", "https://cdn.yodabot.xyz"),
+            self.bot.session,
+            (config.OPENAI_KEY, config.DREAM_KEY),
+        )
+
         # Hacky way, ik, idk how to do it the proper/better way.
         # styles = [x.name for x in await self.image.style.get_styles(raw=True)]
         # choices = [app_commands.Choice(name=x, value=x) for x in styles]
-        
+
         # app_commands.choices(style=choices)(self.gen_art_style_slash)
 
     async def cog_unload(self):
@@ -238,14 +248,33 @@ class Image(commands.Cog):
             finally:
                 await self.MAX_CONCURRENCY.release(ctx)
         except commands.MaxConcurrencyReached:
-            await ctx.send("You are already generating an image. Please wait until it's done.", ephemeral=True)
+            await ctx.send(
+                "You are already generating an image. Please wait until it's done.",
+                ephemeral=True,
+            )
             return
 
-    @commands.group('generate-art', aliases=['generate-image', 'generate-img', 'generate-images', 'dalle', 'dalle2',
-                                             'image-generator', 'imgen'],
-                    invoke_without_command=True)
-    async def gen_art_cmd(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
-                          size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *, prompt: str):
+    @commands.group(
+        "generate-art",
+        aliases=[
+            "generate-image",
+            "generate-img",
+            "generate-images",
+            "dalle",
+            "dalle2",
+            "image-generator",
+            "imgen",
+        ],
+        invoke_without_command=True,
+    )
+    async def gen_art_cmd(
+        self,
+        ctx: Context,
+        amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
+        size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large",
+        *,
+        prompt: str,
+    ):
         """
         Generate an image from a prompt.
 
@@ -272,9 +301,15 @@ class Image(commands.Cog):
 
         await self.handle(ctx, main, prompt, amount, size)
 
-    @gen_art_cmd.command('image')
-    async def gen_art2(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
-                       size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *, prompt: str):
+    @gen_art_cmd.command("image")
+    async def gen_art2(
+        self,
+        ctx: Context,
+        amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
+        size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large",
+        *,
+        prompt: str,
+    ):
         """
         Generate an image from a prompt.
 
@@ -301,11 +336,15 @@ class Image(commands.Cog):
 
         await self.handle(ctx, main, prompt, amount, size)
 
-    @gen_art_cmd.command('variations', aliases=['variation', 'var', 'similar'])
-    async def gen_art_variations_cmd(self, ctx: commands.Context,
-                                     amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
-                                     size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large", *,
-                                     image: str = None):
+    @gen_art_cmd.command("variations", aliases=["variation", "var", "similar"])
+    async def gen_art_variations_cmd(
+        self,
+        ctx: Context,
+        amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
+        size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large",
+        *,
+        image: str = None,
+    ):
         """
         Gets a list of variations of an image provided.
 
@@ -321,7 +360,7 @@ class Image(commands.Cog):
         """
 
         async def main(ctx, amount, size, image):
-            image = await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or '')
+            image = await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or "")
 
             if not image:
                 return await ctx.send("Please send an image or provide a URL.", ephemeral=True)
@@ -337,10 +376,16 @@ class Image(commands.Cog):
 
         await self.handle(ctx, main, amount, size, image)
 
-    @gen_art_cmd.command('style')
-    async def gen_art_style(self, ctx: commands.Context, style: str = None,
-                            amount: typing.Optional[commands.Range[int, 1, 5]] = 1,
-                            size: typing.Optional[SizeConverter] = None, *, prompt: str = None):
+    @gen_art_cmd.command("style")
+    async def gen_art_style(
+        self,
+        ctx: Context,
+        style: str = None,
+        amount: typing.Optional[commands.Range[int, 1, 5]] = 1,
+        size: typing.Optional[SizeConverter] = None,
+        *,
+        prompt: str = None,
+    ):
         """
         Generate an image from a prompt with styles applied.
 
@@ -358,12 +403,15 @@ class Image(commands.Cog):
 
         async def main(ctx, prompt, style, amount, size):
             original_style = style
-            style = await self.image.style.get_style_from_name(style or '')
+            style = await self.image.style.get_style_from_name(style or "")
 
             if not style:
                 styles = await self.image.style.get_styles(raw=True)
-                embed = discord.Embed(title="Styles", description="Here are the available styles:\n\n",
-                                      color=self.bot.color)
+                embed = discord.Embed(
+                    title="Styles",
+                    description="Here are the available styles:\n\n",
+                    color=self.bot.color,
+                )
 
                 for style in styles:
                     embed.description += f"- {style.name}\n"
@@ -378,7 +426,7 @@ class Image(commands.Cog):
 
             if size is not None:
                 width, height = size
-                
+
                 if width > 1024 or height > 1024:
                     return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
             else:
@@ -390,13 +438,19 @@ class Image(commands.Cog):
 
     gen_art_slash = app_commands.Group(name="generate-art", description="Generate an image from a prompt.")
 
-    @gen_art_slash.command(name='image')
-    @app_commands.describe(amount="Amount of images to generate",
-                           size="Size of the image",
-                           prompt="Prompt to generate images from")
-    async def gen_art2_slash(self, interaction: discord.Interaction, prompt: str,
-                             amount: typing.Optional[app_commands.Range[int, 1, 10]] = 5,
-                             size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large"):
+    @gen_art_slash.command(name="image")
+    @app_commands.describe(
+        amount="Amount of images to generate",
+        size="Size of the image",
+        prompt="Prompt to generate images from",
+    )
+    async def gen_art2_slash(
+        self,
+        interaction: discord.Interaction,
+        prompt: str,
+        amount: typing.Optional[app_commands.Range[int, 1, 10]] = 5,
+        size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large",
+    ):
         """
         Generate an image from a prompt.
 
@@ -420,16 +474,23 @@ class Image(commands.Cog):
 
             return await self.generate_image(ctx, prompt, amount, size)
 
-        await self.handle(interaction, main, prompt, amount, size)  # type: ignore
+        await self.handle(interaction, main, prompt, amount, size)
 
-    @gen_art_slash.command(name='variations')
-    @app_commands.describe(amount="Amount of images to generate",
-                           size="The size of the image",
-                           image="Image to generate variations from",
-                           url="URL of the image to generate variations from")
-    async def gen_art_variations_slash(self, interaction: discord.Interaction, image: discord.Attachment = None,
-                                       url: str = None, amount: typing.Optional[app_commands.Range[int, 1, 10]] = 5,
-                                       size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large"):
+    @gen_art_slash.command(name="variations")
+    @app_commands.describe(
+        amount="Amount of images to generate",
+        size="The size of the image",
+        image="Image to generate variations from",
+        url="URL of the image to generate variations from",
+    )
+    async def gen_art_variations_slash(
+        self,
+        interaction: discord.Interaction,
+        image: discord.Attachment = None,
+        url: str = None,
+        amount: typing.Optional[app_commands.Range[int, 1, 10]] = 5,
+        size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large",
+    ):
         """
         Gets a list of variations of an image provided.
 
@@ -462,16 +523,23 @@ class Image(commands.Cog):
 
             return await self.variations(ctx, image, amount, size)
 
-        await self.handle(interaction, main, amount, size, image, url)  # type: ignore
+        await self.handle(interaction, main, amount, size, image, url)
 
-    @gen_art_slash.command(name='style')
-    @app_commands.describe(style="Style to apply to the image",
-                           amount="Amount of images to generate",
-                           size="Size of the image e.g 1024x1024",
-                           prompt="Prompt to generate images from")
-    async def gen_art_style_slash(self, ctx: commands.Context, prompt: str = None, style: str = None,
-                                  amount: typing.Optional[app_commands.Range[int, 1, 5]] = 1,
-                                  size: typing.Optional[str] = None):
+    @gen_art_slash.command(name="style")
+    @app_commands.describe(
+        style="Style to apply to the image",
+        amount="Amount of images to generate",
+        size="Size of the image e.g 1024x1024",
+        prompt="Prompt to generate images from",
+    )
+    async def gen_art_style_slash(
+        self,
+        ctx: Context,
+        prompt: str = None,
+        style: str = None,
+        amount: typing.Optional[app_commands.Range[int, 1, 5]] = 1,
+        size: typing.Optional[str] = None,
+    ):
         """
         Generate an image from a prompt with styles applied.
 
@@ -489,12 +557,15 @@ class Image(commands.Cog):
 
         async def main(ctx, prompt, style, amount, size):
             original_style = style
-            style = await self.image.style.get_style_from_name(style or '')
+            style = await self.image.style.get_style_from_name(style or "")
 
             if not style:
                 styles = await self.image.style.get_styles(raw=True)
-                embed = discord.Embed(title="Styles", description="Here are the available styles:\n\n",
-                                      color=self.bot.color)
+                embed = discord.Embed(
+                    title="Styles",
+                    description="Here are the available styles:\n\n",
+                    color=self.bot.color,
+                )
 
                 for style in styles:
                     embed.description += f"- {style.name}\n"
@@ -517,23 +588,27 @@ class Image(commands.Cog):
                     return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
             except:
                 if size:
-                    return await ctx.send("Invalid size provided. Please enter a valid size e.g `1024x1024`",
-                                          ephemeral=True)
+                    return await ctx.send(
+                        "Invalid size provided. Please enter a valid size e.g `1024x1024`",
+                        ephemeral=True,
+                    )
 
                 width, height = None, None
 
             return await self.generate_image_style(ctx, prompt, style, amount, width, height)
 
         await self.handle(ctx, main, prompt, style, amount, size)
-        
-    @gen_art_style_slash.autocomplete('style')
+
+    @gen_art_style_slash.autocomplete("style")
     async def gen_art_style_slash_autocomplete(self, interaction: discord.Interaction, current: str):
         if not current:
-            return [app_commands.Choice(name=style.name, value=style.name) 
-                    for style in await self.image.style.get_styles(raw=True)][:25]
-        
+            return [
+                app_commands.Choice(name=style.name, value=style.name)
+                for style in await self.image.style.get_styles(raw=True)
+            ][:25]
+
         styles = []
-        
+
         for style in await self.image.style.get_styles(raw=True):
             if current.lower() in style.name.lower():
                 styles.append(app_commands.Choice(name=style.name, value=style.name))
@@ -549,13 +624,12 @@ class Image(commands.Cog):
 
             result = await self.image.analyze(image)
 
-            embed = discord.Embed(
-                title="Image Analysis Result:",
-                color=self.bot.color
-            )
+            embed = discord.Embed(title="Image Analysis Result:", color=self.bot.color)
             embed.set_image(url=url)
 
-            embed.add_field(name="Adult Score:", value=f"""
+            embed.add_field(
+                name="Adult Score:",
+                value=f"""
 **Is Adult Content:** `{'True' if result.adult.is_adult_content else 'False'}`
 **Is Racy Content:** `{'True' if result.adult.is_racy_content else 'False'}`
 **Is Gory Content:** `{'True' if result.adult.is_gory_content else 'False'}`
@@ -563,43 +637,76 @@ class Image(commands.Cog):
 **Adult Score:** `{round(result.adult.adult_score, 1)}%`
 **Racy Score:** `{round(result.adult.racy_score, 1)}%`
 **Gore Score:** `{round(result.adult.gore_score, 1)}%`
-            """, inline=False)
+            """,
+                inline=False,
+            )
 
-            embed.add_field(name="Categories/Tags:", value="- " + "\n- ".join(
-                [f"`{x.name}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.tags]
-            ) if result.tags else "None", inline=False)
+            embed.add_field(
+                name="Categories/Tags:",
+                value="- " + "\n- ".join([f"`{x.name}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.tags])
+                if result.tags
+                else "None",
+                inline=False,
+            )
 
-            embed.add_field(name="Description/Caption:", value="- " + "\n- ".join(
-                [f"`{x.text}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.captions]
-            ) if result.captions else "None", inline=False)
+            embed.add_field(
+                name="Description/Caption:",
+                value="- "
+                + "\n- ".join([f"`{x.text}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.captions])
+                if result.captions
+                else "None",
+                inline=False,
+            )
 
-            embed.add_field(name="Color:", value=f"""
+            embed.add_field(
+                name="Color:",
+                value=f"""
 **Dominant Color Foreground:** `{result.color.dominant_color_foreground}`
 **Dominant Color Background:** `{result.color.dominant_color_background}`
 **Dominant Colors:** {', '.join([f'`{x}`' for x in result.color.dominant_colors]) if result.color.dominant_colors else 'None'}
 **Accent Color:** `#{result.color.accent_color}`
 **Is Black & White:** `{'True' if result.color.is_bw_img else 'False'}`
-            """, inline=False)
+            """,
+                inline=False,
+            )
 
-            embed.add_field(name="Image Type:", value=f"""
+            embed.add_field(
+                name="Image Type:",
+                value=f"""
 **Is Clip Art:** `{'True' if result.image_type.is_clip_art else 'False'}`
 **Is Line Drawing:** `{'True' if result.image_type.is_line_drawing else 'False'}`
 **Clip Art Type:** `{result.image_type.clip_art_type_describe.replace("-", " ").title()}`
-            """, inline=False)
+            """,
+                inline=False,
+            )
 
-            embed.add_field(name="Brands:", value="- " + "\n- ".join(
-                [f"`{x.name}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.brands]
-            ) if result.brands else "None", inline=False)
+            embed.add_field(
+                name="Brands:",
+                value="- "
+                + "\n- ".join([f"`{x.name}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.brands])
+                if result.brands
+                else "None",
+                inline=False,
+            )
 
-            embed.add_field(name="Objects:", value="- " + "\n- ".join(
-                [f"`{x.object}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.objects]
-            ) if result.objects else "None", inline=False)
+            embed.add_field(
+                name="Objects:",
+                value="- "
+                + "\n- ".join([f"`{x.object}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.objects])
+                if result.objects
+                else "None",
+                inline=False,
+            )
 
-            embed.add_field(name="Image Metadata/Properties:", value=f"""
+            embed.add_field(
+                name="Image Metadata/Properties:",
+                value=f"""
 **Width:** `{result.metadata.width}`
 **Height:** `{result.metadata.height}`
-            """, inline=False)
-        
+            """,
+                inline=False,
+            )
+
         return embed
 
     MAX_CONCURRENCY_ANALYZE = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=False)
@@ -616,10 +723,13 @@ class Image(commands.Cog):
             finally:
                 await self.MAX_CONCURRENCY_ANALYZE.release(ctx)
         except commands.MaxConcurrencyReached:
-            await ctx.send("You are already analyzing an image. Please wait until it's done.", ephemeral=True)
+            await ctx.send(
+                "You are already analyzing an image. Please wait until it's done.",
+                ephemeral=True,
+            )
             return
 
-    @commands.command('analyze-image', aliases=['analyze-img', 'analyze_img', 'analyze_image'])
+    @commands.command("analyze-image", aliases=["analyze-img", "analyze_img", "analyze_image"])
     async def analyze_image_cmd(self, ctx, image: str = None):
         """
         Analyze an image including its colors, categories, brands, and more!
@@ -631,23 +741,27 @@ class Image(commands.Cog):
         - `yoda analyze-image <Emoji>`
         - `yoda analyze-image @Someone`
         """
-        
+
         async def main(ctx, self, image):
-            image = await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or '')
-            
+            image = await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or "")
+
             if not image:
                 return await ctx.send("Please send an image or provide a URL.")
-        
+
             embed = await self.analyze_image(ctx, image)
-            
+
             return await ctx.send(embed=embed)
-        
+
         return await self.handle_analyze(ctx, main, self, image)
 
-    @app_commands.command(name='analyze-image')
+    @app_commands.command(name="analyze-image")
     @app_commands.describe(image="The image to analyze.", url="The URL of the image to analyze.")
-    async def analyze_image_slash(self, interaction: discord.Interaction, image: discord.Attachment = None,
-                                  url: str = None):
+    async def analyze_image_slash(
+        self,
+        interaction: discord.Interaction,
+        image: discord.Attachment = None,
+        url: str = None,
+    ):
         """
         Analyze an image including its colors, categories, brands, and more!
 
@@ -670,7 +784,7 @@ class Image(commands.Cog):
 
             return await ctx.send(embed=embed)
 
-        return await self.handle_analyze(interaction, main, self, image)  # type: ignore
+        return await self.handle_analyze(interaction, main, self, image)
 
 
 async def setup(bot: commands.Bot):

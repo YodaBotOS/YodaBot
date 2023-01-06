@@ -1,13 +1,13 @@
 import io
 import uuid
 
-import openai
 import aiohttp
+import openai
 
+from .dataclass import AnalyzeResult
 from .enums import *
 from .image import *
 from .style import *
-from .dataclass import AnalyzeResult
 
 
 class ImageUtilities:
@@ -26,7 +26,7 @@ class ImageUtilities:
     def _get_headers(self):
         return {
             "Authorization": f"Bearer {self.openai_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
     async def _upload_to_cdn(self, gen: GeneratedImages):
@@ -45,7 +45,7 @@ class ImageUtilities:
             self.s3.upload_fileobj(
                 io.BytesIO(data),
                 Bucket=self.bucket,
-                Key=f"dalle2-results/{img_id}/{counter}.png"
+                Key=f"dalle2-results/{img_id}/{counter}.png",
             )
 
             image.url = f"{self.host}/dalle2-results/{img_id}/{counter}.png"
@@ -58,20 +58,16 @@ class ImageUtilities:
 
         s = size.get_size()
 
-        response = openai.Image.create(
-            prompt=prompt,
-            n=n,
-            size=s,
-            user=user
-        )
+        response = openai.Image.create(prompt=prompt, n=n, size=s, user=user)
 
         gen = GeneratedImages(self, response)
         await self._upload_to_cdn(gen)
 
         return gen
 
-    async def create_image_variations(self, image: str | bytes | io.BytesIO, n: int, *,
-                                      size: Size, user: str = None) -> GeneratedImages:
+    async def create_image_variations(
+        self, image: str | bytes | io.BytesIO, n: int, *, size: Size, user: str = None
+    ) -> GeneratedImages:
         if 1 > n or n > 10:
             raise ValueError("n must be between 1 and 10")
 
@@ -82,12 +78,7 @@ class ImageUtilities:
         elif isinstance(image, io.BytesIO):
             image = image.getvalue()
 
-        response = openai.Image.create_variation(
-            image=image,
-            n=n,
-            size=s,
-            user=user
-        )
+        response = openai.Image.create_variation(image=image, n=n, size=s, user=user)
 
         gen = GeneratedImages(self, response)
         await self._upload_to_cdn(gen)

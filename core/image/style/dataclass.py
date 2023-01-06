@@ -34,4 +34,3 @@ class GeneratedImage:
     result: str = field(default_factory=str, init=True)
     use_target_image: bool = None
     target_image_url: dict = field(default_factory=dict, init=True)
-

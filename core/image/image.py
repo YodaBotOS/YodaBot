@@ -1,6 +1,6 @@
+import datetime
 import io
 import typing
-import datetime
 
 
 class GeneratedImage:
@@ -29,7 +29,7 @@ class GeneratedImage:
 
             return written
         else:
-            with open(fp, 'wb') as f:
+            with open(fp, "wb") as f:
                 return f.write(img)
 
 

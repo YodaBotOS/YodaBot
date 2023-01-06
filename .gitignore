@@ -1,5 +1,6 @@
 core/maps/maps_.py
 core/ping/
+formatter.bash
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

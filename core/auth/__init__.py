@@ -21,8 +21,11 @@ def get_gcp_token(*, from_gcloud=False):
     # if not os.path.exists(os.environ['GOOGLE_APPLICATION_CREDENTIALS']):
     #     raise Exception("GOOGLE_APPLICATION_CREDENTIALS environment variable set to non-existent file.")
 
-    process = subprocess.Popen(["gcloud", "auth", "application-default", "print-access-token"], stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
+    process = subprocess.Popen(
+        ["gcloud", "auth", "application-default", "print-access-token"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
     stdout, stderr = process.communicate()
 

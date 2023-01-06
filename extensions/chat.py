@@ -1,13 +1,20 @@
+from __future__ import annotations
+
 import asyncio
 import importlib
+from typing import TYPE_CHECKING
 
 import discord
-from discord.ext import commands
 from discord import app_commands
+from discord.ext import commands
 
 import config
 from core import openai as core_openai
+from core.context import Context
 from utils.chat import *
+
+if TYPE_CHECKING:
+    from core.bot import Bot
 
 
 class Chat(commands.Cog):
@@ -15,22 +22,23 @@ class Chat(commands.Cog):
     Chat with an AI
     """
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Bot):
         self.openai = None
-        self.bot = bot
+        self.bot: Bot = bot
 
     async def cog_load(self):
         importlib.reload(core_openai)
         from core.openai import OpenAI
 
         self.openai: OpenAI = OpenAI(config.OPENAI_KEY)
+        self.bot.openai = self.openai
 
     async def cog_unload(self):
         del self.openai
 
-    @commands.command('chat')
+    @commands.command("chat")
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def chat(self, ctx: commands.Context, *, text: str = None):
+    async def chat(self, ctx: Context, *, text: str = None):
         """
         Chat with an AI
         """
@@ -51,12 +59,17 @@ class Chat(commands.Cog):
 
         view = ChatView(openai=self.openai, user=ctx.author, ephemeral=False)
 
-        prev_msg = await ctx.send("YodaBot chat has started. Say `stop`, `goodbye`, `cancel`, `exit` or `end` to end "
-                                  "the chat, or click the `Stop` button.", view=view)
+        prev_msg = await ctx.send(
+            "YodaBot chat has started. Say `stop`, `goodbye`, `cancel`, `exit` or `end` to end "
+            "the chat, or click the `Stop` button.",
+            view=view,
+        )
 
         while not view.stopped:
-            msg = await self.bot.wait_for('message',
-                                          check=lambda m: m.author == ctx.author and m.channel == ctx.channel)
+            msg = await self.bot.wait_for(
+                "message",
+                check=lambda m: m.author == ctx.author and m.channel == ctx.channel,
+            )
 
             if view.stopped:
                 return
@@ -64,7 +77,7 @@ class Chat(commands.Cog):
             async with ctx.typing():
                 text = msg.content
 
-                if text.lower() in ['stop', 'goodbye', 'cancel', 'exit', 'end']:
+                if text.lower() in ["stop", "goodbye", "cancel", "exit", "end"]:
                     view.stopped = True
 
                     for i in view.children:
@@ -96,7 +109,7 @@ class Chat(commands.Cog):
 
     CHAT_SLASH_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=False)
 
-    @app_commands.command(name='chat')
+    @app_commands.command(name="chat")
     async def chat_slash(self, interaction: discord.Interaction, text: str = None):
         """
         Chat with an AI
@@ -104,7 +117,7 @@ class Chat(commands.Cog):
 
         # As of right now, app_commands does not support max_concurrency, so we need to handle it ourselves in the
         # callback.
-        ctx = await commands.Context.from_interaction(interaction)
+        ctx = await Context.from_interaction(interaction)
         await self.CHAT_SLASH_MAX_CONCURRENCY.acquire(ctx.message)
 
         await interaction.response.defer()
@@ -115,7 +128,7 @@ class Chat(commands.Cog):
                     text = self.openai.chat(text)
                 except Exception as e:
                     await interaction.followup.send(f"Something went wrong, try again later.", ephemeral=True)
-                    await self.bot.tree.on_error(interaction, (e, False))  # type: ignore
+                    await self.bot.tree.on_error(interaction, (e, False))
 
                 embed = discord.Embed(color=interaction.client.color)
                 embed.set_author(name="Chat:", icon_url=interaction.user.display_avatar.url)
@@ -125,8 +138,11 @@ class Chat(commands.Cog):
 
             view = ChatView(openai=self.openai, user=ctx.author, ephemeral=True)
 
-            await interaction.followup.send("YodaBot chat has started. click the `Stop` button to stop ",
-                                            "chatting.", view=view)
+            await interaction.followup.send(
+                "YodaBot chat has started. click the `Stop` button to stop ",
+                "chatting.",
+                view=view,
+            )
 
             # For concurrency reasons, we gotta wait for the user to stop the chat until we can release it.
             await view.wait()

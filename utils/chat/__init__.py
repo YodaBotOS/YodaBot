@@ -24,8 +24,11 @@ class ChatModal(discord.ui.Modal):
             text = self.openai.chat(text, user=interaction.user.id, channel=interaction.channel.id)
         except Exception as e:
             print(e)
-            return await interaction.followup.send(f"Something went wrong. Try again later.", view=self.view,
-                                                   ephemeral=True)
+            return await interaction.followup.send(
+                f"Something went wrong. Try again later.",
+                view=self.view,
+                ephemeral=True,
+            )
 
         embed = discord.Embed(color=interaction.client.color)
         embed.set_author(name="Chat:", icon_url=interaction.user.display_avatar.url)
@@ -45,8 +48,8 @@ class ChatView(discord.ui.View):
         self.stopped = False
         self.prev_msg = None
 
-        if 'timeout' not in kwargs:
-            kwargs['timeout'] = None
+        if "timeout" not in kwargs:
+            kwargs["timeout"] = None
 
         super().__init__(*args, **kwargs)
 
@@ -69,10 +72,21 @@ class ChatView(discord.ui.View):
 
         self.prev_msg = interaction.message
 
-        return await interaction.response.send_modal(ChatModal(title="Chat", openai=self.openai, view=self,
-                                                               ephemeral=self.ephemeral, prev_msg=self.prev_msg))
+        return await interaction.response.send_modal(
+            ChatModal(
+                title="Chat",
+                openai=self.openai,
+                view=self,
+                ephemeral=self.ephemeral,
+                prev_msg=self.prev_msg,
+            )
+        )
 
-    @discord.ui.button(label="Stop", style=discord.ButtonStyle.red, emoji="<:StopButton:845592836116054017>")
+    @discord.ui.button(
+        label="Stop",
+        style=discord.ButtonStyle.red,
+        emoji="<:StopButton:845592836116054017>",
+    )
     async def stop_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
         for i in self.children:
             i.disabled = True

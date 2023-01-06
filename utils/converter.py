@@ -5,8 +5,8 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Converter
 
+from core.context import Context
 from core.twemoji_parser import TwemojiParser
-
 
 parser = TwemojiParser()
 
@@ -32,9 +32,12 @@ class _ImageConverter(Converter):
         Else:
             Raise error saying that argument is not valid.
     """
-    async def convert(self, ctx: commands.Context, argument: str) -> str | None:
-        if match := re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
-                                 argument):
+
+    async def convert(self, ctx: Context, argument: str) -> str | None:
+        if match := re.fullmatch(
+            r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+            argument,
+        ):
             return match.group(0)
 
 
@@ -43,24 +46,26 @@ class ImageConverter(Converter):
         self.with_member = with_member
         self.with_emoji = with_emoji
 
-    async def convert(self, ctx: commands.Context, argument: str | None) -> str | None:
+    async def convert(self, ctx: Context, argument: str | None) -> str | None:
         if argument:
             argument = argument.strip()
-            
-            if match := re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
-                                     argument):
+
+            if match := re.fullmatch(
+                r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+                argument,
+            ):
                 return match.group(0)
 
         # Please ignore the variable names, thx!
         if msgattach := ctx.message.attachments:
             return msgattach[0].url
-        
+
         if msgsticker := ctx.message.stickers:
             if msgsticker[0].format == discord.StickerFormatType.png:
                 return msgsticker[0].url
 
         if self.with_member:
-            if mention := re.fullmatch(r'<@!?(\d+)>', argument):
+            if mention := re.fullmatch(r"<@!?(\d+)>", argument):
                 user_id = int(mention.group(1))
 
                 try:
@@ -77,7 +82,7 @@ class ImageConverter(Converter):
                 return em.url
             except:
                 if result := parser.full_parse(argument):
-                    url = result['url']
+                    url = result["url"]
 
                     async with ctx.bot.session.get(url) as resp:
                         if resp.status == 200:
@@ -87,8 +92,10 @@ class ImageConverter(Converter):
             msgreply = reply.resolved
 
             if msgreplycontent := msgreply.content:
-                if match := re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
-                                         msgreplycontent):
+                if match := re.fullmatch(
+                    r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+                    msgreplycontent,
+                ):
                     return match.group(0)
 
             if msgreplyattach := msgreply.attachments:
@@ -109,7 +116,7 @@ class ImageConverter(Converter):
 class AttachmentConverter(Converter):
     URL_REGEX = re.compile(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
 
-    async def convert(self, ctx: commands.Context, argument: str) -> str:
+    async def convert(self, ctx: Context, argument: str) -> str:
         if match := self.URL_REGEX.fullmatch(argument):
             return match.group(0)
 
@@ -135,9 +142,9 @@ class AttachmentConverter(Converter):
 
 
 class SizeConverter(Converter):
-    async def convert(self, ctx: commands.Context, argument: str) -> tuple[int, int]:
+    async def convert(self, ctx: Context, argument: str) -> tuple[int, int]:
         try:
-            width, height = argument.split('x')
+            width, height = argument.split("x")
 
             return int(width), int(height)
         except:

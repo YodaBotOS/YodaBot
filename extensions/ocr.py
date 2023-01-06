@@ -1,13 +1,20 @@
-import re
+from __future__ import annotations
+
 import importlib
+import re
+from typing import TYPE_CHECKING
 
 import discord
-from discord.ext import commands
 from discord import app_commands
+from discord.ext import commands
 
 from core import ocr, trocr
+from core.context import Context
 from utils import converter
 from utils.ocr import TranslateOCRLanguagesPaginator, YodaMenuPages
+
+if TYPE_CHECKING:
+    from core.bot import Bot
 
 
 class OCR(commands.Cog):
@@ -15,21 +22,19 @@ class OCR(commands.Cog):
     OCR (Optical Character Recognition)
     """
 
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
+    def __init__(self, bot: Bot):
+        self.bot: Bot = bot
         self.ocr: ocr.OCR = None
         self.trocr: trocr.TranslateOCR = None
 
         # https://github.com/Rapptz/discord.py/issues/7823#issuecomment-1086830458
         self.ctx_menu_ocr = app_commands.ContextMenu(
-            name="Image To Text (OCR)",
-            callback=self.image_to_text_context_menu
+            name="Image To Text (OCR)", callback=self.image_to_text_context_menu
         )
         self.bot.tree.add_command(self.ctx_menu_ocr)
 
         self.ctx_menu_trocr = app_commands.ContextMenu(
-            name="Translate Image (Translate OCR)",
-            callback=self.trocr_context_menu
+            name="Translate Image (Translate OCR)", callback=self.trocr_context_menu
         )
         self.bot.tree.add_command(self.ctx_menu_trocr)
 
@@ -98,12 +103,17 @@ class OCR(commands.Cog):
         return embed
 
     @app_commands.command(name="image-to-text")
-    @app_commands.describe(image="The attachment to be converted to text.",
-                           url="The URL to an image to be converted to "
-                               "text.")
+    @app_commands.describe(
+        image="The attachment to be converted to text.",
+        url="The URL to an image to be converted to " "text.",
+    )
     @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
-    async def image_to_text_slash(self, interaction: discord.Interaction, image: discord.Attachment = None,
-                                  url: str = None):
+    async def image_to_text_slash(
+        self,
+        interaction: discord.Interaction,
+        image: discord.Attachment = None,
+        url: str = None,
+    ):
         """
         Convert an image to text, known as the phrase OCR (Optical Character Recognition).
         """
@@ -120,8 +130,10 @@ class OCR(commands.Cog):
         if image is not None:
             image = image.url
         else:
-            if match := re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
-                                     url):
+            if match := re.fullmatch(
+                r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+                url,
+            ):
                 image = match.group(0)
             else:
                 return await interaction.response.send_message("Please provide a valid URL!", ephemeral=True)
@@ -131,13 +143,16 @@ class OCR(commands.Cog):
         resp = await self.ocr_image(image)
 
         if isinstance(resp, discord.ui.View):
-            return await interaction.followup.send('Result too long.', view=resp)
+            return await interaction.followup.send("Result too long.", view=resp)
         else:
             return await interaction.followup.send(embed=resp)
 
-    @commands.command(name="image-to-text", aliases=["ocr", "itt", "i2t", "image2text", "image-2-text", "imagetotext"])
+    @commands.command(
+        name="image-to-text",
+        aliases=["ocr", "itt", "i2t", "image2text", "image-2-text", "imagetotext"],
+    )
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def image_to_text_command(self, ctx: commands.Context, *, image=None):
+    async def image_to_text_command(self, ctx: Context, *, image=None):
         """
         Convert an image to text, known as the phrase OCR (Optical Character Recognition).
         """
@@ -151,7 +166,7 @@ class OCR(commands.Cog):
             resp = await self.ocr_image(image)
 
             if isinstance(resp, discord.ui.View):
-                return await ctx.send('Result too long.', view=resp)
+                return await ctx.send("Result too long.", view=resp)
             else:
                 return await ctx.send(embed=resp)
 
@@ -168,8 +183,10 @@ class OCR(commands.Cog):
                 elif embed.thumbnail:
                     url = embed.thumbnail.url
                     break
-        elif match := re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
-                                   message.content):
+        elif match := re.fullmatch(
+            r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+            message.content,
+        ):
             url = match.group(0)
 
         if not url:
@@ -180,17 +197,24 @@ class OCR(commands.Cog):
         resp = await self.ocr_image(url)
 
         if isinstance(resp, discord.ui.View):
-            return await interaction.followup.send('Result too long.', view=resp, ephemeral=True)
+            return await interaction.followup.send("Result too long.", view=resp, ephemeral=True)
         else:
             return await interaction.followup.send(embed=resp, ephemeral=True)
 
     @app_commands.command(name="translate-image")
-    @app_commands.describe(language="The language for the text to be translated to",
-                           image="The attachment to be converted to text then translated.",
-                           url="The URL to an image to be converted to text then translated.")
+    @app_commands.describe(
+        language="The language for the text to be translated to",
+        image="The attachment to be converted to text then translated.",
+        url="The URL to an image to be converted to text then translated.",
+    )
     @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
-    async def trocr_slash(self, interaction: discord.Interaction, language: str,
-                          image: discord.Attachment = None, url: str = None):
+    async def trocr_slash(
+        self,
+        interaction: discord.Interaction,
+        language: str,
+        image: discord.Attachment = None,
+        url: str = None,
+    ):
         """
         Convert an image to text, then translates it to another language.
         """
@@ -207,8 +231,10 @@ class OCR(commands.Cog):
         if image is not None:
             image = image.url
         else:
-            if match := re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
-                                     url):
+            if match := re.fullmatch(
+                r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+                url,
+            ):
                 image = match.group(0)
             else:
                 return await interaction.response.send_message("Please provide a valid URL!", ephemeral=True)
@@ -220,11 +246,11 @@ class OCR(commands.Cog):
 
         await interaction.response.defer()
 
-        embed = await self.translate_ocr(image, lang['code'])
+        embed = await self.translate_ocr(image, lang["code"])
 
         return await interaction.followup.send(embed=embed)
 
-    @trocr_slash.autocomplete('language')
+    @trocr_slash.autocomplete("language")
     async def trocr_autocomplete_language(self, interaction: discord.Interaction, current: str):
         amount = 25
 
@@ -235,12 +261,15 @@ class OCR(commands.Cog):
 
         langs = langs[amount:]
 
-        return [app_commands.Choice(name=lang['name'], value=lang['name']) for lang in langs][amount:]
+        return [app_commands.Choice(name=lang["name"], value=lang["name"]) for lang in langs][amount:]
 
-    @commands.group(name="translate-image", aliases=["translate-ocr", "trocr", "trimg", "trim"],
-                    invoke_without_command=True)
+    @commands.group(
+        name="translate-image",
+        aliases=["translate-ocr", "trocr", "trimg", "trim"],
+        invoke_without_command=True,
+    )
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def trocr_command(self, ctx: commands.Context, language: str, *, image=None):
+    async def trocr_command(self, ctx: Context, language: str, *, image=None):
         """
         Convert an image to text, then translates it to another language.
         """
@@ -256,7 +285,7 @@ class OCR(commands.Cog):
             return await ctx.send("Please provide a valid language!")
 
         async with ctx.typing():
-            embed = await self.translate_ocr(image, lang['code'])
+            embed = await self.translate_ocr(image, lang["code"])
 
             return await ctx.send(embed=embed)
 
@@ -279,8 +308,8 @@ class OCR(commands.Cog):
 
             lang = lang[0]
 
-            lang_code = lang['code']
-            lang_name = lang['name']
+            lang_code = lang["code"]
+            lang_name = lang["name"]
 
             embed = discord.Embed(color=self.bot.color)
             embed.title = lang_name
@@ -289,7 +318,7 @@ class OCR(commands.Cog):
 
             return await interaction.followup.send(embed=embed)
 
-        ctx = await commands.Context.from_interaction(interaction)
+        ctx = await Context.from_interaction(interaction)
 
         langs = await self.trocr.get_languages()
 
@@ -297,7 +326,7 @@ class OCR(commands.Cog):
         menu = YodaMenuPages(source, delete_message_after=True)
         return await menu.start(ctx, channel=interaction.followup)
 
-    @trocr_languages_slash.autocomplete('query')
+    @trocr_languages_slash.autocomplete("query")
     async def trocr_languages_autocomplete_query(self, interaction: discord.Interaction, current: str):
         amount = 25
 
@@ -308,10 +337,10 @@ class OCR(commands.Cog):
 
         langs = langs[amount:]
 
-        return [app_commands.Choice(name=lang['name'], value=lang['name']) for lang in langs][amount:]
+        return [app_commands.Choice(name=lang["name"], value=lang["name"]) for lang in langs][amount:]
 
     @trocr_command.command(name="languages")
-    async def trocr_languages_slash(self, ctx: commands.Context, query: str = None):
+    async def trocr_languages_slash(self, ctx: Context, query: str = None):
         """
         Shows a list of languages that can be translated to.
         """
@@ -326,8 +355,8 @@ class OCR(commands.Cog):
 
             lang = lang[0]
 
-            lang_code = lang['code']
-            lang_name = lang['name']
+            lang_code = lang["code"]
+            lang_name = lang["name"]
 
             embed = discord.Embed(color=self.bot.color)
             embed.title = lang_name
@@ -355,20 +384,22 @@ class OCR(commands.Cog):
                 elif embed.thumbnail:
                     url = embed.thumbnail.url
                     break
-        elif match := re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
-                                   message.content):
+        elif match := re.fullmatch(
+            r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+            message.content,
+        ):
             url = match.group(0)
 
         if not url:
             return await interaction.response.send_message("There is no image!", ephemeral=True)
 
         class Modal(discord.ui.Modal, title="Translate OCR"):
-            language = discord.ui.TextInput(label='Language', placeholder='Enter a Language')
+            language = discord.ui.TextInput(label="Language", placeholder="Enter a Language")
 
             def __init__(self, cls):
                 super().__init__()
                 self.cls = cls
-                
+
             async def on_submit(self, interaction: discord.Interaction):
                 language = self.language.value
 
@@ -378,7 +409,7 @@ class OCR(commands.Cog):
                     return await interaction.response.send_message("Please provide a valid language!", ephemeral=True)
 
                 await interaction.response.defer(ephemeral=True)
-                
+
                 embed = await self.cls.translate_ocr(url, lang["code"])
 
                 return await interaction.followup.send(embed=embed, ephemeral=True)

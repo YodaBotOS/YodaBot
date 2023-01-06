@@ -30,8 +30,13 @@ class Lyrics:
     CACHE = {}
     URL = "https://api.yodabot.xyz/v/{}/lyrics"  # Use Yoda API
 
-    def __init__(self, *, loop: asyncio.AbstractEventLoop = None, session: aiohttp.ClientSession = None,
-                 api_version='latest'):
+    def __init__(
+        self,
+        *,
+        loop: asyncio.AbstractEventLoop = None,
+        session: aiohttp.ClientSession = None,
+        api_version="latest",
+    ):
         self.session: aiohttp.ClientSession = session or aiohttp.ClientSession()
 
         self.url = self.URL.format(api_version)  # Yoda API latest
@@ -58,9 +63,9 @@ class Lyrics:
         return self.CACHE.get(key)
 
     async def call_api(self, query: str) -> dict:
-        params = {'q': query}
+        params = {"q": query}
 
-        async with self.session.get(self.url + '/search', params=params) as resp:
+        async with self.session.get(self.url + "/search", params=params) as resp:
             d = await resp.json()
 
         return d
@@ -90,9 +95,9 @@ class Lyrics:
         if 1 > amount or amount > 20:
             raise ValueError("Amount must be between 1 and 20")
 
-        params = {'q': query, 'amount': amount}
+        params = {"q": query, "amount": amount}
 
-        async with self.session.get(self.url + '/suggest', params=params) as resp:
+        async with self.session.get(self.url + "/suggest", params=params) as resp:
             d = await resp.json()
 
         suggestions = [LyricAutocompleteSuggestions(**suggestion) for suggestion in d]

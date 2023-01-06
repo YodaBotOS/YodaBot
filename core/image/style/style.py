@@ -56,8 +56,16 @@ class GenerateStyleArt:
 
         return js
 
-    async def update_task(self, task_id: str, prompt: str, style: Style, *, height: int = None, width: int = None,
-                          target_image_weight: float = 0.5):
+    async def update_task(
+        self,
+        task_id: str,
+        prompt: str,
+        style: Style,
+        *,
+        height: int = None,
+        width: int = None,
+        target_image_weight: float = 0.5,
+    ):
         height = height or 1568
         width = width or 960
 
@@ -67,7 +75,7 @@ class GenerateStyleArt:
                 "style": style.id,
                 "height": height,
                 "width": width,
-                "target_image_weight": target_image_weight
+                "target_image_weight": target_image_weight,
             }
         }
 
@@ -94,15 +102,22 @@ class GenerateStyleArt:
             self.s3.upload_fileobj(
                 io.BytesIO(data),
                 Bucket=self.bucket,
-                Key=f"art-results/{image.id}/{i+1}.png"
+                Key=f"art-results/{image.id}/{i+1}.png",
             )
 
             image.result = f"{self.host}/art-results/{img_id}/{i+1}.png"
 
         return images
 
-    async def generate(self, prompt: str, style: Style, n: int = 1, *, height: int = None,
-                       width: int = None) -> list[GeneratedImage]:
+    async def generate(
+        self,
+        prompt: str,
+        style: Style,
+        n: int = 1,
+        *,
+        height: int = None,
+        width: int = None,
+    ) -> list[GeneratedImage]:
         images = []
 
         async def func(self):

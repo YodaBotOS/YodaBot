@@ -1,5 +1,5 @@
-import os
 import json
+import os
 import subprocess
 
 
@@ -36,7 +36,11 @@ class TwemojiParser:
 
     @staticmethod
     def install_twemoji_parser():
-        process = subprocess.Popen(["npm", "install", "twemoji-parser"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(
+            ["npm", "install", "twemoji-parser"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         return process, process.communicate()
 
     @staticmethod
@@ -55,7 +59,7 @@ class TwemojiParser:
         return stdout.decode()
 
     def parse(self, text: str, *, svg: bool = False) -> list[dict[str, str | list[int]]]:
-        js = json.loads(self._run(f"\"{text}\""))
+        js = json.loads(self._run(f'"{text}"'))
 
         if not svg:
             for i in js:

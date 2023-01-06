@@ -1,2 +1,2 @@
-from .style import *
 from .dataclass import *
+from .style import *

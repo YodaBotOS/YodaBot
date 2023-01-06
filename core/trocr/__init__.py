@@ -17,7 +17,7 @@ class TranslateOCR:
     URL = "https://api.yodabot.xyz/v/{}/translate-ocr"
     SCORE_CUTOFF = 50  # For get_language. If the score is lower than this, return None.
 
-    def __init__(self, session: aiohttp.ClientSession, *, api_version='2'):
+    def __init__(self, session: aiohttp.ClientSession, *, api_version="2"):
         self.session: aiohttp.ClientSession = session
         self.api_version = api_version
         self.url = self.URL.format(api_version)
@@ -40,17 +40,17 @@ class TranslateOCR:
         async with self.session.get(self.url + "/languages") as resp:
             data = await resp.json()
 
-        raw_languages = data['supportedLanguages']
+        raw_languages = data["supportedLanguages"]
 
         languages = []
         languages_all = []
 
         for lang in raw_languages:
-            if lang['code'] in languages_all or lang['name'] in languages_all:
+            if lang["code"] in languages_all or lang["name"] in languages_all:
                 continue
 
-            languages_all.append(lang['code'].lower())
-            languages_all.append(lang['name'].lower())
+            languages_all.append(lang["code"].lower())
+            languages_all.append(lang["name"].lower())
 
             languages.append(lang)
 
@@ -66,7 +66,7 @@ class TranslateOCR:
         langs = await self.get_languages()
 
         for language in langs:
-            if lang.lower() in [language['code'].lower(), language['name'].lower()]:
+            if lang.lower() in [language["code"].lower(), language["name"].lower()]:
                 return language
 
         return None
@@ -87,7 +87,7 @@ class TranslateOCR:
         langs_found = []
 
         for lang in res:
-            d = await self.get_language(lang)  # type: ignore
+            d = await self.get_language(lang)
 
             if d:
                 langs_found.append(d)
@@ -98,7 +98,7 @@ class TranslateOCR:
         data = aiohttp.FormData()
         data.add_field("image", img_bytes)
 
-        params = {'lang': lang}
+        params = {"lang": lang}
 
         async with self.session.post(self.url + "/render", data=data, params=params) as resp:
             data = await resp.json()
@@ -117,9 +117,9 @@ class TranslateOCR:
         data = await self.call_api(img, lang)
 
         passed_data = {
-            'url': data['url'],
-            'original_text': data['originalText'],
-            'translated_text': data['translatedText']
+            "url": data["url"],
+            "original_text": data["originalText"],
+            "translated_text": data["translatedText"],
         }
 
         return TranslateOCRResult(**passed_data)

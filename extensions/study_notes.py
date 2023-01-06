@@ -1,13 +1,20 @@
-import typing
+from __future__ import annotations
+
 import asyncio
 import importlib
+import typing
+from typing import TYPE_CHECKING
 
 import discord
-from discord.ext import commands
 from discord import app_commands
+from discord.ext import commands
 
 import config
 from core import openai as core_openai
+from core.context import Context
+
+if TYPE_CHECKING:
+    from core.bot import Bot
 
 
 class StudyNotes(commands.Cog):
@@ -15,25 +22,31 @@ class StudyNotes(commands.Cog):
     Chat with an AI
     """
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Bot):
         self.openai = None
-        self.bot = bot
+        self.bot: Bot = bot
 
     async def cog_load(self):
         importlib.reload(core_openai)
         from core.openai import OpenAI
 
         self.openai: OpenAI = OpenAI(config.OPENAI_KEY)
+        self.bot.openai = self.openai
 
     async def cog_unload(self):
         del self.openai
 
     STUDY_NOTES_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=False)
 
-    @commands.command('study-notes')
+    @commands.command("study-notes")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def study_notes(self, ctx: commands.Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5, *,
-                          topic: str):
+    async def study_notes(
+        self,
+        ctx: Context,
+        amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
+        *,
+        topic: str,
+    ):
         """
         Generate study notes about a certain topic
         """
@@ -56,19 +69,25 @@ class StudyNotes(commands.Cog):
         finally:
             await self.STUDY_NOTES_MAX_CONCURRENCY.release(ctx.message)
 
-    @app_commands.command(name='study-notes')
+    @app_commands.command(name="study-notes")
     @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
-    @app_commands.describe(topic='The text to be checked for grammar.',
-                           amount='The amount of study notes to be generated. Minimal 1, maximum 10.')
-    async def study_notes_slash(self, interaction: discord.Interaction, topic: str,
-                                amount: app_commands.Range[int, 1, 10] = 5):
+    @app_commands.describe(
+        topic="The text to be checked for grammar.",
+        amount="The amount of study notes to be generated. Minimal 1, maximum 10.",
+    )
+    async def study_notes_slash(
+        self,
+        interaction: discord.Interaction,
+        topic: str,
+        amount: app_commands.Range[int, 1, 10] = 5,
+    ):
         """
         Generate study notes about a certain topic
         """
 
         # As of right now, app_commands does not support max_concurrency, so we need to handle it ourselves in the
         # callback.
-        ctx = await commands.Context.from_interaction(interaction)
+        ctx = await Context.from_interaction(interaction)
         await self.STUDY_NOTES_MAX_CONCURRENCY.acquire(ctx.message)
 
         await interaction.response.defer()
@@ -77,7 +96,7 @@ class StudyNotes(commands.Cog):
             try:
                 notes = self.openai.study_notes(topic, amount=amount)
             except Exception as e:
-                self.bot.tree.on_error(interaction, (e, False))  # type: ignore
+                self.bot.tree.on_error(interaction, (e, False))
                 return await interaction.followup.send(f"Something went wrong, try again later.", ephemeral=True)
 
             embed = discord.Embed(color=self.bot.color)

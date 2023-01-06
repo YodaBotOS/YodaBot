@@ -1,8 +1,9 @@
-import re
-import json
 import base64
+import json
+import re
 
 import aiohttp
+
 from core.auth import get_gcp_token
 
 
@@ -18,7 +19,10 @@ class OCR:
 
     async def request(self, data: str | bytes, *, raw=False) -> str | dict:
         if isinstance(data, str):
-            if re.fullmatch(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", data):
+            if re.fullmatch(
+                r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+                data,
+            ):
                 data = await self.read_url(data)
             else:
                 raise TypeError("Invalid data")
@@ -39,7 +43,7 @@ class OCR:
                         {
                             "type": "TEXT_DETECTION",
                         }
-                    ]
+                    ],
                 }
             ]
         }

@@ -2,8 +2,8 @@ import typing
 
 import aiohttp
 import discord
-from discord.ext import commands
 from discord import app_commands
+from discord.ext import commands
 
 import config
 from core.translate import Translate
@@ -29,14 +29,18 @@ class Translator(app_commands.Translator):
     async def unload(self):
         await self.session.close()
 
-    async def translate(self, string: app_commands.locale_str, locale: discord.Locale,
-                        context: app_commands.TranslationContext) -> typing.Optional[str]:
+    async def translate(
+        self,
+        string: app_commands.locale_str,
+        locale: discord.Locale,
+        context: app_commands.TranslationContext,
+    ) -> typing.Optional[str]:
         message = string.message
-        target = locale.value  # type: ignore
+        target = locale.value
 
         try:
             trans = await self.translate.translate(message, target)
         except:
             return None
 
-        return trans['translated']
+        return trans["translated"]
