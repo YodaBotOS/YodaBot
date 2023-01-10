@@ -730,7 +730,7 @@ class Image(commands.Cog):
             return
 
     @commands.command("analyze-image", aliases=["analyze-img", "analyze_img", "analyze_image"])
-    async def analyze_image_cmd(self, ctx, image: str = None):
+    async def analyze_image_cmd(self, ctx, *, image: str = None):
         """
         Analyze an image including its colors, categories, brands, and more!
 
