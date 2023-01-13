@@ -129,6 +129,10 @@ class Music(commands.Cog):
         url: str = None,
         mode: typing.Literal["fast", "best"] = "best",
     ):
+        """
+        Predict the genre of a song.
+        """
+        
         ctx = await Context.from_interaction(interaction)
         await self.PREDICT_GENRE_MAX_CONCURRENCY.acquire(ctx.message)
 

@@ -1,18 +1,29 @@
 import discord
 from discord import ui
-from discord.ext import menus
+from discord.ext import menus, commands
 
 from core.context import Context
 
 
 class YodaMenuPages(ui.View, menus.MenuPages):
-    def __init__(self, source, *, delete_message_after=False):
-        super().__init__(timeout=60)
+    def __init__(self, source, *, delete_message_after=False, allow_other_users=False, ephemeral=False):
+        super().__init__(timeout=None)
         self._source = source
         self.current_page = 0
-        self.ctx: Context = None
+        self.ctx: Context | discord.Interaction = None
         self.message = None
         self.delete_message_after = delete_message_after
+        self.allow_other_users = allow_other_users
+        self.ephemeral = ephemeral
+        
+    async def send_initial_message(self, ctx, channel):
+        if isinstance(ctx, commands.Context):
+            return await super().send_initial_message(ctx, channel)
+        else:
+            page = await self._source.get_page(0)
+            kwargs = await self._get_kwargs_from_page(page)
+            
+            return await ctx.followup.send(**kwargs)
 
     async def start(self, ctx, *, channel=None, wait=False):
         await self._source._prepare_once()
@@ -32,8 +43,10 @@ class YodaMenuPages(ui.View, menus.MenuPages):
 
     async def interaction_check(self, interaction):
         """Only allow the author that invoke the command to be able to use the interaction"""
+        
+        original = self.ctx.author if isinstance(self.ctx, commands.Context) else self.ctx.user
 
-        if interaction.user != self.ctx.author:
+        if not self.allow_other_users and interaction.user != original:
             await interaction.response.send_message("This is not your interaction!", ephemeral=True)
             return False
 
@@ -125,37 +138,21 @@ class YodaMenuPages(ui.View, menus.MenuPages):
 
     @ui.button(label="Go to page...", style=discord.ButtonStyle.gray, row=2)
     async def go_to_page(self, interaction, button):
-        await interaction.response.defer()
+        class Modal(ui.Modal, title="Go to page..."):
+            def __init__(self, cls):
+                self.cls = cls
+                super().__init__(timeout=None)
+                
+            page_no = ui.TextInput(label="Page Number", placeholder="Enter page number")
+            
+            async def on_submit(self, interaction: discord.Interaction) -> None:
+                try:
+                    page = int(self.page_no.value)
+                    await self.cls.show_page(page - 1)
+                except ValueError:
+                    await interaction.send_message(f"Invalid page number. Try again.\nHint: Pick a page number from 1-{self.source.get_max_pages()}", ephemeral=True)
+                    return
 
-        m = await interaction.followup.send(
-            embed=discord.Embed(
-                description="Enter the page number you want to go to.",
-                color=interaction.client.color,
-            )
-        )
+                await self.cls.update_buttons()
 
-        msg = await interaction.client.wait_for(
-            "message",
-            check=lambda m: m.author == interaction.user and m.channel == interaction.channel,
-        )
-
-        try:
-            await m.delete()
-        except:
-            pass
-
-        try:
-            await msg.delete()
-        except:
-            pass
-
-        try:
-            page = int(msg.content)
-            await self.show_page(page - 1)
-        except ValueError:
-            await interaction.send_message("Invalid page number. Try again.")
-            return
-
-        await self.update_buttons()
-
-        await interaction.response.defer()
+        await interaction.response.send_modal(Modal(self))
