@@ -232,7 +232,6 @@ class Maps(commands.Cog):
             
         return await self.handle(ctx, func, map_type, place)
         
-    @app_commands.guilds(818072057068912700)
     @app_commands.command(name="maps")
     @app_commands.describe(place_id="The place you want to search for", map_type="The map type to render the image as.")
     @app_commands.autocomplete(place_id=place_autocomplete)
