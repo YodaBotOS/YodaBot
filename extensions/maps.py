@@ -100,10 +100,19 @@ class Maps(commands.Cog):
                 utc_offset = abs(utc_offset)
                 sign = "-"
                 
-            thr = utc_offset // 60
-            tmin = utc_offset % 60
+            thr = str(utc_offset // 60)
+            tmin = str(utc_offset % 60)
             
-            timezone = f"`UTC{sign}{thr}:{tmin}`"
+            if thr == "0" and tmin == "0":
+                timezone = "`UTC`"
+            else:
+                if thr == "0":
+                    thr = "00"
+                    
+                if tmin == "0":
+                    tmin = "00"
+                
+                timezone = f"`UTC{sign}{thr}:{tmin}`"
             
             embed.add_field(name="UTC Offset:", value=timezone, inline=False)
             
