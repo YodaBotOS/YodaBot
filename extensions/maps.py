@@ -27,6 +27,7 @@ class Maps(commands.Cog):
         "name",
         "photo",
         "url",
+        "utc_offset",
         "international_phone_number",
         "opening_hours",
         "website",
@@ -90,6 +91,22 @@ class Maps(commands.Cog):
         if business_status := place.get("business_status"):
             embed.add_field(name="Business Status:", value=f"`{business_status.lower().replace('_', ' ').title()}`", inline=False)
             
+        timezone = None
+            
+        if utc_offset := place.get("utc_offset"):
+            sign = "+"
+            
+            if utc_offset < 0:
+                utc_offset = abs(utc_offset)
+                sign = "-"
+                
+            thr = utc_offset // 60
+            tmin = utc_offset % 60
+            
+            timezone = f"`UTC{sign}{thr}:{tmin}`"
+            
+            embed.add_field(name="UTC Offset:", value=timezone, inline=False)
+            
         if opening_hours := place.get("opening_hours"):
             weekday_text = opening_hours["weekday_text"]
             
@@ -116,7 +133,7 @@ class Maps(commands.Cog):
 **Open Now:** `{opening_hours['open_now']}`
 **Periods:**
 {periods}
-            """, inline=False)
+            """ + (f"\n\n(time is in {timezone})" if timezone else ""), inline=False)
 
         embed.add_field(
             name="Geometry:",
