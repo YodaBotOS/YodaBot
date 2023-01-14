@@ -139,8 +139,8 @@ class Maps(commands.Cog):
             periods = "\n".join(periods)
                 
             embed.add_field(name="Opening Hours:", value=f"""
-**Open Now:** `{opening_hours['open_now']}`
-**Periods:**
+Open Now: `{opening_hours['open_now']}`
+Periods:
 {periods}
             """ + (f"\n\n(time is in {timezone})" if timezone else ""), inline=False)
 
