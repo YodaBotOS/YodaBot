@@ -143,8 +143,8 @@ class GoogleMapsAPI:
                 best_zoom = zoom
                 break
 
-        if best_zoom > 3:
-            best_zoom -= 3  # tbh idk why
+        if best_zoom > 2:
+            best_zoom -= 2  # tbh idk why
 
         return best_zoom
 
