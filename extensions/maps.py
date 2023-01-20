@@ -194,6 +194,47 @@ Periods:
         view = MapsView(maps, place_id, place["photos"])
 
         await ctx.send(embed=embed, view=view, file=f)
+        
+    async def send_autocomplete(self, maps, ctx, place):
+        res = (await maps.autocomplete(place, text_only=True))[:25]
+            
+        options = []
+        
+        for place in res:
+            place_name = place["place"]
+            
+            if len(place_name) > 97:
+                place_name = place_name[:97] + "..."
+            
+            options.append(discord.SelectOption(label=place_name, value=place["id"]))
+        
+        class View(discord.ui.View):
+            def __init__(self, cls):
+                self.cls = cls
+                self.place_id = None
+                
+                super().__init__(timeout=None)
+                
+            async def interaction_check(self, interaction: discord.Interaction):
+                if interaction.user != ctx.author:
+                    await interaction.response.send_message("You are not the author of this command!", ephemeral=True)
+                    return False
+                
+                return True
+                
+            @discord.ui.select(placeholder="Select a place", options=options)
+            async def select(self, interaction, select):
+                await interaction.message.delete()
+                
+                self.place_id = select.values[0]
+                
+                self.stop()
+        
+        view = View(self)
+        await ctx.send("Please select a place.", view=view)
+        await view.wait()
+        
+        return view.place_id
 
     @commands.command("maps", aliases=["map"])
     async def cmd(self, ctx: Context, map_type: typing.Optional[maps.MAP_STYLES] = "roadmap", *, place: str):
@@ -214,45 +255,7 @@ Periods:
         async def func(ctx, map_type, place):
             maps = SlashMaps.initialize(ctx)
             
-            res = (await maps.autocomplete(place, text_only=True))[:25]
-            
-            options = []
-            
-            for place in res:
-                place_name = place["place"]
-                
-                if len(place_name) > 97:
-                    place_name = place_name[:97] + "..."
-                
-                options.append(discord.SelectOption(label=place_name, value=place["id"]))
-            
-            class View(discord.ui.View):
-                def __init__(self, cls):
-                    self.cls = cls
-                    self.place_id = None
-                    
-                    super().__init__(timeout=None)
-                    
-                async def interaction_check(self, interaction: discord.Interaction):
-                    if interaction.user != ctx.author:
-                        await interaction.response.send_message("You are not the author of this command!", ephemeral=True)
-                        return False
-                    
-                    return True
-                    
-                @discord.ui.select(placeholder="Select a place", options=options)
-                async def select(self, interaction, select):
-                    await interaction.message.delete()
-                    
-                    self.place_id = select.values[0]
-                    
-                    self.stop()
-            
-            view = View(self)
-            await ctx.send("Please select a place.", view=view)
-            await view.wait()
-            
-            place_id = view.place_id
+            place_id = await self.send_autocomplete(maps, ctx, place)
             
             return await self.func(ctx, place_id, map_type)
             
@@ -261,11 +264,21 @@ Periods:
     @app_commands.command(name="maps")
     @app_commands.describe(place_id="The place you want to search for", map_type="The map type to render the image as.")
     @app_commands.autocomplete(place_id=place_autocomplete)
-    @app_commands.rename(place_id="place")
-    async def slash_cmd(self, interaction: discord.Interaction, place_id: str, map_type: maps.MAP_STYLES = "roadmap"):
+    async def slash_cmd(self, interaction: discord.Interaction, place: str, map_type: maps.MAP_STYLES = "roadmap"):
         """Search for a place on Google Maps"""
         
-        return await self.handle(interaction, self.func, place_id, map_type)
+        async def func(ctx, place, map_type):
+            maps = SlashMaps.initialize(ctx)
+            
+            # Just to check if it's a valid place id or not (the user clicked one of the options or provided their own option).
+            try:
+                await maps.place_details(place, fields=['name'])
+            except KeyError:
+                place = await self.send_autocomplete(maps, ctx, place)
+                
+            return await self.func(ctx, place, map_type)
+        
+        return await self.handle(interaction, func, place, map_type)
 
 
 async def setup(bot):
