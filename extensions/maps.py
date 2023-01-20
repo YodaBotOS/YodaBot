@@ -4,7 +4,6 @@ import importlib
 import io
 import re
 import typing
-import datetime
 from typing import TYPE_CHECKING
 
 import discord
@@ -93,7 +92,6 @@ class Maps(commands.Cog):
             embed.add_field(name="Business Status:", value=f"`{business_status.lower().replace('_', ' ').title()}`", inline=False)
             
         timezone = None
-        timezone_timedelta = None
             
         if utc_offset := place.get("utc_offset"):
             sign = "+"
@@ -102,13 +100,8 @@ class Maps(commands.Cog):
                 utc_offset = abs(utc_offset)
                 sign = "-"
                 
-            thr = utc_offset // 60
-            tmin = utc_offset % 60
-            
-            timezone_timedelta = datetime.timedelta(hours=thr, minutes=tmin)
-            
-            thr = str(thr)
-            tmin = str(tmin)
+            thr = str(utc_offset // 60)
+            tmin = str(utc_offset % 60)
             
             if thr == "0" and tmin == "0":
                 timezone = "`UTC`"
@@ -144,35 +137,6 @@ class Maps(commands.Cog):
                 periods.append(f"\N{BULLET} {search(day)}")
                 
             periods = "\n".join(periods)
-            
-            open_soon = False
-            open_soon_at = None
-            
-            tz = datetime.timezone(timezone_timedelta)
-            time_now = datetime.datetime.now(tz)
-            
-            open_periods = opening_hours["periods"]
-            
-            for data in open_periods:
-                open = data["open"]
-                thr = int(open["time"][:2])
-                tmin = int(open["time"][2:])
-                
-                open_tz = time_now.replace(day=open["day"], hour=thr, minute=tmin, second=0, microsecond=0, tzinfo=tz)
-                
-                if open_tz <= time_now + datetime.timedelta(hours=1) and not opening_hours['open_now']:
-                    open_soon = True
-                    open_soon_at = open_tz
-                    
-            open_now = opening_hours['open_now']
-            
-            if open_now:
-                open_now = "`Open Now`"
-            else:
-                open_now = "`Closed`"
-                
-            if open_soon:
-                open_now = f"`Opening soon at {open_soon_at.strftime('%H:%M %p')}`"
                 
             embed.add_field(name="Opening Hours:", value=f"""
 Open Now: `{opening_hours['open_now']}` 

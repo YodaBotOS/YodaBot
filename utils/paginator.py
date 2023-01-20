@@ -23,7 +23,11 @@ class YodaMenuPages(ui.View, menus.MenuPages):
             page = await self._source.get_page(0)
             kwargs = await self._get_kwargs_from_page(page)
             
-            return await ctx.followup.send(**kwargs)
+            if ctx.response.is_done():
+                return await ctx.followup.send(**kwargs)
+            else:
+                await ctx.response.send_message(**kwargs)
+                return await ctx.original_response()
 
     async def start(self, ctx, *, channel=None, wait=False):
         await self._source._prepare_once()
