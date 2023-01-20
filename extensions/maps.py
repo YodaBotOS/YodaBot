@@ -264,7 +264,8 @@ Periods:
     @app_commands.command(name="maps")
     @app_commands.describe(place_id="The place you want to search for", map_type="The map type to render the image as.")
     @app_commands.autocomplete(place_id=place_autocomplete)
-    async def slash_cmd(self, interaction: discord.Interaction, place: str, map_type: maps.MAP_STYLES = "roadmap"):
+    @app_commands.rename(place_id="place")
+    async def slash_cmd(self, interaction: discord.Interaction, place_id: str, map_type: maps.MAP_STYLES = "roadmap"):
         """Search for a place on Google Maps"""
         
         async def func(ctx, place, map_type):
@@ -278,7 +279,7 @@ Periods:
                 
             return await self.func(ctx, place, map_type)
         
-        return await self.handle(interaction, func, place, map_type)
+        return await self.handle(interaction, func, place_id, map_type)
 
 
 async def setup(bot):
