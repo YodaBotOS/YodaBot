@@ -189,6 +189,8 @@ class GoogleMapsAPI:
     async def get_photo(self, photo_reference: str) -> bytes:
         params = self._get_params("get_photo", {
             "photo_reference": photo_reference,
+            "maxheight": 1600,
+            "maxwidth": 1600,
         }, with_language=False)
         
         async with self.session.get(self.GET_PHOTO_URL, params=params) as resp:
