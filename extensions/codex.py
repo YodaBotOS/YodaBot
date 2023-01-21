@@ -8,7 +8,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from core.context import Context
-from core.openai import codex, openai
+from core.openai import codex as core_codex, openai
 
 if TYPE_CHECKING:
     from core.bot import Bot
@@ -20,7 +20,7 @@ class Codex(commands.Cog):
         self.bot: Bot = bot
 
     async def cog_load(self):
-        importlib.reload(codex)
+        importlib.reload(core_codex)
         from core.openai import codex
 
         openai.api_key = self.bot.config.OPENAI_KEY
@@ -35,7 +35,7 @@ class Codex(commands.Cog):
     @app_commands.describe(language="The language to generate code in", prompt="The prompt to generate code from")
     @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(1, 20, commands.BucketType.user)
-    async def generate_code(self, ctx: Context, language: codex.SUPPORTED_LANGUAGES_LITERAL, *, prompt: str):
+    async def generate_code(self, ctx: Context, language: core_codex.SUPPORTED_LANGUAGES_LITERAL, *, prompt: str):
         """
         Generate code from a prompt.
 
