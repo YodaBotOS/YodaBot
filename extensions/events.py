@@ -59,7 +59,9 @@ class Events(commands.Cog):
                 return
 
         if isinstance(error, ignored):
-            raise error
+            print(f"Ignoring exception in command {ctx.command}:", file=sys.stderr)
+            traceback.print_exception(error)
+            return
 
         if send_msg:
             await ctx.send(f"Error: {error}")
