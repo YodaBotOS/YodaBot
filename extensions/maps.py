@@ -116,7 +116,7 @@ class Maps(commands.Cog):
 
                 timezone = f"`UTC{sign}{thr}:{tmin}`"
 
-            embed.add_field(name="UTC Offset:", value=timezone, inline=False)
+            embed.add_field(name="Timezone in that location:", value=timezone, inline=False)
 
         if opening_hours := place.get("opening_hours"):
             weekday_text = opening_hours["weekday_text"]
