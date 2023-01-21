@@ -59,7 +59,7 @@ class Events(commands.Cog):
                 return
 
         if isinstance(error, ignored):
-            return
+            raise error
 
         if send_msg:
             await ctx.send(f"Error: {error}")
