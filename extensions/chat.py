@@ -139,8 +139,7 @@ class Chat(commands.Cog):
             view = ChatView(openai=self.openai, user=ctx.author, ephemeral=True)
 
             await interaction.followup.send(
-                "YodaBot chat has started. click the `Stop` button to stop ",
-                "chatting.",
+                "YodaBot chat has started. click the `Stop` button to stop chatting.",
                 view=view,
             )
 
