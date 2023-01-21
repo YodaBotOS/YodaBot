@@ -55,7 +55,7 @@ class StudyNotes(commands.Cog):
 
         try:
             try:
-                notes = self.openai.study_notes(topic, amount=amount)
+                notes = self.openai.study_notes(topic, user=ctx.author.id, amount=amount)
             except Exception as e:
                 self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
                 return await ctx.send(f"Something went wrong, try again later.")
@@ -94,7 +94,7 @@ class StudyNotes(commands.Cog):
 
         try:
             try:
-                notes = self.openai.study_notes(topic, amount=amount)
+                notes = self.openai.study_notes(topic, user=interaction.user.id, amount=amount)
             except Exception as e:
                 self.bot.tree.on_error(interaction, (e, False))
                 return await interaction.followup.send(f"Something went wrong, try again later.", ephemeral=True)

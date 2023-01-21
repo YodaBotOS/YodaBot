@@ -3,15 +3,17 @@ import typing
 
 import openai
 
+from .codex import Codex
+
 
 class OpenAI:
     CHAT_START_STRING = """
 The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.
 
 Human: Hello, who are you?
-AI: I am a bot.
+AI: I am YodaBot.
 Human: Who are you?
-AI: I am a bot.
+AI: I am YodaBot.
 Human:"""
     CHAT_PARAMS = {
         "model": "text-davinci-003",
@@ -132,7 +134,7 @@ Human:"""
 
             text = chat_id["text"]
 
-            response = openai.Completion.create(prompt=text, **self.CHAT_PARAMS)
+            response = openai.Completion.create(prompt=text, user=str(user), **self.CHAT_PARAMS)
 
             if force_return_data:
                 return response
@@ -150,7 +152,7 @@ Human:"""
         else:
             start_string = self.CHAT_START_STRING.strip() + f"Human: {text}\n"
 
-            response = openai.Completion.create(prompt=text, **self.CHAT_PARAMS)
+            response = openai.Completion.create(prompt=text, user=str(user), **self.CHAT_PARAMS)
 
             ai_resps = response["choices"][0]["text"].strip()
 
@@ -160,10 +162,10 @@ Human:"""
             return ai_resps
 
     # --- Grammar Correction ---
-    def grammar_correction(self, text: str, *, raw: bool = False) -> str | typing.Any:
+    def grammar_correction(self, text: str, *, user: int, raw: bool = False) -> str | typing.Any:
         prompt = self.GRAMMAR_CORRECTION_START_STRING.format(text=text)
 
-        response = openai.Completion.create(prompt=prompt, **self.GRAMMAR_CORRECTION_PARAMS)
+        response = openai.Completion.create(prompt=prompt, user=str(user), **self.GRAMMAR_CORRECTION_PARAMS)
 
         if raw:
             return response
@@ -171,12 +173,12 @@ Human:"""
         return response["choices"][0]["text"].strip()
 
     # --- Study Notes ---
-    def study_notes(self, topic: str, *, amount: int = 5, raw: bool = False) -> str | typing.Any:
+    def study_notes(self, topic: str, *, user: int, amount: int = 5, raw: bool = False) -> str | typing.Any:
         amount = min(max(1, amount), 10)  # only numbers between 1-10 only allowed
 
         prompt = self.STUDY_NOTES_START_STRING.format(topic=topic, amount=amount)
 
-        response = openai.Completion.create(prompt=prompt, **self.STUDY_NOTES_PARAMS)
+        response = openai.Completion.create(prompt=prompt, user=str(user), **self.STUDY_NOTES_PARAMS)
 
         if raw:
             return response
@@ -186,3 +188,7 @@ Human:"""
         text = re.sub("\n+", "\n", text)
 
         return text
+
+    @property
+    def codex(self) -> Codex:
+        return Codex()

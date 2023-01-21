@@ -45,7 +45,7 @@ class GrammarCorrection(commands.Cog):
 
     async def grammar_correction(self, user, text: str) -> discord.Embed | tuple[str, Exception]:
         try:
-            new_text = self.openai.grammar_correction(text)
+            new_text = self.openai.grammar_correction(text, user=user.id)
         except Exception as e:
             return "SOMETHING_WENT_WRONG", e
 
