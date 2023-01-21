@@ -17,13 +17,12 @@ class ChatModal(discord.ui.Modal):
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
 
-        text = self.text.value
-        text = discord.utils.escape_markdown(text)
+        text_prompt = self.text.value
+        text_prompt = discord.utils.escape_markdown(text)
 
         try:
-            text = self.openai.chat(text, user=interaction.user.id, channel=interaction.channel.id)
+            text = self.openai.chat(text_prompt, user=interaction.user.id, channel=interaction.channel.id)
         except Exception as e:
-            print(e)
             return await interaction.followup.send(
                 f"Something went wrong. Try again later.",
                 view=self.view,
@@ -32,7 +31,8 @@ class ChatModal(discord.ui.Modal):
 
         embed = discord.Embed(color=interaction.client.color)
         embed.set_author(name="Chat:", icon_url=interaction.user.display_avatar.url)
-        embed.description = text
+        embed.add_field(name="Input/Prompt:", value=text_prompt)
+        embed.add_field(name="Output/Response:", value=text)
 
         if self.prev_msg:
             await self.prev_msg.edit(view=None)
