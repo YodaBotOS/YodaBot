@@ -52,13 +52,13 @@ class Events(commands.Cog):
         ignored = (commands.CommandNotFound,)
 
         if not force:
-            if ctx.command.has_error_handler():
+            if ctx.command and ctx.command.has_error_handler():
                 return
 
             if ctx.cog and ctx.cog.has_error_handler():
                 return
 
-        if isinstance(error, ignored):
+        if error in ignored:
             raise error
 
         if send_msg:
