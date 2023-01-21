@@ -154,11 +154,13 @@ class YodaMenuPages(ui.View, menus.MenuPages):
                     page = int(self.page_no.value)
                     await self.cls.show_page(page - 1)
                 except ValueError:
-                    await interaction.send_message(
+                    await interaction.response.send_message(
                         f"Invalid page number. Try again.\nHint: Pick a page number from 1-{self.source.get_max_pages()}",
                         ephemeral=True,
                     )
                     return
+                else:
+                    await interaction.response.send_message(f"Sure! Showing page {page}.", ephemeral=True)
 
                 await self.cls.update_buttons()
 
