@@ -189,7 +189,7 @@ class GoogleMapsAPI:
             "maptype": map_type,
             "zoom": zoom,
             "size": f"{size[0]}x{size[1]}",
-            "map_id": self.MAP_THEMES[map_theme],
+            "map_id": self.MAP_IDS[map_theme],
         }
         params.update(kwargs)
         params = self._get_params("render", params)
