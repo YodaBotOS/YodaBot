@@ -24,8 +24,9 @@ class Context(commands.Context):
         embeds: Optional[Sequence[discord.Embed]] = None,
         **kwargs,
     ):
+        root_parent = self.command.root_parent if self.command else None
         if (
-            self.command.root_parent != self.bot.get_command("jishaku")
+            root_parent != self.bot.get_command("jishaku")
             and kwargs.pop("embed_content", True)
             and not embed
             and not embeds
