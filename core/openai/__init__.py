@@ -23,7 +23,7 @@ Human:"""
         "stop": [" Human:", " AI:", "Human:", "AI:"],
     }
 
-    GRAMMAR_CORRECTION_START_STRING = "Correct this to standard English:\n\n"
+    GRAMMAR_CORRECTION_START_STRING = "Correct this to standard English:\n\n{text}\n\n"
     GRAMMAR_CORRECTION_PARAMS = {
         "model": "text-davinci-003",
         "temperature": 0,
@@ -161,7 +161,7 @@ Human:"""
 
     # --- Grammar Correction ---
     def grammar_correction(self, text: str, *, raw: bool = False) -> str | typing.Any:
-        prompt = self.GRAMMAR_CORRECTION_START_STRING + text
+        prompt = self.GRAMMAR_CORRECTION_START_STRING.format(text=text)
 
         response = openai.Completion.create(prompt=prompt, **self.GRAMMAR_CORRECTION_PARAMS)
 
