@@ -9,6 +9,7 @@ from discord.ext import commands
 from yarl import URL
 
 MAP_STYLES = typing.Literal["roadmap", "satellite", "terrain", "hybrid"]
+MAP_THEMES = typing.Literal["standard", "light", "atlas", "dark", "dark-orange"]
 
 
 class GoogleMapsAPI:
@@ -19,6 +20,14 @@ class GoogleMapsAPI:
     PLACE_DETAILS_URL = BASE_URL / "place/details/json"
     RENDER_MAPS_URL = BASE_URL / "staticmap"
     GET_PHOTO_URL = BASE_URL / "place/photo"
+    
+    MAP_IDS = {
+        "standard": "23c821bf646d4f91",
+        "light": "b1c242e5420989a",
+        "atlas": "da6df2329e2c5290",
+        "dark": "3ea09b97b8008fcc",
+        "dark-orange": "aa5e322f8a9033f5",
+    }
 
     ZOOM_LEVELS = {
         0: {"max-lng": 360.0, "max-lat": 170.0},
@@ -154,6 +163,7 @@ class GoogleMapsAPI:
         *,
         size: tuple[int, int] = (640, 640),
         map_type: MAP_STYLES = "roadmap",
+        map_theme: MAP_THEMES = "standard",
         geometry: dict = None,
         **kwargs,
     ) -> bytes:
@@ -179,6 +189,7 @@ class GoogleMapsAPI:
             "maptype": map_type,
             "zoom": zoom,
             "size": f"{size[0]}x{size[1]}",
+            "map_id": self.MAP_THEMES[map_theme],
         }
         params.update(kwargs)
         params = self._get_params("render", params)
@@ -292,11 +303,12 @@ class SlashMaps:
         place_id: str,
         *,
         size: tuple[int, int] = (640, 640),
-        map_type: typing.Literal["roadmap", "satellite", "terrain", "hybrid"] = "roadmap",
+        map_type: MAP_STYLES = "roadmap",
+        map_theme: MAP_THEMES = "standard",
         geometry: dict = None,
         **kwargs,
     ):
-        return await self.maps_obj.render(place_id, size=size, map_type=map_type, geometry=geometry, **kwargs)
+        return await self.maps_obj.render(place_id, size=size, map_type=map_type, map_theme=map_theme, geometry=geometry, **kwargs)
     
     async def get_photo(self, photo_reference: str) -> bytes:
         return await self.maps_obj.get_photo(photo_reference)

@@ -172,7 +172,7 @@ Periods:
         finally:
             await self.MAX_CONCURRENCY.release(ctx)
             
-    async def func(self, ctx, place_id, map_type):
+    async def func(self, ctx, place_id, map_type, map_theme):
         maps = SlashMaps.initialize(ctx)
 
         place = await maps.place_details(
@@ -181,7 +181,7 @@ Periods:
             fields=self.NECESSARY_FIELDS,
         )
 
-        img = await maps.render(place_id, map_type=map_type, geometry=place["geometry"])
+        img = await maps.render(place_id, map_type=map_type, map_theme=map_theme, geometry=place["geometry"])
         f = discord.File(io.BytesIO(img), filename="map.png")
 
         maps.delete_session()
@@ -231,44 +231,46 @@ Periods:
                 self.stop()
         
         view = View(self)
-        await ctx.send("Please select a place.", view=view)
+        await ctx.send("Please select a place.", view=view, embed_content=False)
         await view.wait()
         
         return view.place_id
 
     @commands.command("maps", aliases=["map"])
-    async def cmd(self, ctx: Context, map_type: typing.Optional[maps.MAP_STYLES] = "roadmap", *, place: str):
+    async def cmd(self, ctx: Context, map_type: typing.Optional[maps.MAP_STYLES] = "roadmap", map_theme: typing.Optional[maps.MAP_THEMES] = "standard", *, place: str):
         """
         Search for a place on Google Maps
         
         Place is the place you want to search for.
         
         Map Types can be either `roadmap`, `satellite`, `hybrid`, `terrain`. Defaults to `roadmap`.
+        Map Themes can be either `standard`, `light`, `atlas`, `dark`, `dark-orange`. Defaults to `standard`.
         
-        Usage: `yoda maps [map type] <place>`
+        Usage: `yoda maps [map type] [map_theme] <place>`
         
         - `yoda maps Eiffel Tower`
         - `yoda maps satellite Great Wall of China`
         - `yoda maps terrain London`
+        - `yoda maps hybrid dark-orange New York`
+        - `yoda maps light Paris`
         """
 
-        async def func(ctx, map_type, place):
+        async def func(ctx, map_type, map_theme, place):
             maps = SlashMaps.initialize(ctx)
             
             place_id = await self.send_autocomplete(maps, ctx, place)
             
-            return await self.func(ctx, place_id, map_type)
+            return await self.func(ctx, place_id, map_type, map_theme)
             
-        return await self.handle(ctx, func, map_type, place)
+        return await self.handle(ctx, func, map_type, map_theme, place)
         
     @app_commands.command(name="maps")
-    @app_commands.describe(place_id="The place you want to search for", map_type="The map type to render the image as.")
-    @app_commands.autocomplete(place_id=place_autocomplete)
-    @app_commands.rename(place_id="place")
-    async def slash_cmd(self, interaction: discord.Interaction, place_id: str, map_type: maps.MAP_STYLES = "roadmap"):
+    @app_commands.describe(place="The place you want to search for", map_type="The map type to render the image as.", map_theme="The map theme to render the image as.")
+    @app_commands.autocomplete(place=place_autocomplete)
+    async def slash_cmd(self, interaction: discord.Interaction, place: str, map_type: maps.MAP_STYLES = "roadmap", map_theme: maps.MAP_THEMES = "standard"):
         """Search for a place on Google Maps"""
         
-        async def func(ctx, place, map_type):
+        async def func(ctx, place, map_type, map_theme):
             maps = SlashMaps.initialize(ctx)
             
             # Just to check if it's a valid place id or not (the user clicked one of the options or provided their own option).
@@ -277,9 +279,9 @@ Periods:
             except KeyError:
                 place = await self.send_autocomplete(maps, ctx, place)
                 
-            return await self.func(ctx, place, map_type)
+            return await self.func(ctx, place, map_type, map_theme)
         
-        return await self.handle(interaction, func, place_id, map_type)
+        return await self.handle(interaction, func, place, map_type, map_theme)
 
 
 async def setup(bot):
