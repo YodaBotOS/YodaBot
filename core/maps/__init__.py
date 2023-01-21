@@ -20,7 +20,7 @@ class GoogleMapsAPI:
     PLACE_DETAILS_URL = BASE_URL / "place/details/json"
     RENDER_MAPS_URL = BASE_URL / "staticmap"
     GET_PHOTO_URL = BASE_URL / "place/photo"
-    
+
     MAP_IDS = {
         "standard": "23c821bf646d4f91",
         "light": "b1c242e5420989a",
@@ -48,9 +48,9 @@ class GoogleMapsAPI:
         15: {"max-lng": 0.17578125, "max-lat": 0.0830078125},
         16: {"max-lng": 0.087890625, "max-lat": 0.0415039063},
         17: {"max-lng": 0.0439453125, "max-lat": 0.0207519531},
-        18: {'max-lng': 0.0219726563, 'max-lat': 0.0103759766},
-        19: {'max-lng': 0.0109863281, 'max-lat': 0.0051879883},
-        20: {'max-lng': 0.0054931641, 'max-lat': 0.0025939941},
+        18: {"max-lng": 0.0219726563, "max-lat": 0.0103759766},
+        19: {"max-lng": 0.0109863281, "max-lat": 0.0051879883},
+        20: {"max-lng": 0.0054931641, "max-lat": 0.0025939941},
     }
 
     def __init__(self, api_key: str, session: aiohttp.ClientSession):
@@ -61,10 +61,10 @@ class GoogleMapsAPI:
         params = {
             "key": self.api_key,
         }
-        
+
         if with_language:
             params["language"] = self.LANGUAGE
-            
+
         params.update(data)
 
         return params
@@ -143,7 +143,7 @@ class GoogleMapsAPI:
         for zoom, bounds in self.ZOOM_LEVELS.items():
             if zoom >= best_zoom:
                 break
-            
+
             if (
                 bounds["max-lat"] >= lat > self.ZOOM_LEVELS[zoom + 1]["max-lat"]
                 and lng <= bounds["max-lng"]
@@ -196,14 +196,18 @@ class GoogleMapsAPI:
 
         async with self.session.get(self.RENDER_MAPS_URL, params=params) as resp:
             return await resp.read()
-        
+
     async def get_photo(self, photo_reference: str) -> bytes:
-        params = self._get_params("get_photo", {
-            "photo_reference": photo_reference,
-            "maxheight": 1600,
-            "maxwidth": 1600,
-        }, with_language=False)
-        
+        params = self._get_params(
+            "get_photo",
+            {
+                "photo_reference": photo_reference,
+                "maxheight": 1600,
+                "maxwidth": 1600,
+            },
+            with_language=False,
+        )
+
         async with self.session.get(self.GET_PHOTO_URL, params=params) as resp:
             return await resp.read()
 
@@ -276,16 +280,18 @@ class SlashMaps:
 
         if limit is not None:
             place = place[:limit]
-            
+
         choices = []
-        
+
         for res in place:
             place_name = res["place"]
-                
+
             if len(place_name) > 97:
                 place_name = place_name[:97] + "..."
-                
-            choices.append(app_commands.Choice(name=place_name, value=res["id"]))  # returns place id (str) as the argument value
+
+            choices.append(
+                app_commands.Choice(name=place_name, value=res["id"])
+            )  # returns place id (str) as the argument value
 
         return choices
 
@@ -308,7 +314,9 @@ class SlashMaps:
         geometry: dict = None,
         **kwargs,
     ):
-        return await self.maps_obj.render(place_id, size=size, map_type=map_type, map_theme=map_theme, geometry=geometry, **kwargs)
-    
+        return await self.maps_obj.render(
+            place_id, size=size, map_type=map_type, map_theme=map_theme, geometry=geometry, **kwargs
+        )
+
     async def get_photo(self, photo_reference: str) -> bytes:
         return await self.maps_obj.get_photo(photo_reference)

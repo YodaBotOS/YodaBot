@@ -33,7 +33,7 @@ class CommandTree(app_commands.CommandTree):
         #     await interaction.followup.send(f"Error, please report: {error}", ephemeral=True)
 
         traceback.print_exception(error)
-        
+
         if interaction.command:
             command_name = interaction.command.name
         else:

@@ -132,7 +132,7 @@ class Music(commands.Cog):
         """
         Predict the genre of a song.
         """
-        
+
         ctx = await Context.from_interaction(interaction)
         await self.PREDICT_GENRE_MAX_CONCURRENCY.acquire(ctx.message)
 

@@ -1,6 +1,6 @@
 import discord
 from discord import ui
-from discord.ext import menus, commands
+from discord.ext import commands, menus
 
 from core.context import Context
 
@@ -15,14 +15,14 @@ class YodaMenuPages(ui.View, menus.MenuPages):
         self.delete_message_after = delete_message_after
         self.allow_other_users = allow_other_users
         self.ephemeral = ephemeral
-        
+
     async def send_initial_message(self, ctx, channel):
         if isinstance(ctx, commands.Context):
             return await super().send_initial_message(ctx, channel)
         else:
             page = await self._source.get_page(0)
             kwargs = await self._get_kwargs_from_page(page)
-            
+
             if ctx.response.is_done():
                 return await ctx.followup.send(**kwargs)
             else:
@@ -47,7 +47,7 @@ class YodaMenuPages(ui.View, menus.MenuPages):
 
     async def interaction_check(self, interaction):
         """Only allow the author that invoke the command to be able to use the interaction"""
-        
+
         original = self.ctx.author if isinstance(self.ctx, commands.Context) else self.ctx.user
 
         if not self.allow_other_users and interaction.user != original:
@@ -146,15 +146,18 @@ class YodaMenuPages(ui.View, menus.MenuPages):
             def __init__(self, cls):
                 self.cls = cls
                 super().__init__(timeout=None)
-                
+
             page_no = ui.TextInput(label="Page Number", placeholder="Enter page number")
-            
+
             async def on_submit(self, interaction: discord.Interaction) -> None:
                 try:
                     page = int(self.page_no.value)
                     await self.cls.show_page(page - 1)
                 except ValueError:
-                    await interaction.send_message(f"Invalid page number. Try again.\nHint: Pick a page number from 1-{self.source.get_max_pages()}", ephemeral=True)
+                    await interaction.send_message(
+                        f"Invalid page number. Try again.\nHint: Pick a page number from 1-{self.source.get_max_pages()}",
+                        ephemeral=True,
+                    )
                     return
 
                 await self.cls.update_buttons()
