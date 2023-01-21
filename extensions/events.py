@@ -58,8 +58,8 @@ class Events(commands.Cog):
             if ctx.cog and ctx.cog.has_error_handler():
                 return
 
-        if error in ignored:
-            raise error
+        if isinstance(error, ignored):
+            return
 
         if send_msg:
             await ctx.send(f"Error: {error}")
