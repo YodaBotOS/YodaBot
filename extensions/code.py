@@ -124,12 +124,16 @@ class CodeUtils(commands.Cog):
 
             embed = discord.Embed(color=self.bot.color)
             embed.title = "Code Explaination Result:"
+            
+            if len(code) > 2000:
+                paste = await self.bot.mystbin.create_paste(filename=f"code.{self.codex.FILE[language]}", content=code)
+                embed.description = f"**Code: ({lang})** {paste} (Too long to display)\n\n"
+            else:
+                embed.description = f"**Code: ({lang})** ```{lang.lower()}\n{code}\n```\n\n"
 
-            embed.description = f"**Code: ({lang})** ```{lang.lower()}\n{code}\n```\n\n"
-
-            if len(explain) > 3000:
+            if len(explain) > 2000:
                 paste = await self.bot.mystbin.create_paste(filename=f"explaination.txt", content=explain)
-                embed.description += f"**Result:** {paste} (code is too long to display)"
+                embed.description += f"**Result:** {paste} (Too long to display)"
             else:
                 embed.description += f"**Result:**\n{explain}"
 
