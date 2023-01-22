@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Optional
 import discord
 from discord import app_commands
 from discord.ext import commands
-from guesslang.guess import Guess
+# from guesslang.guess import Guess
 
 from core.context import Context
 from core.openai import codex as core_codex
@@ -32,12 +32,12 @@ class CodeUtils(commands.Cog):
 
         self.codex: CodexClass = codex.Codex()
         self.bot.codex = self.codex
-        self.guesslang = Guess()
-        self.bot.guesslang = self.guesslang
+        # self.guesslang = Guess()
+        # self.bot.guesslang = self.guesslang
 
     async def cog_unload(self):
         del self.openai
-        del self.guesslang
+        # del self.guesslang
 
     @commands.hybrid_command("generate-code", aliases=["generatecode", "gencode"])
     @app_commands.describe(language="The language to generate code in", prompt="The prompt to generate code from")
@@ -137,57 +137,57 @@ class CodeUtils(commands.Cog):
 
             return await ctx.send(embed=embed)
 
-    def predict(self, code):
-        probs = self.guesslang.probabilities(code)
-        probs.sort(key=lambda i: i[1], reverse=True)
-        probs = probs[:5]
+    # def predict(self, code):
+    #     probs = self.guesslang.probabilities(code)
+    #     probs.sort(key=lambda i: i[1], reverse=True)
+    #     probs = probs[:5]
 
-        sure_lang = self.guesslang.language_name(code) or probs[0][0]
+    #     sure_lang = self.guesslang.language_name(code) or probs[0][0]
 
-        return probs, sure_lang
+    #     return probs, sure_lang
 
-    @commands.command("guess-language", aliases=["guesslanguage", "guesslang", "glang"])
-    @commands.max_concurrency(1, commands.BucketType.user)
-    @commands.cooldown(1, 20, commands.BucketType.user)
-    async def explain_code(
-        self,
-        ctx: Context,
-        *,
-        code: CodeblockConverter,
-    ):
-        """
-        Guesses the language of the code.
+    # @commands.command("guess-language", aliases=["guesslanguage", "guesslang", "glang"])
+    # @commands.max_concurrency(1, commands.BucketType.user)
+    # @commands.cooldown(1, 20, commands.BucketType.user)
+    # async def explain_code(
+    #     self,
+    #     ctx: Context,
+    #     *,
+    #     code: CodeblockConverter,
+    # ):
+    #     """
+    #     Guesses the language of the code.
         
-        You can also provide a codeblock or a raw text. Note that the language of the codeblock will be ignored (not used).
+    #     You can also provide a codeblock or a raw text. Note that the language of the codeblock will be ignored (not used).
         
-        Usage: `yoda guess-language <code>`
+    #     Usage: `yoda guess-language <code>`
         
-        - `yoda guess-language print("Hello, World!")`
-        - `yoda guess-language console.log("Hello, World!")`
-        """
+    #     - `yoda guess-language print("Hello, World!")`
+    #     - `yoda guess-language console.log("Hello, World!")`
+    #     """
         
-        code = code[1]
+    #     code = code[1]
 
-        async with ctx.typing():
-            with ProcessPoolExecutor() as pool:
-                result = await self.bot.loop.run_in_executor(pool, functools.partial(self.predict, code))
+    #     async with ctx.typing():
+    #         with ProcessPoolExecutor() as pool:
+    #             result = await self.bot.loop.run_in_executor(pool, functools.partial(self.predict, code))
 
-            probs, sure_lang = result
+    #         probs, sure_lang = result
 
-            embed = discord.Embed(color=self.bot.color)
-            embed.title = "Code Language Guessing Result:"
+    #         embed = discord.Embed(color=self.bot.color)
+    #         embed.title = "Code Language Guessing Result:"
 
-            entry = []
+    #         entry = []
 
-            for lang, probability in probs:
-                spaces = 6 - len(lang)
-                entry.append(f"{lang}{' '*spaces}: {probability * 100}%")
+    #         for lang, probability in probs:
+    #             spaces = 6 - len(lang)
+    #             entry.append(f"{lang}{' '*spaces}: {probability * 100}%")
 
-            embed.description = f"**Language:** `{sure_lang}`\n\n**Probability:** ```yml\n" + "\n".join(entry) + "\n```"
+    #         embed.description = f"**Language:** `{sure_lang}`\n\n**Probability:** ```yml\n" + "\n".join(entry) + "\n```"
 
-            embed.set_footer(text="*Might not be accurate.")
+    #         embed.set_footer(text="*Might not be accurate.")
 
-            await ctx.send(embed=embed)
+    #         await ctx.send(embed=embed)
 
 
 async def setup(bot):
