@@ -129,9 +129,9 @@ class CodeUtils(commands.Cog):
 
             if len(explain) > 3000:
                 paste = await self.bot.mystbin.create_paste(filename=f"explaination.txt", content=explain)
-                embed.description += f"Result: {paste} (code is too long to display)"
+                embed.description += f"**Result:** {paste} (code is too long to display)"
             else:
-                embed.description += f"Result:\n{explain}"
+                embed.description += f"**Result:**\n{explain}"
 
             embed.set_footer(text="*Might not be accurate.")
 
