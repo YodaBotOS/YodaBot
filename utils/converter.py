@@ -4,6 +4,7 @@ import unicodedata
 import discord
 from discord.ext import commands
 from discord.ext.commands import Converter
+from jishaku.codeblocks import codeblock_converter
 
 from core.context import Context
 from core.twemoji_parser import TwemojiParser
@@ -149,3 +150,11 @@ class SizeConverter(Converter):
             return int(width), int(height)
         except:
             raise commands.BadArgument("Invalid size provided.")
+
+
+class CodeblockConverter(Converter):
+    async def convert(self, ctx: Context, argument: str) -> tuple[str]:
+        codeblock = codeblock_converter(argument)
+        
+        return codeblock.language, codeblock.content
+

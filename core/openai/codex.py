@@ -21,7 +21,7 @@ class Codex:
         "TypeScript": "//",
     }
 
-    CODEBLOCK = {
+    FILE = {
         "Bash": "bash",
         "C#": "cs",
         "Go": "go",
@@ -32,6 +32,19 @@ class Codex:
         "Rust": "rs",
         "SQL": "sql",
         "TypeScript": "ts",
+    }
+    
+    LOWERED_CHARS = {
+        "bash": "Bash",
+        "c#": "C#",
+        "go": "Go",
+        "java": "Java",
+        "javascript": "JavaScript",
+        "python": "Python",
+        "ruby": "Ruby",
+        "rust": "Rust",
+        "sql": "SQL",
+        "typescript": "TypeScript",
     }
 
     MODEL = "code-davinci-002"
