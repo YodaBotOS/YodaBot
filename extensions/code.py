@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import importlib
 import functools
-from typing import TYPE_CHECKING, Optional
+import importlib
 from concurrent.futures import ProcessPoolExecutor
+from typing import TYPE_CHECKING, Optional
 
 import discord
-from guesslang.guess import Guess
 from discord import app_commands
 from discord.ext import commands
+from guesslang.guess import Guess
 
 from core.context import Context
 from core.openai import codex as core_codex
@@ -71,7 +71,7 @@ class CodeUtils(commands.Cog):
                 embed.description += f"Result: {paste} (code is too long to display)"
             else:
                 embed.description += f"Result: ```{self.codex.FILE[language]}\n{completion}\n```"
-                
+
             embed.set_footer(text="*Might not be accurate.")
 
             return await ctx.send(embed=embed)
@@ -132,20 +132,20 @@ class CodeUtils(commands.Cog):
                 embed.description += f"Result: {paste} (code is too long to display)"
             else:
                 embed.description += f"Result:\n{explain}"
-                
+
             embed.set_footer(text="*Might not be accurate.")
 
             return await ctx.send(embed=embed)
-        
+
     def predict(self, code):
         probs = self.guesslang.probabilities(code)
         probs.sort(key=lambda i: i[1], reverse=True)
         probs = probs[:5]
-        
+
         sure_lang = self.guesslang.language_name(code) or probs[0][0]
-        
+
         return probs, sure_lang
-        
+
     @commands.command("guess-language", aliases=["guesslanguage", "guesslang", "glang"])
     @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(1, 20, commands.BucketType.user)
@@ -155,27 +155,38 @@ class CodeUtils(commands.Cog):
         *,
         code: CodeblockConverter,
     ):
-        code = code[1]
+        """
+        Guesses the language of the code.
         
+        You can also provide a codeblock or a raw text. Note that the language of the codeblock will be ignored (not used).
+        
+        Usage: `yoda guess-language <code>`
+        
+        - `yoda guess-language print("Hello, World!")`
+        - `yoda guess-language console.log("Hello, World!")`
+        """
+        
+        code = code[1]
+
         async with ctx.typing():
             with ProcessPoolExecutor() as pool:
                 result = await self.bot.loop.run_in_executor(pool, functools.partial(self.predict, code))
-                
+
             probs, sure_lang = result
-            
+
             embed = discord.Embed(color=self.bot.color)
             embed.title = "Code Language Guessing Result:"
-            
+
             entry = []
-            
+
             for lang, probability in probs:
                 spaces = 6 - len(lang)
                 entry.append(f"{lang}{' '*spaces}: {probability * 100}%")
-                
-            embed.description = f"**Language:** {sure_lang}\n\n**Probability:** ```yml\n" + "\n".join(entry) + "\n```"
-            
+
+            embed.description = f"**Language:** `{sure_lang}`\n\n**Probability:** ```yml\n" + "\n".join(entry) + "\n```"
+
             embed.set_footer(text="*Might not be accurate.")
-            
+
             await ctx.send(embed=embed)
 
 
