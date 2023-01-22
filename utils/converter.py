@@ -155,6 +155,5 @@ class SizeConverter(Converter):
 class CodeblockConverter(Converter):
     async def convert(self, ctx: Context, argument: str) -> tuple[str]:
         codeblock = codeblock_converter(argument)
-        
-        return codeblock.language, codeblock.content
 
+        return codeblock.language, codeblock.content

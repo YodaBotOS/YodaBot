@@ -33,7 +33,7 @@ class Codex:
         "SQL": "sql",
         "TypeScript": "ts",
     }
-    
+
     LOWERED_CHARS = {
         "bash": "Bash",
         "c#": "C#",
