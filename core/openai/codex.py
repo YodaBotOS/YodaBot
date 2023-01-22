@@ -112,6 +112,8 @@ class Codex:
 
         for choice in response["choices"]:
             text = choice["text"].strip()
+            
+            print(text)
 
             c = choice.copy()
 
@@ -123,6 +125,8 @@ class Codex:
                     prompt=passed_prompt + text,
                     user=str(user),
                 )
+                
+                print(response["choices"][0]["text"])
 
                 c = response["choices"][0]
 
