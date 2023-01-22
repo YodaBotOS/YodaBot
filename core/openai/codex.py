@@ -52,10 +52,10 @@ class Codex:
     COMPLETION_KWARGS = {
         "model": MODEL,
         "temperature": 0,
-        "max_tokens": 350,
+        "max_tokens": 512,
         "top_p": 1,
-        "frequency_penalty": 0.0,
-        "presence_penalty": 0.0,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0.3,
     }
 
     EXPLAIN_KWARGS = {
@@ -115,13 +115,11 @@ class Codex:
 
             c = choice.copy()
 
-            while c["finish_reason"] != "stop":
+            while c["finish_reason"] == "length":
                 await asyncio.sleep(1)
 
-                k = Codex.COMPLETION_KWARGS.copy()
-
                 response = openai.Completion.create(
-                    **k,
+                    **Codex.COMPLETION_KWARGS,
                     prompt=passed_prompt + text,
                     user=str(user),
                 )
