@@ -68,9 +68,9 @@ class CodeUtils(commands.Cog):
                 paste = await self.bot.mystbin.create_paste(
                     filename=f"code.{self.codex.FILE[language]}", content=completion
                 )
-                embed.description += f"Result: {paste} (Too long to display)"
+                embed.description += f"**Result:** {paste} (Too long to display)"
             else:
-                embed.description += f"Result: ```{self.codex.FILE[language]}\n{completion}\n```"
+                embed.description += f"**Result:** ```{self.codex.FILE[language]}\n{completion}\n```"
 
             embed.set_footer(text="*Might not be accurate.")
 
