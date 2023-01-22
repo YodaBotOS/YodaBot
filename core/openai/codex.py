@@ -116,10 +116,9 @@ class Codex:
             c = choice.copy()
 
             while c["finish_reason"] != "stop":
-                asyncio.sleep(1)
+                await asyncio.sleep(1)
 
                 k = Codex.COMPLETION_KWARGS.copy()
-                k.pop("n")
 
                 response = openai.Completion.create(
                     **k,
@@ -163,7 +162,7 @@ class Codex:
         c = choice.copy()
 
         while c["finish_reason"] == "length":
-            asyncio.sleep(1)
+            await asyncio.sleep(1)
 
             response = openai.Completion.create(
                 **Codex.EXPLAIN_KWARGS,
