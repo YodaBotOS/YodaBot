@@ -1,5 +1,6 @@
 git+https://github.com/Rapptz/discord-ext-menus
 git+https://github.com/oliver-ni/discord-ext-menus-views
+git+https://github.com/YodaBotOS/guesslang.git
 jishaku
 discord.py
 selenium

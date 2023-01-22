@@ -34,7 +34,7 @@ EXTENSIONS = [
     "extensions.events",
     "extensions.utilities",
     "extensions.maps",
-    "extensions.codex",
+    "extensions.code",
 ]
 
 

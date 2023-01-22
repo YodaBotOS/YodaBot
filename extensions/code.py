@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import importlib
+import functools
 from typing import TYPE_CHECKING, Optional
+from concurrent.futures import ProcessPoolExecutor
 
 import discord
+from guesslang.guess import Guess
 from discord import app_commands
 from discord.ext import commands
 
@@ -17,7 +20,7 @@ if TYPE_CHECKING:
     from core.openai import Codex as CodexClass
 
 
-class Codex(commands.Cog):
+class CodeUtils(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot: Bot = bot
 
@@ -29,9 +32,12 @@ class Codex(commands.Cog):
 
         self.codex: CodexClass = codex.Codex()
         self.bot.codex = self.codex
+        self.guesslang = Guess()
+        self.bot.guesslang = self.guesslang
 
     async def cog_unload(self):
         del self.openai
+        del self.guesslang
 
     @commands.hybrid_command("generate-code", aliases=["generatecode", "gencode"])
     @app_commands.describe(language="The language to generate code in", prompt="The prompt to generate code from")
@@ -65,10 +71,12 @@ class Codex(commands.Cog):
                 embed.description += f"Result: {paste} (code is too long to display)"
             else:
                 embed.description += f"Result: ```{self.codex.FILE[language]}\n{completion}\n```"
+                
+            embed.set_footer(text="*Might not be accurate.")
 
             return await ctx.send(embed=embed)
 
-    # If this would be a slash command
+    # If this would be a slash command, it would be hard to insert the code.
     @commands.command("explain-code", aliases=["explaincode", "excode"])
     @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(1, 20, commands.BucketType.user)
@@ -124,9 +132,52 @@ class Codex(commands.Cog):
                 embed.description += f"Result: {paste} (code is too long to display)"
             else:
                 embed.description += f"Result:\n{explain}"
+                
+            embed.set_footer(text="*Might not be accurate.")
 
             return await ctx.send(embed=embed)
+        
+    def predict(self, code):
+        probs = self.guesslang.probabilities(code)
+        probs.sort(key=lambda i: i[1], reverse=True)
+        probs = probs[:5]
+        
+        sure_lang = self.guesslang.language_name(code) or probs[0][0]
+        
+        return probs, sure_lang
+        
+    @commands.command("guess-language", aliases=["guesslanguage", "guesslang", "glang"])
+    @commands.max_concurrency(1, commands.BucketType.user)
+    @commands.cooldown(1, 20, commands.BucketType.user)
+    async def explain_code(
+        self,
+        ctx: Context,
+        *,
+        code: CodeblockConverter,
+    ):
+        code = code[1]
+        
+        async with ctx.typing():
+            with ProcessPoolExecutor() as pool:
+                result = await self.bot.loop.run_in_executor(pool, functools.partial(self.predict, code))
+                
+            probs, sure_lang = result
+            
+            embed = discord.Embed(color=self.bot.color)
+            embed.title = "Code Language Guessing Result:"
+            
+            entry = []
+            
+            for lang, probability in probs:
+                spaces = 6 - len(lang)
+                entry.append(f"{lang}{' '*spaces}: {probability * 100}%")
+                
+            embed.description = f"**Language:** {sure_lang}\n\n**Probability:** ```yml\n" + "\n".join(entry) + "\n```"
+            
+            embed.set_footer(text="*Might not be accurate.")
+            
+            await ctx.send(embed=embed)
 
 
 async def setup(bot):
-    await bot.add_cog(Codex(bot))
+    await bot.add_cog(CodeUtils(bot))
