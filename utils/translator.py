@@ -126,7 +126,7 @@ class Translator(app_commands.Translator):
         if context.location is app_commands.TranslationContextLocation.choice_name:
             return None
         
-        trans = self.search_persistent_cache(target, message)
+        trans = await self.search_persistent_cache(target, message)
         
         if trans:
             return trans
@@ -143,6 +143,6 @@ class Translator(app_commands.Translator):
         elif context.location is app_commands.TranslationContextLocation.parameter_name:
             res = res.replace(' ', '_')
         
-        self.add_to_persistent_cache(target, message, res)
+        await self.add_to_persistent_cache(target, message, res)
 
         return res
