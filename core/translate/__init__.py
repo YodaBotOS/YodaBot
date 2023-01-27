@@ -85,8 +85,6 @@ class Translate:
 
         lang_names = self.get_all_languages(lowered=True)
 
-        # print(lang_names)
-
         if use_difflib:
             res = find_one_difflib(query.lower(), lang_names)
         else:
@@ -134,8 +132,6 @@ class Translate:
             resp.raise_for_status()
 
             js = await resp.json()
-            
-            print(js)
 
             if raw:
                 return js
@@ -252,7 +248,6 @@ class Translate:
         data = json.dumps(data)
 
         async with self.session.post(self.url + ":translateText", data=data, headers=headers) as resp:
-            print(await resp.text())
             resp.raise_for_status()
 
             js = await resp.json()

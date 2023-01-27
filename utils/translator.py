@@ -52,7 +52,6 @@ class AppCommandsTranslator(Translate):
     }
     
     def get_language(self, query: str) -> dict[str, str] | None:
-        print(query)
         if code := self.LOCALES.get(query):
             return {'languageCode': code}
         elif query in self.LOCALES.values():
