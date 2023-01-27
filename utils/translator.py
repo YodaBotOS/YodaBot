@@ -1,6 +1,7 @@
 import os
 import typing
 import json
+import asyncio
 
 import aiohttp
 import discord
@@ -64,6 +65,7 @@ class Translator(app_commands.Translator):
         self.bot = bot
         self.session: aiohttp.ClientSession = None
         self._translate: Translate = None
+        self.sem = asyncio.Semaphore(1)
 
     async def load(self):
         self.session = self.bot.session
@@ -72,45 +74,45 @@ class Translator(app_commands.Translator):
     async def unload(self):
         await self.session.close()
     
-    @staticmethod  
-    def add_to_persistent_cache(target: str, message: str, trans: str):
-        if not os.path.exists('data'):
-            os.mkdir('data')
-            
-        if not os.path.exists('data/translate'):
-            os.mkdir('data/translate')
-            
-        if not os.path.exists(f'data/translate/translated.json'):
-            d = {}
-        else:
-            with open('data/translate/translated.json', 'r') as f:
-                d = json.load(f)
+    async def add_to_persistent_cache(self, target: str, message: str, trans: str):
+        async with self.sem:
+            if not os.path.exists('data'):
+                os.mkdir('data')
                 
-        if message not in d:
-            d[message] = {target: trans}
-        else:
-            d[message][target] = trans
-            
-        with open('data/translate/translated.json', 'w') as f:
-            json.dump(d, f, indent=4)
+            if not os.path.exists('data/translate'):
+                os.mkdir('data/translate')
+                
+            if not os.path.exists(f'data/translate/translated.json'):
+                d = {}
+            else:
+                with open('data/translate/translated.json', 'r') as f:
+                    d = json.load(f)
+                    
+            if message not in d:
+                d[message] = {target: trans}
+            else:
+                d[message][target] = trans
+                
+            with open('data/translate/translated.json', 'w') as f:
+                json.dump(d, f, indent=4)
     
-    @staticmethod
-    def search_persistent_cache(target: str, message: str) -> str | None:
-        if not os.path.exists('data'):
-            os.mkdir('data')
-            
-        if not os.path.exists('data/translate'):
-            os.mkdir('data/translate')
-            
-        if not os.path.exists(f'data/translate/translated.json'):
-            d = {}
-        else:
-            with open('data/translate/translated.json', 'r') as f:
-                d = json.load(f)
+    async def search_persistent_cache(self, target: str, message: str) -> str | None:
+        async with self.sem:
+            if not os.path.exists('data'):
+                os.mkdir('data')
                 
-        if message in d:
-            if target in d[message]:
-                return d[message][target]
+            if not os.path.exists('data/translate'):
+                os.mkdir('data/translate')
+                
+            if not os.path.exists(f'data/translate/translated.json'):
+                d = {}
+            else:
+                with open('data/translate/translated.json', 'r') as f:
+                    d = json.load(f)
+                    
+            if message in d:
+                if target in d[message]:
+                    return d[message][target]
 
     async def translate(
         self,
