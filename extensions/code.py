@@ -1,19 +1,23 @@
 from __future__ import annotations
 
 import functools
+import asyncio
 import importlib
 from concurrent.futures import ProcessPoolExecutor
 from typing import TYPE_CHECKING, Optional
 
 import discord
+from async_timeout import timeout
 from discord import app_commands
 from discord.ext import commands
-# from guesslang.guess import Guess
 
 from core.context import Context
 from core.openai import codex as core_codex
 from core.openai import openai
 from utils.converter import CodeblockConverter
+
+# from guesslang.guess import Guess
+
 
 if TYPE_CHECKING:
     from core.bot import Bot
@@ -56,25 +60,29 @@ class CodeUtils(commands.Cog):
         """
 
         async with ctx.typing():
-            completion = await self.codex.completion(language, prompt, user=ctx.author.id, n=1)
-            completion = completion[0]
+            try:
+                async with timeout(60):
+                    completion = await self.codex.completion(language, prompt, user=ctx.author.id, n=1)
+                    completion = completion[0]
 
-            embed = discord.Embed(color=self.bot.color)
-            embed.title = "Code Generation Result:"
+                    embed = discord.Embed(color=self.bot.color)
+                    embed.title = "Code Generation Result:"
 
-            embed.description = f"**Language:** {language}\n**Prompt:** {prompt}\n\n"
+                    embed.description = f"**Language:** {language}\n**Prompt:** {prompt}\n\n"
 
-            if len(completion) > 3000:
-                paste = await self.bot.mystbin.create_paste(
-                    filename=f"code.{self.codex.FILE[language]}", content=completion
-                )
-                embed.description += f"**Result:** {paste} (Too long to display)"
-            else:
-                embed.description += f"**Result:** ```{self.codex.FILE[language]}\n{completion}\n```"
+                    if len(completion) > 3000:
+                        paste = await self.bot.mystbin.create_paste(
+                            filename=f"code.{self.codex.FILE[language]}", content=completion
+                        )
+                        embed.description += f"**Result:** {paste} (Too long to display)"
+                    else:
+                        embed.description += f"**Result:** ```{self.codex.FILE[language]}\n{completion}\n```"
 
-            embed.set_footer(text="*Might not be accurate.")
+                    embed.set_footer(text="*Might not be accurate.")
 
-            return await ctx.send(embed=embed)
+                    return await ctx.send(embed=embed)
+            except asyncio.TimeoutError:
+                return await ctx.send("Code Generation Timed out (>60 seconds). Something might be wrong or you are sending a prompt that is taking too long to generate.", ephemeral=True)
 
     # If this would be a slash command, it would be hard to insert the code.
     @commands.command("explain-code", aliases=["explaincode", "excode"])
@@ -120,26 +128,30 @@ class CodeUtils(commands.Cog):
                     raise commands.BadArgument("Language not supported")
 
         async with ctx.typing():
-            explain = await self.codex.explain(lang, code, user=ctx.author.id)
+            try:
+                async with timeout(60):
+                    explain = await self.codex.explain(lang, code, user=ctx.author.id)
 
-            embed = discord.Embed(color=self.bot.color)
-            embed.title = "Code Explaination Result:"
-            
-            if len(code) > 2000:
-                paste = await self.bot.mystbin.create_paste(filename=f"code.{self.codex.FILE[language]}", content=code)
-                embed.description = f"**Code: ({lang})** {paste} (Too long to display)\n\n"
-            else:
-                embed.description = f"**Code: ({lang})** ```{lang.lower()}\n{code}\n```\n\n"
+                    embed = discord.Embed(color=self.bot.color)
+                    embed.title = "Code Explaination Result:"
+                    
+                    if len(code) > 2000:
+                        paste = await self.bot.mystbin.create_paste(filename=f"code.{self.codex.FILE[language]}", content=code)
+                        embed.description = f"**Code: ({lang})** {paste} (Too long to display)\n\n"
+                    else:
+                        embed.description = f"**Code: ({lang})** ```{lang.lower()}\n{code}\n```\n\n"
 
-            if len(explain) > 2000:
-                paste = await self.bot.mystbin.create_paste(filename=f"explaination.txt", content=explain)
-                embed.description += f"**Result:** {paste} (Too long to display)"
-            else:
-                embed.description += f"**Result:**\n{explain}"
+                    if len(explain) > 2000:
+                        paste = await self.bot.mystbin.create_paste(filename=f"explaination.txt", content=explain)
+                        embed.description += f"**Result:** {paste} (Too long to display)"
+                    else:
+                        embed.description += f"**Result:**\n{explain}"
 
-            embed.set_footer(text="*Might not be accurate.")
+                    embed.set_footer(text="*Might not be accurate.")
 
-            return await ctx.send(embed=embed)
+                    return await ctx.send(embed=embed)
+            except asyncio.TimeoutError:
+                return await ctx.send("Code Explaination Timed out (>60 seconds). Something might be wrong or you are sending a code that is taking too long to explain.", ephemeral=True)
 
     # def predict(self, code):
     #     probs = self.guesslang.probabilities(code)

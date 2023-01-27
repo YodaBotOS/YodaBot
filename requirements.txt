@@ -11,3 +11,4 @@ boto3
 sentry-sdk
 Pillow
 cachetools
+async-timeout

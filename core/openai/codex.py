@@ -118,7 +118,7 @@ class Codex:
             c = choice.copy()
 
             while c["finish_reason"] == "length":
-                await asyncio.sleep(1)
+                await asyncio.sleep(.5)
 
                 response = openai.Completion.create(
                     **Codex.COMPLETION_KWARGS,
@@ -164,7 +164,7 @@ class Codex:
         c = choice.copy()
 
         while c["finish_reason"] == "length":
-            await asyncio.sleep(1)
+            await asyncio.sleep(.5)
 
             response = openai.Completion.create(
                 **Codex.EXPLAIN_KWARGS,
