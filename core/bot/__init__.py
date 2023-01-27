@@ -5,6 +5,7 @@ import os
 import typing
 from typing import TYPE_CHECKING
 
+import asyncpg
 import aiohttp
 import boto3
 import discord
@@ -55,6 +56,7 @@ class Bot(commands.Bot):
     mystbin: mystbin.Client
     openai: OpenAI
     cdn: S3Client
+    pool: asyncpg.Pool
 
     def __init__(self, command_prefix: typing.Any = None, *args, **kwargs):
         self.connected = False
@@ -118,6 +120,11 @@ class Bot(commands.Bot):
             aws_access_key_id=cfg.CDN_ACCESS_KEY,
             aws_secret_access_key=cfg.CDN_SECRET_KEY,
         )
+        
+        self.pool = await asyncpg.create_pool(cfg.POSTGRESQL_DSN)
+        
+        with open("schema.sql") as f:
+            await self.pool.execute(f.read())
 
         print("Setting up translator")
         await self.tree.set_translator(Translator(self))

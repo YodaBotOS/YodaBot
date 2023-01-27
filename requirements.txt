@@ -12,3 +12,4 @@ sentry-sdk
 Pillow
 cachetools
 async-timeout
+asyncpg

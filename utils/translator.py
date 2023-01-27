@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import os
 import typing
 import json
-import asyncio
+from typing import TYPE_CHECKING
 
 import aiohttp
 import discord
@@ -10,6 +12,9 @@ from discord.ext import commands
 
 import config
 from core.translate import Translate
+
+if TYPE_CHECKING:
+    from core.bot import Bot
 
 
 class AppCommandsTranslator(Translate):
@@ -59,13 +64,12 @@ class Translator(app_commands.Translator):
     Translator
     """
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Bot):
         super().__init__()
 
         self.bot = bot
         self.session: aiohttp.ClientSession = None
         self._translate: Translate = None
-        self.sem = asyncio.Semaphore(1)
 
     async def load(self):
         self.session = self.bot.session
@@ -75,44 +79,48 @@ class Translator(app_commands.Translator):
         await self.session.close()
     
     async def add_to_persistent_cache(self, target: str, message: str, trans: str):
-        async with self.sem:
-            if not os.path.exists('data'):
-                os.mkdir('data')
+        # if not os.path.exists('data'):
+        #     os.mkdir('data')
+            
+        # if not os.path.exists('data/translate'):
+        #     os.mkdir('data/translate')
+            
+        # if not os.path.exists(f'data/translate/translated.json'):
+        #     d = {}
+        # else:
+        #     with open('data/translate/translated.json', 'r') as f:
+        #         d = json.load(f)
                 
-            if not os.path.exists('data/translate'):
-                os.mkdir('data/translate')
-                
-            if not os.path.exists(f'data/translate/translated.json'):
-                d = {}
-            else:
-                with open('data/translate/translated.json', 'r') as f:
-                    d = json.load(f)
-                    
-            if message not in d:
-                d[message] = {target: trans}
-            else:
-                d[message][target] = trans
-                
-            with open('data/translate/translated.json', 'w') as f:
-                json.dump(d, f, indent=4)
+        # if message not in d:
+        #     d[message] = {target: trans}
+        # else:
+        #     d[message][target] = trans
+            
+        # with open('data/translate/translated.json', 'w') as f:
+        #     json.dump(d, f, indent=4)
+        
+        q = 'INSERT INTO translations (target, message, translation) VALUES ($1, $2, $3) ON CONFLICT (message, target) DO UPDATE SET translation = $3;'
+        await self.bot.pool.execute(q, target, message, trans)
     
     async def search_persistent_cache(self, target: str, message: str) -> str | None:
-        async with self.sem:
-            if not os.path.exists('data'):
-                os.mkdir('data')
+        # if not os.path.exists('data'):
+        #     os.mkdir('data')
+            
+        # if not os.path.exists('data/translate'):
+        #     os.mkdir('data/translate')
+            
+        # if not os.path.exists(f'data/translate/translated.json'):
+        #     d = {}
+        # else:
+        #     with open('data/translate/translated.json', 'r') as f:
+        #         d = json.load(f)
                 
-            if not os.path.exists('data/translate'):
-                os.mkdir('data/translate')
-                
-            if not os.path.exists(f'data/translate/translated.json'):
-                d = {}
-            else:
-                with open('data/translate/translated.json', 'r') as f:
-                    d = json.load(f)
-                    
-            if message in d:
-                if target in d[message]:
-                    return d[message][target]
+        # if message in d:
+        #     if target in d[message]:
+        #         return d[message][target]
+        
+        q = 'SELECT translation FROM translations WHERE target = $1 AND message = $2;'
+        return await self.bot.pool.fetchval(q, target, message)
 
     async def translate(
         self,
