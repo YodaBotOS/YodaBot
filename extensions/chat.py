@@ -12,6 +12,7 @@ import config
 from core import openai as core_openai
 from core.context import Context
 from utils.chat import *
+from discord.app_commands import locale_str as _T
 
 if TYPE_CHECKING:
     from core.bot import Bot
@@ -109,7 +110,7 @@ class Chat(commands.Cog):
 
     CHAT_SLASH_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=False)
 
-    @app_commands.command(name="chat")
+    @app_commands.command(name=_T("chat"))
     async def chat_slash(self, interaction: discord.Interaction, text: str = None):
         """
         Chat with an AI

@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 
 from core.context import Context
+from discord.app_commands import locale_str as _T
 
 if TYPE_CHECKING:
     from core.bot import Bot
@@ -15,7 +16,7 @@ class Utilities(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot: Bot = bot
 
-    @commands.hybrid_command(aliases=["latency"])
+    @commands.hybrid_command(name=_T("ping"), aliases=["latency"])
     async def ping(self, ctx: Context):
         """
         Get the bot's latency.
@@ -23,7 +24,7 @@ class Utilities(commands.Cog):
 
         return await ctx.send(f"Pong! `{round(self.bot.latency * 1000, 2)}ms`")
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(name=_T("uptime"))
     async def uptime(self, ctx: Context):
         """
         Get the bot's uptime.

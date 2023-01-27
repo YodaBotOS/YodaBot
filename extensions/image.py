@@ -13,6 +13,7 @@ from discord import app_commands
 from discord.ext import commands
 from jishaku.functools import executor_function
 from PIL import Image as PILImg
+from discord.app_commands import locale_str as _T
 
 import config
 from core import image as core_image
@@ -436,13 +437,13 @@ class Image(commands.Cog):
 
         await self.handle(ctx, main, prompt, style, amount, size)
 
-    gen_art_slash = app_commands.Group(name="generate-art", description="Generate an image from a prompt.")
+    gen_art_slash = app_commands.Group(name=_T("generate-art"), description=_T("Generate an image from a prompt."))
 
-    @gen_art_slash.command(name="image")
+    @gen_art_slash.command(name=_T("image"))
     @app_commands.describe(
-        amount="Amount of images to generate",
-        size="Size of the image",
-        prompt="Prompt to generate images from",
+        amount=_T("Amount of images to generate"),
+        size=_T("Size of the image"),
+        prompt=_T("Prompt to generate images from"),
     )
     async def gen_art2_slash(
         self,
@@ -476,12 +477,12 @@ class Image(commands.Cog):
 
         await self.handle(interaction, main, prompt, amount, size)
 
-    @gen_art_slash.command(name="variations")
+    @gen_art_slash.command(name=_T("variations"))
     @app_commands.describe(
-        amount="Amount of images to generate",
-        size="The size of the image",
-        image="Image to generate variations from",
-        url="URL of the image to generate variations from",
+        amount=_T("Amount of images to generate"),
+        size=_T("The size of the image"),
+        image=_T("Image to generate variations from"),
+        url=_T("URL of the image to generate variations from"),
     )
     async def gen_art_variations_slash(
         self,
@@ -525,12 +526,12 @@ class Image(commands.Cog):
 
         await self.handle(interaction, main, amount, size, image, url)
 
-    @gen_art_slash.command(name="style")
+    @gen_art_slash.command(name=_T("style"))
     @app_commands.describe(
-        style="Style to apply to the image",
-        amount="Amount of images to generate",
-        size="Size of the image e.g 1024x1024",
-        prompt="Prompt to generate images from",
+        style=_T("Style to apply to the image"),
+        amount=_T("Amount of images to generate"),
+        size=_T("Size of the image e.g 1024x1024"),
+        prompt=_T("Prompt to generate images from"),
     )
     async def gen_art_style_slash(
         self,
@@ -754,8 +755,8 @@ class Image(commands.Cog):
 
         return await self.handle_analyze(ctx, main, self, image)
 
-    @app_commands.command(name="analyze-image")
-    @app_commands.describe(image="The image to analyze.", url="The URL of the image to analyze.")
+    @app_commands.command(name=_T("analyze-image"))
+    @app_commands.describe(image=_T("The image to analyze."), url=_T("The URL of the image to analyze."))
     async def analyze_image_slash(
         self,
         interaction: discord.Interaction,

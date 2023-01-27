@@ -13,6 +13,8 @@ import sentry_sdk
 from discord import app_commands
 from discord.ext import commands
 
+from utils.translator import Translator
+
 import config as cfg
 from core.context import Context
 from core.openai import OpenAI
@@ -117,12 +119,13 @@ class Bot(commands.Bot):
             aws_secret_access_key=cfg.CDN_SECRET_KEY,
         )
 
-        # print("Setting up translator")
-        # await self.tree.set_translator(Translator(bot))
+        print("Setting up translator")
+        await self.tree.set_translator(Translator(self))
 
         # Load cogs
         for extension in EXTENSIONS:
             await self.load_extension(extension)
             print("Loaded extension:", extension)
 
-        sentry_sdk.init(cfg.SENTRY_DSN, traces_sample_rate=1.0)
+        if not self.is_selfhosted:
+            sentry_sdk.init(cfg.SENTRY_DSN, traces_sample_rate=1.0)

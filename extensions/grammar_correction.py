@@ -11,6 +11,7 @@ from discord.ext import commands
 import config
 from core import openai as core_openai
 from core.context import Context
+from discord.app_commands import locale_str as _T
 
 if TYPE_CHECKING:
     from core.bot import Bot
@@ -26,7 +27,7 @@ class GrammarCorrection(commands.Cog):
         self.bot: Bot = bot
 
         self.ctx_menu = app_commands.ContextMenu(
-            name="Grammar Correction",
+            name=_T("Grammar Correction"),
             callback=self.check_grammar_context_menu,
         )
         self.bot.tree.add_command(self.ctx_menu)
@@ -59,7 +60,7 @@ class GrammarCorrection(commands.Cog):
 
         return embed
 
-    @app_commands.command(name="check-grammar")
+    @app_commands.command(name=_T("check-grammar"))
     @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.describe(text="The text to be checked for grammar.")
     async def check_grammar_slash(self, interaction: discord.Interaction, text: str = None):

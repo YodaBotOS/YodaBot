@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import functools
 import asyncio
+import functools
 import importlib
 from concurrent.futures import ProcessPoolExecutor
 from typing import TYPE_CHECKING, Optional
+from discord.app_commands import locale_str as _T
 
 import discord
 from async_timeout import timeout
@@ -43,8 +44,8 @@ class CodeUtils(commands.Cog):
         del self.openai
         # del self.guesslang
 
-    @commands.hybrid_command("generate-code", aliases=["generatecode", "gencode"])
-    @app_commands.describe(language="The language to generate code in", prompt="The prompt to generate code from")
+    @commands.hybrid_command(_T("generate-code"), aliases=["generatecode", "gencode"])
+    @app_commands.describe(language=_T("The language to generate code in"), prompt=_T("The prompt to generate code from"))
     @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(1, 20, commands.BucketType.user)
     async def generate_code(self, ctx: Context, language: core_codex.SUPPORTED_LANGUAGES_LITERAL, *, prompt: str):
@@ -82,7 +83,10 @@ class CodeUtils(commands.Cog):
 
                     return await ctx.send(embed=embed)
             except asyncio.TimeoutError:
-                return await ctx.send("Code Generation Timed out (>60 seconds). Something might be wrong or you are sending a prompt that is taking too long to generate.", ephemeral=True)
+                return await ctx.send(
+                    "Code Generation Timed out (>60 seconds). Something might be wrong or you are sending a prompt that is taking too long to generate.",
+                    ephemeral=True,
+                )
 
     # If this would be a slash command, it would be hard to insert the code.
     @commands.command("explain-code", aliases=["explaincode", "excode"])
@@ -134,9 +138,11 @@ class CodeUtils(commands.Cog):
 
                     embed = discord.Embed(color=self.bot.color)
                     embed.title = "Code Explaination Result:"
-                    
+
                     if len(code) > 2000:
-                        paste = await self.bot.mystbin.create_paste(filename=f"code.{self.codex.FILE[language]}", content=code)
+                        paste = await self.bot.mystbin.create_paste(
+                            filename=f"code.{self.codex.FILE[language]}", content=code
+                        )
                         embed.description = f"**Code: ({lang})** {paste} (Too long to display)\n\n"
                     else:
                         embed.description = f"**Code: ({lang})** ```{lang.lower()}\n{code}\n```\n\n"
@@ -151,7 +157,10 @@ class CodeUtils(commands.Cog):
 
                     return await ctx.send(embed=embed)
             except asyncio.TimeoutError:
-                return await ctx.send("Code Explaination Timed out (>60 seconds). Something might be wrong or you are sending a code that is taking too long to explain.", ephemeral=True)
+                return await ctx.send(
+                    "Code Explaination Timed out (>60 seconds). Something might be wrong or you are sending a code that is taking too long to explain.",
+                    ephemeral=True,
+                )
 
     # def predict(self, code):
     #     probs = self.guesslang.probabilities(code)
@@ -173,15 +182,15 @@ class CodeUtils(commands.Cog):
     # ):
     #     """
     #     Guesses the language of the code.
-        
+
     #     You can also provide a codeblock or a raw text. Note that the language of the codeblock will be ignored (not used).
-        
+
     #     Usage: `yoda guess-language <code>`
-        
+
     #     - `yoda guess-language print("Hello, World!")`
     #     - `yoda guess-language console.log("Hello, World!")`
     #     """
-        
+
     #     code = code[1]
 
     #     async with ctx.typing():

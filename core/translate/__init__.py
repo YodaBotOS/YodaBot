@@ -134,6 +134,8 @@ class Translate:
             resp.raise_for_status()
 
             js = await resp.json()
+            
+            print(js)
 
             if raw:
                 return js
@@ -141,7 +143,7 @@ class Translate:
             # Find the data with the most confidence, then return that data
             detected = js["languages"]
 
-            if not detected:
+            if not detected or detected[0]['languageCode'] == 'und':
                 return None
 
             result = sorted(detected, key=lambda x: x["confidence"], reverse=True)[0]
@@ -208,6 +210,7 @@ class Translate:
         source_language: str = None,
         mime_type: str = "text/plain",
         raw=False,
+        check_duplicate=False,
     ) -> dict:
         # Make target and source language params to use language code instead of display name
 
@@ -229,6 +232,9 @@ class Translate:
             source_language = (await self.detect_language(text))["languageCode"]
 
         text = (await self.input_tools(text, source_language))["choices"][0]
+        
+        if check_duplicate and target_language == source_language:
+            return {"translated": text, "sourceLanguageCode": source_language}
 
         key = get_gcp_token(from_gcloud=True)
 
@@ -246,6 +252,7 @@ class Translate:
         data = json.dumps(data)
 
         async with self.session.post(self.url + ":translateText", data=data, headers=headers) as resp:
+            print(await resp.text())
             resp.raise_for_status()
 
             js = await resp.json()

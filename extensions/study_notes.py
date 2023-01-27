@@ -12,6 +12,7 @@ from discord.ext import commands
 import config
 from core import openai as core_openai
 from core.context import Context
+from discord.app_commands import locale_str as _T
 
 if TYPE_CHECKING:
     from core.bot import Bot
@@ -69,11 +70,11 @@ class StudyNotes(commands.Cog):
         finally:
             await self.STUDY_NOTES_MAX_CONCURRENCY.release(ctx.message)
 
-    @app_commands.command(name="study-notes")
+    @app_commands.command(name=_T("study-notes"))
     @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.describe(
-        topic="The text to be checked for grammar.",
-        amount="The amount of study notes to be generated. Minimal 1, maximum 10.",
+        topic=_T("The text to be checked for grammar."),
+        amount=_T("The amount of study notes to be generated. Minimal 1, maximum 10."),
     )
     async def study_notes_slash(
         self,

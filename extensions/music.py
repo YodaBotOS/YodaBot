@@ -11,6 +11,7 @@ from core.context import Context
 from core.music import *
 from utils.converter import AttachmentConverter
 from utils.lyrics import *
+from discord.app_commands import locale_str as _T
 
 if TYPE_CHECKING:
     from core.bot import Bot
@@ -22,8 +23,8 @@ class Music(commands.Cog):
         self.lyrics = Lyrics(loop=self.bot.loop, session=self.bot.session)
         self.gpred = GenrePrediction(session=self.bot.session)
 
-    @commands.hybrid_command("lyrics", aliases=["lyric"])
-    @app_commands.describe(query="The song's lyrics to search for.")
+    @commands.hybrid_command(_T("lyrics"), aliases=["lyric"])
+    @app_commands.describe(query=_T("The song's lyrics to search for."))
     async def lyrics(self, ctx: Context, *, query: str):
         """
         Search for lyrics of a song.
@@ -116,11 +117,11 @@ class Music(commands.Cog):
         finally:
             await self.PREDICT_GENRE_MAX_CONCURRENCY.release(ctx.message)
 
-    @app_commands.command(name="predict-genre")
+    @app_commands.command(name=_T("predict-genre"))
     @app_commands.describe(
-        file="The audio file to check the genre for.",
-        url="The URL of the audio file to check the genre for.",
-        mode="The mode of the genre check. Best is slow.",
+        file=_T("The audio file to check the genre for."),
+        url=_T("The URL of the audio file to check the genre for."),
+        mode=_T("The mode of the genre check. Best is slow."),
     )
     async def predict_genre_slash(
         self,

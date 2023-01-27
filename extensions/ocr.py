@@ -12,6 +12,7 @@ from core import ocr, trocr
 from core.context import Context
 from utils import converter
 from utils.ocr import TranslateOCRLanguagesPaginator, YodaMenuPages
+from discord.app_commands import locale_str as _T
 
 if TYPE_CHECKING:
     from core.bot import Bot
@@ -29,12 +30,12 @@ class OCR(commands.Cog):
 
         # https://github.com/Rapptz/discord.py/issues/7823#issuecomment-1086830458
         self.ctx_menu_ocr = app_commands.ContextMenu(
-            name="Image To Text (OCR)", callback=self.image_to_text_context_menu
+            name=_T("Image To Text (OCR)"), callback=self.image_to_text_context_menu
         )
         self.bot.tree.add_command(self.ctx_menu_ocr)
 
         self.ctx_menu_trocr = app_commands.ContextMenu(
-            name="Translate Image (Translate OCR)", callback=self.trocr_context_menu
+            name=_T("Translate Image (Translate OCR)"), callback=self.trocr_context_menu
         )
         self.bot.tree.add_command(self.ctx_menu_trocr)
 
@@ -102,10 +103,10 @@ class OCR(commands.Cog):
 
         return embed
 
-    @app_commands.command(name="image-to-text")
+    @app_commands.command(name=_T("image-to-text"))
     @app_commands.describe(
-        image="The attachment to be converted to text.",
-        url="The URL to an image to be converted to " "text.",
+        image=_T("The attachment to be converted to text."),
+        url=_T("The URL to an image to be converted to text."),
     )
     @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
     async def image_to_text_slash(
@@ -201,11 +202,11 @@ class OCR(commands.Cog):
         else:
             return await interaction.followup.send(embed=resp, ephemeral=True)
 
-    @app_commands.command(name="translate-image")
+    @app_commands.command(name=_T("translate-image"))
     @app_commands.describe(
-        language="The language for the text to be translated to",
-        image="The attachment to be converted to text then translated.",
-        url="The URL to an image to be converted to text then translated.",
+        language=_T("The language for the text to be translated to"),
+        image=_T("The attachment to be converted to text then translated."),
+        url=_T("The URL to an image to be converted to text then translated."),
     )
     @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
     async def trocr_slash(
@@ -289,8 +290,8 @@ class OCR(commands.Cog):
 
             return await ctx.send(embed=embed)
 
-    @app_commands.command(name="translate-image-languages")
-    @app_commands.describe(query="The language you want to search for.")
+    @app_commands.command(name=_T("translate-image-languages"))
+    @app_commands.describe(query=_T("The language you want to search for."))
     async def trocr_languages_slash(self, interaction: discord.Interaction, query: str = None):
         """
         Shows a list of languages that can be translated to.

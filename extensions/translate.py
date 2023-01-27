@@ -13,6 +13,7 @@ from core import translate
 from core.context import Context
 from utils.paginator import YodaMenuPages
 from utils.translate import TranslateLanguagesPaginator
+from discord.app_commands import locale_str as _T
 
 if TYPE_CHECKING:
     from core.bot import Bot
@@ -28,7 +29,7 @@ class Translate(commands.Cog):
         self.translate: translate.Translate = None
 
         self.ctx_menu = app_commands.ContextMenu(
-            name="Translate",
+            name=_T("Translate"),
             callback=self.translate_context_menu,
         )
         self.bot.tree.add_command(self.ctx_menu)
@@ -117,13 +118,13 @@ class Translate(commands.Cog):
 
         return embed
 
-    @app_commands.command(name="translate")
+    @app_commands.command(name=_T("translate"))
     @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
-    @app_commands.rename(_from="from")
+    @app_commands.rename(_from=_T("from"))
     @app_commands.describe(
-        text="The text to be translated",
-        to="The language to translate to",
-        _from="The language to translate from",
+        text=_T("The text to be translated"),
+        to=_T("The language to translate to"),
+        _from=_T("The language to translate from"),
     )
     async def translate_slash(self, interaction: discord.Interaction, text: str, to: str, _from: str = None):
         """
@@ -280,8 +281,8 @@ class Translate(commands.Cog):
 
         return choices[:25]
 
-    @app_commands.command(name="translate-languages")
-    @app_commands.describe(query="The language you want to search for.")
+    @app_commands.command(name=_T("translate-languages"))
+    @app_commands.describe(query=_T("The language you want to search for."))
     async def translate_languages_slash(self, interaction: discord.Interaction, query: str = None):
         """
         Shows a list of languages that can be translated to.
