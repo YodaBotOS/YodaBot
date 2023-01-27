@@ -122,7 +122,7 @@ class Maps(commands.Cog):
             timezone_now = datetime.datetime.now(timezone_dt)
             timezone_now_str = timezone_now.strftime(r"%A, %-d %B %Y - %-I:%M %p")
 
-            embed.add_field(name="Timezone in that location:", value=f"{timezone} (Current time in that location is `{timezone_now_str}`)", inline=False)
+            embed.add_field(name="Timezone in that location:", value=f"{timezone}\n(Current time in that location is `{timezone_now_str}`)", inline=False)
 
         if opening_hours := place.get("opening_hours"):
             weekday_text = opening_hours["weekday_text"]
