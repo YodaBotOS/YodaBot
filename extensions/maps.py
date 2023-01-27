@@ -7,6 +7,7 @@ import typing
 from typing import TYPE_CHECKING
 
 import discord
+import datetime
 from discord import app_commands
 from discord.ext import commands
 
@@ -115,8 +116,13 @@ class Maps(commands.Cog):
                     tmin = "00"
 
                 timezone = f"`UTC{sign}{thr}:{tmin}`"
+                
+            timezone_dt = datetime.timezone(datetime.timedelta(hours=int(thr), minutes=int(tmin)))
+            
+            timezone_now = datetime.datetime.now(timezone_dt)
+            timezone_now_str = timezone_now.strftime(r"%A, %-d %B %Y - %-I:%M %p")
 
-            embed.add_field(name="Timezone in that location:", value=timezone, inline=False)
+            embed.add_field(name="Timezone in that location:", value=f"{timezone} (Current time in that location is `{timezone_now_str}`)", inline=False)
 
         if opening_hours := place.get("opening_hours"):
             weekday_text = opening_hours["weekday_text"]
