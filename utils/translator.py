@@ -133,6 +133,9 @@ class Translator(app_commands.Translator):
         elif context.location is app_commands.TranslationContextLocation.parameter_name:
             trans = trans.replace(" ", "_").lower()
             
+        if context.location in [app_commands.TranslationContextLocation.group_description, app_commands.TranslationContextLocation.command_description, app_commands.TranslationContextLocation.parameter_description, app_commands.TranslationContextLocation.other] and len(trans) > 100:
+            return None
+            
         if not self.REGEX.fullmatch(trans) and context.location not in [app_commands.TranslationContextLocation.group_description, app_commands.TranslationContextLocation.command_description, app_commands.TranslationContextLocation.parameter_description, app_commands.TranslationContextLocation.other]:
             return None
         
