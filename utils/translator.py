@@ -123,7 +123,7 @@ class Translator(app_commands.Translator):
 
         q = "SELECT translation FROM translations WHERE target = $1 AND message = $2;"
         return await self.bot.pool.fetchval(q, target, message)
-    
+
     def do_check(self, trans, context) -> str | None:
         if context.location in [
             app_commands.TranslationContextLocation.command_name,
@@ -132,13 +132,27 @@ class Translator(app_commands.Translator):
             trans = trans.replace(" ", "-").lower()
         elif context.location is app_commands.TranslationContextLocation.parameter_name:
             trans = trans.replace(" ", "_").lower()
-            
-        if context.location in [app_commands.TranslationContextLocation.group_description, app_commands.TranslationContextLocation.command_description, app_commands.TranslationContextLocation.parameter_description, app_commands.TranslationContextLocation.other] and len(trans) > 100:
+
+        if (
+            context.location
+            in [
+                app_commands.TranslationContextLocation.group_description,
+                app_commands.TranslationContextLocation.command_description,
+                app_commands.TranslationContextLocation.parameter_description,
+                app_commands.TranslationContextLocation.other,
+            ]
+            and len(trans) > 100
+        ):
             return None
-            
-        if not self.REGEX.fullmatch(trans) and context.location not in [app_commands.TranslationContextLocation.group_description, app_commands.TranslationContextLocation.command_description, app_commands.TranslationContextLocation.parameter_description, app_commands.TranslationContextLocation.other]:
+
+        if not self.REGEX.fullmatch(trans) and context.location not in [
+            app_commands.TranslationContextLocation.group_description,
+            app_commands.TranslationContextLocation.command_description,
+            app_commands.TranslationContextLocation.parameter_description,
+            app_commands.TranslationContextLocation.other,
+        ]:
             return None
-        
+
         return trans
 
     async def translate(
@@ -166,11 +180,11 @@ class Translator(app_commands.Translator):
         res = trans["translated"]
 
         res2 = self.do_check(res, context)
-        
+
         res = res2 or res
 
         await self.add_to_persistent_cache(target, message, res)
-        
+
         if not res2:
             return None
 
