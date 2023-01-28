@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import regex
 import typing
 import json
 from typing import TYPE_CHECKING
@@ -62,6 +63,8 @@ class Translator(app_commands.Translator):
     """
     Translator
     """
+    
+    REGEX = regex.compile(r'^[-_\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}$')
 
     def __init__(self, bot: Bot):
         super().__init__()
@@ -136,6 +139,9 @@ class Translator(app_commands.Translator):
         trans = await self.search_persistent_cache(target, message)
         
         if trans:
+            if not self.REGEX.fullmatch(trans):
+                return None
+            
             return trans
 
         try:
@@ -151,5 +157,8 @@ class Translator(app_commands.Translator):
             res = res.replace(' ', '_')
         
         await self.add_to_persistent_cache(target, message, res)
+        
+        if not self.REGEX.fullmatch(trans):
+            return None
 
         return res

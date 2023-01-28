@@ -13,3 +13,4 @@ Pillow
 cachetools
 async-timeout
 asyncpg
+regex
