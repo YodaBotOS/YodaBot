@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import typing
+import datetime
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -76,6 +77,7 @@ class Translator(app_commands.Translator):
     async def load(self):
         self.session = self.bot.session
         self._translate = AppCommandsTranslator(config.PROJECT_ID, session=self.session)
+        self.bot.loop.create_task(self.translate_task())
 
     async def unload(self):
         await self.session.close()
@@ -100,9 +102,11 @@ class Translator(app_commands.Translator):
 
         # with open('data/translate/translated.json', 'w') as f:
         #     json.dump(d, f, indent=4)
+        
+        ttl = discord.utils.utcnow() + datetime.timedelta(days=30)
 
-        q = "INSERT INTO translations (target, message, translation) VALUES ($1, $2, $3) ON CONFLICT (message, target) DO UPDATE SET translation = $3;"
-        await self.bot.pool.execute(q, target, message, trans)
+        q = "INSERT INTO translations (target, message, translation, ttl) VALUES ($1, $2, $3, $4) ON CONFLICT (target, message) DO UPDATE SET translation = $3, ttl = $4;"
+        await self.bot.pool.execute(q, target, message, trans, ttl)
 
     async def search_persistent_cache(self, target: str, message: str) -> str | None:
         # if not os.path.exists('data'):
@@ -189,3 +193,33 @@ class Translator(app_commands.Translator):
             return None
 
         return res
+    
+    async def translate_task(self):
+        await self.bot.wait_until_ready()
+        
+        q = 'SELECT * FROM translations ORDER BY ttl ASC LIMIT 1;'
+        
+        oldest = await self.bot.pool.fetchrow(q)
+        
+        while not self.bot.is_closed():
+            if oldest['ttl'] < discord.utils.utcnow():
+                try:
+                    trans = await self._translate.translate(oldest['message'], oldest['target'], source_language="en", check_duplicate=True)
+                except:
+                    return None
+
+                res = trans["translated"]
+
+                res2 = self.do_check(res, None)
+
+                res = res2 or res
+
+                await self.add_to_persistent_cache(oldest['target'], oldest['message'], res)
+                
+                q = 'SELECT * FROM translations ORDER BY ttl ASC LIMIT 1;'
+                oldest = await self.bot.pool.fetchrow(q)
+
+                if not res2:
+                    return None
+
+                return res
