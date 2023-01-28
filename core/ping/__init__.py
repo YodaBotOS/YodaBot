@@ -19,7 +19,7 @@ class APIPing:
     def __init__(self, ping: "Ping"):
         self._ping = ping
 
-    async def yodabot(self, format: str = "seconds") -> int | float:
+    async def yodabot(self, format: str = "ms") -> int | float:
         # API ping test, the fastest endpoint to test as it just returns a static text.
         url = self.URLS['yodabot']
 
@@ -57,7 +57,7 @@ class Ping:
     def api(self):
         return self._api_ping
 
-    def bot(self, format: str = "seconds") -> int | float:
+    def bot(self, format: str = "ms") -> int | float:
         latency = self._bot.latency
 
         match format.lower():
@@ -66,7 +66,7 @@ class Ping:
             case _:
                 return latency
 
-    async def discord(self, format: str = "seconds") -> int | float:
+    async def discord(self, format: str = "ms") -> int | float:
         url = self.URLS['discord']
 
         start = time.perf_counter()
@@ -79,7 +79,7 @@ class Ping:
                 case _:
                     return end - start
 
-    async def typing(self, format: str = "seconds") -> int | float:
+    async def typing(self, format: str = "ms") -> int | float:
         chan = self._bot.get_channel(903282453735678035)  # Typing Channel ping test
 
         start = time.perf_counter()
@@ -92,7 +92,7 @@ class Ping:
             case _:
                 return end - start
 
-    async def r2(self, format: str = "seconds") -> int | float:
+    async def r2(self, format: str = "ms") -> int | float:
         url = self.URLS['r2']
 
         start = time.perf_counter()
@@ -105,7 +105,7 @@ class Ping:
             case _:
                 return end - start
             
-    async def postgresql(self, format: str = "seconds") -> int | float:
+    async def postgresql(self, format: str = "ms") -> int | float:
         async with self._bot.pool.acquire() as conn:
             start = time.perf_counter()
             await conn.execute("SELECT 1")
