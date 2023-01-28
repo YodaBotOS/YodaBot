@@ -103,7 +103,7 @@ class Translator(app_commands.Translator):
         # with open('data/translate/translated.json', 'w') as f:
         #     json.dump(d, f, indent=4)
         
-        ttl = discord.utils.utcnow() + datetime.timedelta(days=30)
+        ttl = datetime.datetime.utcnow() + datetime.timedelta(days=30)
 
         q = "INSERT INTO translations (target, message, translation, ttl) VALUES ($1, $2, $3, $4) ON CONFLICT (target, message) DO UPDATE SET translation = $3, ttl = $4;"
         
@@ -206,7 +206,7 @@ class Translator(app_commands.Translator):
         oldest = await self.bot.pool.fetchrow(q)
         
         while not self.bot.is_closed():
-            if oldest['ttl'] < discord.utils.utcnow():
+            if oldest['ttl'] < datetime.datetime.utcnow():
                 try:
                     trans = await self._translate.translate(oldest['message'], oldest['target'], source_language="en", check_duplicate=True)
                 except:
