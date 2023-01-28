@@ -139,7 +139,7 @@ class Translate:
             # Find the data with the most confidence, then return that data
             detected = js["languages"]
 
-            if not detected or detected[0]['languageCode'] == 'und':
+            if not detected or detected[0]["languageCode"] == "und":
                 return None
 
             result = sorted(detected, key=lambda x: x["confidence"], reverse=True)[0]
@@ -228,7 +228,7 @@ class Translate:
             source_language = (await self.detect_language(text))["languageCode"]
 
         text = (await self.input_tools(text, source_language))["choices"][0]
-        
+
         if check_duplicate and target_language == source_language:
             return {"translated": text, "sourceLanguageCode": source_language}
 

@@ -5,11 +5,11 @@ import functools
 import importlib
 from concurrent.futures import ProcessPoolExecutor
 from typing import TYPE_CHECKING, Optional
-from discord.app_commands import locale_str as _T
 
 import discord
 from async_timeout import timeout
 from discord import app_commands
+from discord.app_commands import locale_str as _T
 from discord.ext import commands
 
 from core.context import Context
@@ -45,7 +45,9 @@ class CodeUtils(commands.Cog):
         # del self.guesslang
 
     @commands.hybrid_command(_T("generate-code"), aliases=["generatecode", "gencode"])
-    @app_commands.describe(language=_T("The language to generate code in"), prompt=_T("The prompt to generate code from"))
+    @app_commands.describe(
+        language=_T("The language to generate code in"), prompt=_T("The prompt to generate code from")
+    )
     @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(1, 20, commands.BucketType.user)
     async def generate_code(self, ctx: Context, language: core_codex.SUPPORTED_LANGUAGES_LITERAL, *, prompt: str):

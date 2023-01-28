@@ -10,10 +10,10 @@ from typing import TYPE_CHECKING
 import discord
 import openai
 from discord import app_commands
+from discord.app_commands import locale_str as _T
 from discord.ext import commands
 from jishaku.functools import executor_function
 from PIL import Image as PILImg
-from discord.app_commands import locale_str as _T
 
 import config
 from core import image as core_image

@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Literal, Optional
 
 import discord
+from discord.app_commands import locale_str as _T
 from discord.ext import commands
 
 from core.context import Context
-from discord.app_commands import locale_str as _T
 
 if TYPE_CHECKING:
     from core.bot import Bot

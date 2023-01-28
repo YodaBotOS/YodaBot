@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import discord
 from discord import app_commands
+from discord.app_commands import locale_str as _T
 from discord.ext import commands
 from discord.utils import as_chunks as chunker
 
@@ -13,7 +14,6 @@ from core import translate
 from core.context import Context
 from utils.paginator import YodaMenuPages
 from utils.translate import TranslateLanguagesPaginator
-from discord.app_commands import locale_str as _T
 
 if TYPE_CHECKING:
     from core.bot import Bot

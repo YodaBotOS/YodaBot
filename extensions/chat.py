@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 
 import discord
 from discord import app_commands
+from discord.app_commands import locale_str as _T
 from discord.ext import commands
 
 import config
 from core import openai as core_openai
 from core.context import Context
 from utils.chat import *
-from discord.app_commands import locale_str as _T
 
 if TYPE_CHECKING:
     from core.bot import Bot
