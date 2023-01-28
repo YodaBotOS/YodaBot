@@ -50,7 +50,7 @@ class Ping:
     }
 
     def __init__(self, bot: Bot):
-        self.bot = bot
+        self._bot = bot
         self._api_ping = APIPing(self)
 
     @property
@@ -58,7 +58,7 @@ class Ping:
         return self._api_ping
 
     def bot(self, format: str = "seconds") -> int | float:
-        latency = self.bot.latency
+        latency = self._bot.latency
 
         match format.lower():
             case "ms" | "milliseconds" | "millisecond":
@@ -70,7 +70,7 @@ class Ping:
         url = self.URLS['discord']
 
         start = time.perf_counter()
-        async with self.bot.session.get(url) as resp:
+        async with self._bot.session.get(url) as resp:
             end = time.perf_counter()
 
             match format.lower():
@@ -80,7 +80,7 @@ class Ping:
                     return end - start
 
     async def typing(self, format: str = "seconds") -> int | float:
-        chan = self.bot.get_channel(903282453735678035)  # Typing Channel ping test
+        chan = self._bot.get_channel(903282453735678035)  # Typing Channel ping test
 
         start = time.perf_counter()
         await chan.typing()
@@ -96,7 +96,7 @@ class Ping:
         url = self.URLS['r2']
 
         start = time.perf_counter()
-        async with self.bot.session.get(url) as resp:
+        async with self._bot.session.get(url) as resp:
             end = time.perf_counter()
 
         match format.lower():
@@ -106,7 +106,7 @@ class Ping:
                 return end - start
             
     async def postgresql(self, format: str = "seconds") -> int | float:
-        async with self.bot.pool.acquire() as conn:
+        async with self._bot.pool.acquire() as conn:
             start = time.perf_counter()
             await conn.execute("SELECT 1")
             end = time.perf_counter()
