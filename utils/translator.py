@@ -77,7 +77,7 @@ class Translator(app_commands.Translator):
     async def load(self):
         self.session = self.bot.session
         self._translate = AppCommandsTranslator(config.PROJECT_ID, session=self.session)
-        self.bot.loop.create_task(self.translate_task())
+        # self.bot.loop.create_task(self.translate_task())
 
     async def unload(self):
         await self.session.close()
