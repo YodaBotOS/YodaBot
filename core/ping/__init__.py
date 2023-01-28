@@ -24,7 +24,7 @@ class APIPing:
         url = self.URLS['yodabot']
 
         start = time.perf_counter()
-        async with self._ping.bot.session.get(url) as resp:
+        async with self._ping._bot.session.get(url) as resp:
             end = time.perf_counter()
 
             match format.lower():
