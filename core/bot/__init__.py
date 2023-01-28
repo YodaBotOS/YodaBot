@@ -19,6 +19,7 @@ from core.context import Context
 from core.openai import OpenAI
 from utils.app_commands import CommandTree
 from utils.translator import Translator
+from core.ping import Ping
 
 if TYPE_CHECKING:
     from mypy_boto3_s3 import Client as S3Client
@@ -56,6 +57,7 @@ class Bot(commands.Bot):
     openai: OpenAI
     cdn: S3Client
     pool: asyncpg.Pool
+    ping: Ping
 
     def __init__(self, command_prefix: typing.Any = None, *args, **kwargs):
         self.connected = False
@@ -121,6 +123,8 @@ class Bot(commands.Bot):
         )
 
         self.pool = await asyncpg.create_pool(cfg.POSTGRESQL_DSN)
+        
+        self.ping = Ping(self)
 
         with open("schema.sql") as f:
             await self.pool.execute(f.read())

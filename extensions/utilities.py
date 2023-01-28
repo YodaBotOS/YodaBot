@@ -21,8 +21,24 @@ class Utilities(commands.Cog):
         """
         Get the bot's latency.
         """
-
-        return await ctx.send(f"Pong! `{round(self.bot.latency * 1000, 2)}ms`")
+        
+        async with ctx.typing():
+            bot_p = round(self.bot.ping.bot(), 2)
+            discord_p = round(await self.bot.ping.discord(), 2)
+            typing_p = round(await self.bot.ping.typing(), 2)
+            r2_p = round(await self.bot.ping.r2(), 2)
+            psql_p = round(await self.bot.ping.postgresql(), 2)
+            yodabot_api_p = round(await self.bot.ping.api.yodabot(), 2)
+        
+            embed = discord.Embed(title='Ping/Latency:')
+            embed.add_field(name=f'{self.bot.ping.EMOJIS["bot"]} Bot (Websocket)', value=f'{bot_p}ms')
+            embed.add_field(name=f'{self.bot.ping.EMOJIS["discord"]} Discord (API)', value=f'{discord_p}ms')
+            embed.add_field(name=f'{self.bot.ping.EMOJIS["typing"]} Discord (Typing)', value=f'{typing_p}ms')
+            embed.add_field(name=f'{self.bot.ping.EMOJIS["yodabot-api"]} API (YodaBot)', value=f'{yodabot_api_p}ms')
+            embed.add_field(name=f'{self.bot.ping.EMOJIS["postgresql"]} Database (PostgreSQL)', value=f'{psql_p}ms')
+            embed.add_field(name=f'{self.bot.ping.EMOJIS["r2"]} CDN (R2)', value=f'{r2_p}ms')
+            
+            await ctx.send(embed=embed)
 
     @commands.hybrid_command(name=_T("uptime"))
     async def uptime(self, ctx: Context):

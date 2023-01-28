@@ -106,7 +106,9 @@ class Translator(app_commands.Translator):
         ttl = discord.utils.utcnow() + datetime.timedelta(days=30)
 
         q = "INSERT INTO translations (target, message, translation, ttl) VALUES ($1, $2, $3, $4) ON CONFLICT (target, message) DO UPDATE SET translation = $3, ttl = $4;"
-        await self.bot.pool.execute(q, target, message, trans, ttl)
+        
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute(q, target, message, trans, ttl)
 
     async def search_persistent_cache(self, target: str, message: str) -> str | None:
         # if not os.path.exists('data'):
@@ -126,7 +128,9 @@ class Translator(app_commands.Translator):
         #         return d[message][target]
 
         q = "SELECT translation FROM translations WHERE target = $1 AND message = $2;"
-        return await self.bot.pool.fetchval(q, target, message)
+        
+        async with self.bot.pool.acquire() as conn:
+            return await conn.fetchval(q, target, message)
 
     def do_check(self, trans, context) -> str | None:
         if context.location in [

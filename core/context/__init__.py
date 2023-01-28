@@ -33,5 +33,13 @@ class Context(commands.Context):
         ):
             embed = discord.Embed(description=content, color=self.bot.color)
             content = None
+            
+        if embed and not embed.color:
+            embed.color = self.bot.color
+            
+        if embeds:
+            for embed in embeds:
+                if not embed.color:
+                    embed.color = self.bot.color
 
         return await super().send(content, embed=embed, embeds=embeds, **kwargs)
