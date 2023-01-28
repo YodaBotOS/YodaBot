@@ -161,7 +161,7 @@ class Translator(app_commands.Translator):
 
         await self.add_to_persistent_cache(target, message, res)
 
-        if not self.REGEX.fullmatch(trans):
+        if not self.REGEX.fullmatch(res):
             return None
 
         return res
