@@ -135,7 +135,7 @@ AI: You."""
         if user and channel:
             self._append_chat(text, user, channel, human=True)
 
-            chat_id = self._create_chat(user, channel)
+            chat_id = self._create_chat(user, channel, usr=usr)
 
             text = chat_id["text"]
 
