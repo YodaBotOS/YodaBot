@@ -150,9 +150,9 @@ Human:"""
         elif user or channel:
             raise Exception("Both user and channel must be specified")
         else:
-            start_string = self.CHAT_START_STRING.strip() + f"Human: {text}\n"
+            start_string = self.CHAT_START_STRING.strip() + f"Human: {text}\nAI: "
 
-            response = openai.Completion.create(prompt=text, user=str(user), **self.CHAT_PARAMS)
+            response = openai.Completion.create(prompt=start_string, user=str(user), **self.CHAT_PARAMS)
 
             ai_resps = response["choices"][0]["text"].strip()
 
