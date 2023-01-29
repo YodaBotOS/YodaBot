@@ -72,15 +72,15 @@ AI: You."""
 
         return self.chat_ids[(user, channel)]
 
-    def _set_chat(self, text, user, channel):
-        chat_id = self._create_chat(user, channel)
+    def _set_chat(self, text, user, channel, usr):
+        chat_id = self._create_chat(user, channel, usr)
 
         chat_id["text"] = text
 
         return chat_id
 
-    def _append_chat(self, text, user, channel, *, human=True):
-        chat_id = self._create_chat(user, channel)
+    def _append_chat(self, text, user, channel, usr, *, human=True):
+        chat_id = self._create_chat(user, channel, usr)
 
         if human:
             x = "Human"
@@ -93,8 +93,8 @@ AI: You."""
 
         return chat_id
 
-    def _strip_chat(self, user, channel, *, force=True):
-        chat_id = self._create_chat(user, channel)
+    def _strip_chat(self, user, channel, usr, *, force=True):
+        chat_id = self._create_chat(user, channel, usr)
         text = chat_id["text"]
 
         if self.strip_strings:
@@ -133,7 +133,7 @@ AI: You."""
         text = self.clean_chat(text)
 
         if user and channel:
-            self._append_chat(text, user, channel, human=True)
+            self._append_chat(text, user, channel, usr, human=True)
 
             chat_id = self._create_chat(user, channel, usr=usr)
 
@@ -149,7 +149,7 @@ AI: You."""
             if not ai_resps:
                 ai_resps = "Sorry, I did not understand."
 
-            self._append_chat(ai_resps, user, channel, human=False)
+            self._append_chat(ai_resps, user, channel, usr, human=False)
 
             return ai_resps
         elif user or channel:
