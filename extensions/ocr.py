@@ -152,7 +152,7 @@ class OCR(commands.Cog):
         name="image-to-text",
         aliases=["ocr", "itt", "i2t", "image2text", "image-2-text", "imagetotext"],
     )
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 5, commands.BucketType.member)
     async def image_to_text_command(self, ctx: Context, *, image=None):
         """
         Convert an image to text, known as the phrase OCR (Optical Character Recognition).
@@ -269,7 +269,7 @@ class OCR(commands.Cog):
         aliases=["translate-ocr", "trocr", "trimg", "trim"],
         invoke_without_command=True,
     )
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 5, commands.BucketType.member)
     async def trocr_command(self, ctx: Context, language: str, *, image=None):
         """
         Convert an image to text, then translates it to another language.

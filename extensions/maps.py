@@ -177,7 +177,7 @@ Periods:
 
         return embed
 
-    MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=False)
+    MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.member, wait=False)
 
     async def handle(self, ctx, func, *args, **kwargs):
         if isinstance(ctx, discord.Interaction):

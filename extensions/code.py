@@ -48,8 +48,8 @@ class CodeUtils(commands.Cog):
     @app_commands.describe(
         language=_T("The language to generate code in"), prompt=_T("The prompt to generate code from")
     )
-    @commands.max_concurrency(1, commands.BucketType.user)
-    @commands.cooldown(1, 20, commands.BucketType.user)
+    @commands.max_concurrency(1, commands.BucketType.member)
+    @commands.cooldown(1, 20, commands.BucketType.member)
     async def generate_code(self, ctx: Context, language: core_codex.SUPPORTED_LANGUAGES_LITERAL, *, prompt: str):
         """
         Generate code from a prompt.
@@ -92,8 +92,8 @@ class CodeUtils(commands.Cog):
 
     # If this would be a slash command, it would be hard to insert the code.
     @commands.command("explain-code", aliases=["explaincode", "excode"])
-    @commands.max_concurrency(1, commands.BucketType.user)
-    @commands.cooldown(1, 20, commands.BucketType.user)
+    @commands.max_concurrency(1, commands.BucketType.member)
+    @commands.cooldown(1, 20, commands.BucketType.member)
     async def explain_code(
         self,
         ctx: Context,
@@ -174,8 +174,8 @@ class CodeUtils(commands.Cog):
     #     return probs, sure_lang
 
     # @commands.command("guess-language", aliases=["guesslanguage", "guesslang", "glang"])
-    # @commands.max_concurrency(1, commands.BucketType.user)
-    # @commands.cooldown(1, 20, commands.BucketType.user)
+    # @commands.max_concurrency(1, commands.BucketType.member)
+    # @commands.cooldown(1, 20, commands.BucketType.member)
     # async def explain_code(
     #     self,
     #     ctx: Context,

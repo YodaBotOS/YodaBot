@@ -382,7 +382,7 @@ class Translate(commands.Cog):
         return choices[:25]
 
     @commands.group(name="translate", invoke_without_command=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 5, commands.BucketType.member)
     async def translate(self, ctx: Context, lang: str, *, text: str = None):
         """
         Tries to Translate a text to another language.
@@ -427,7 +427,7 @@ class Translate(commands.Cog):
                 return await ctx.send(f"An error occurred, please report this error: {result}")
 
     @translate.command(name="from", usage="<from> <to> [text]")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 5, commands.BucketType.member)
     async def translate_from(self, ctx: Context, _from: str, to: str, *, text: str = None):
         """
         Tries to Translate a text to another language, with the specified source (original text) language.

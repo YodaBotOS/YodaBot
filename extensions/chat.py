@@ -38,7 +38,7 @@ class Chat(commands.Cog):
         del self.openai
 
     @commands.command("chat")
-    @commands.max_concurrency(1, commands.BucketType.user)
+    @commands.max_concurrency(1, commands.BucketType.member)
     async def chat(self, ctx: Context, *, text: str = None):
         """
         Chat with an AI
@@ -108,7 +108,7 @@ class Chat(commands.Cog):
 
                 prev_msg = await ctx.send(embed=embed, view=view)
 
-    CHAT_SLASH_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=False)
+    CHAT_SLASH_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.member, wait=False)
 
     @app_commands.command(name=_T("chat"))
     async def chat_slash(self, interaction: discord.Interaction, text: str = None):

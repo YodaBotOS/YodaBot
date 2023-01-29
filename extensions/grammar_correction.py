@@ -136,7 +136,7 @@ class GrammarCorrection(commands.Cog):
             "gc",
         ],
     )
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 5, commands.BucketType.member)
     async def check_grammar(self, ctx: Context, *, text: str = None):
         """
         Fix grammar mistakes in a text using AI.

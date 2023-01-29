@@ -75,7 +75,7 @@ class Music(commands.Cog):
 
         return embed
 
-    PREDICT_GENRE_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=False)
+    PREDICT_GENRE_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.member, wait=False)
 
     @commands.command(
         "predict-genre",

@@ -37,10 +37,10 @@ class StudyNotes(commands.Cog):
     async def cog_unload(self):
         del self.openai
 
-    STUDY_NOTES_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=False)
+    STUDY_NOTES_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.member, wait=False)
 
     @commands.command("study-notes")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 5, commands.BucketType.member)
     async def study_notes(
         self,
         ctx: Context,
