@@ -18,7 +18,7 @@ class ChatModal(discord.ui.Modal):
         await interaction.response.defer(thinking=True)
 
         text_prompt = self.text.value
-        text_prompt = discord.utils.escape_markdown(text)
+        text_prompt = discord.utils.escape_markdown(text_prompt)
 
         try:
             text = self.openai.chat(text_prompt, user=interaction.user.id, channel=interaction.channel.id)
