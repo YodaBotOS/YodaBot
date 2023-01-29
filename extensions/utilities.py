@@ -19,11 +19,11 @@ class Utilities(commands.Cog):
     @staticmethod
     def ansi(name, latency, spaces=18) -> str:
         if latency < 100:
-            return f"\u001b[0;40;37m > \u001b[0;0m {name} {' ' * (spaces - len(name))} \u001b[0;1;37;40m : \u001b[0;0m \u001b[0;32m{latency}ms\u001b[0;0m"
+            return f"\u001b[0;40;37m > \u001b[0;0m \u001b[0;34m{name}\u001b[0;0m {' ' * (spaces - len(name))} \u001b[0;1;37;40m : \u001b[0;0m \u001b[0;32m{latency}ms\u001b[0;0m"
         elif 100 <= latency < 250:
-            return f"\u001b[0;40;37m > \u001b[0;0m {name} {' ' * (spaces - len(name))} \u001b[0;1;37;40m : \u001b[0;0m \u001b[0;33m{latency}ms\u001b[0;0m"
+            return f"\u001b[0;40;37m > \u001b[0;0m \u001b[0;34m{name}\u001b[0;0m {' ' * (spaces - len(name))} \u001b[0;1;37;40m : \u001b[0;0m \u001b[0;33m{latency}ms\u001b[0;0m"
         elif latency >= 250:
-            return f"\u001b[0;40;37m > \u001b[0;0m {name} {' ' * (spaces - len(name))} \u001b[0;1;37;40m : \u001b[0;0m \u001b[0;31m{latency}ms\u001b[0;0m"
+            return f"\u001b[0;40;37m > \u001b[0;0m \u001b[0;34m{name}\u001b[0;0m {' ' * (spaces - len(name))} \u001b[0;1;37;40m : \u001b[0;0m \u001b[0;31m{latency}ms\u001b[0;0m"
 
     @commands.hybrid_command(name=_T("ping"), aliases=["latency"])
     async def ping(self, ctx: Context):
