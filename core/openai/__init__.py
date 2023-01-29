@@ -8,13 +8,17 @@ from .codex import Codex
 
 class OpenAI:
     CHAT_START_STRING = """
-The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.
+The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly. This AI is more into human conversations than as an Assistant, but still gives out inforrmation/facts. The AI is chatting with "{username}" (with a whole username of "{user}") with the user ID of {userid}.
 
 Human: Hello, who are you?
 AI: I am YodaBot.
 Human: Who are you?
 AI: I am YodaBot.
-Human:"""
+Human: Who am I?
+AI: Your name is {username} ({user})
+Human: Who is {username}?
+AI: You."""
+
     CHAT_PARAMS = {
         "model": "text-davinci-003",
         "temperature": 0.9,
@@ -57,14 +61,14 @@ Human:"""
         self.chat_ids = {}
 
     # --- Chat ---
-    def _create_chat(self, user, channel, *, force=False):
+    def _create_chat(self, user, channel, usr, *, force=False):
         if (user, channel) in self.chat_ids:
             if force:
-                self.chat_ids[(user, channel)] = {"text": self.CHAT_START_STRING}
+                self.chat_ids[(user, channel)] = {"text": self.CHAT_START_STRING.strip().format(user=usr.name, username=str(usr), userid=usr.id)}
 
             return self.chat_ids[(user, channel)]
 
-        self.chat_ids[(user, channel)] = {"text": self.CHAT_START_STRING}
+        self.chat_ids[(user, channel)] = {"text": self.CHAT_START_STRING.strip().format(user=usr.name, username=str(usr), userid=usr.id)}
 
         return self.chat_ids[(user, channel)]
 
@@ -124,6 +128,7 @@ Human:"""
         user: int = None,
         channel: int = None,
         force_return_data: bool = False,
+        usr = None,
     ) -> str:
         text = self.clean_chat(text)
 
@@ -150,7 +155,7 @@ Human:"""
         elif user or channel:
             raise Exception("Both user and channel must be specified")
         else:
-            start_string = self.CHAT_START_STRING.strip() + f"Human: {text}\nAI: "
+            start_string = self.CHAT_START_STRING.strip().format(user=usr.name, username=str(usr), userid=usr.id) + f"Human: {text}\nAI: "
 
             response = openai.Completion.create(prompt=start_string, user=str(user), **self.CHAT_PARAMS)
 
