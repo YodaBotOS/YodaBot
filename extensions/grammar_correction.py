@@ -51,13 +51,14 @@ class GrammarCorrection(commands.Cog):
             return "SOMETHING_WENT_WRONG", e
 
         is_same = text == new_text
-
-        embed = discord.Embed(color=self.bot.color)
-        embed.set_author(name="Grammar Correction Result:", icon_url=user.display_avatar.url)
+        
+        title = "Grammar Correction Result:"
         
         if rephrase:
-            embed.set_author(name="Grammar Correction & Rephrasing Result:")
-            
+            title = "Grammar Correction & Rephrasing Result:"
+
+        embed = discord.Embed(color=self.bot.color)
+        embed.set_author(name=title, icon_url=user.display_avatar.url)
         embed.add_field(name="Original Text:", value=text, inline=False)
         embed.add_field(name="Corrected Text:", value=new_text, inline=False)
         embed.add_field(name="Is The Same?", value=str(is_same), inline=False)
