@@ -4,7 +4,6 @@ import discord
 import sentry_sdk
 from discord import app_commands
 from rich.console import Console
-
 from rich.traceback import Traceback
 
 
@@ -36,7 +35,7 @@ class CommandTree(app_commands.CommandTree):
         #     await interaction.followup.send(f"Error, please report: {error}", ephemeral=True)
 
         console = Console()
-        
+
         t = Traceback.from_exception(error)
         console.print(t)
 

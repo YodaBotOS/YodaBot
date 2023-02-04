@@ -8,11 +8,10 @@ from typing import TYPE_CHECKING
 import discord
 import sentry_sdk
 from discord.ext import commands
-
-from core.context import Context
-
 from rich.console import Console
 from rich.traceback import Traceback
+
+from core.context import Context
 
 if TYPE_CHECKING:
     from core.bot import Bot
@@ -76,7 +75,6 @@ class Events(commands.Cog):
         t = Traceback.from_exception(error)
         print(f"Ignoring exception in command {ctx.command}:", file=sys.stderr)
         self.console.print(t)
-        
 
         with sentry_sdk.push_scope() as scope:
             scope.set_user({"username": str(ctx.author), "id": ctx.author.id})
