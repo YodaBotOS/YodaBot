@@ -30,6 +30,7 @@ AI: You."""
     }
 
     GRAMMAR_CORRECTION_START_STRING = "Correct this to standard English:\n\n{text}\n\n"
+    GRAMMAR_CORRECTION_REPHRASE_START_STRING = "Correct this to standard English as well as replace complicated sentences with more efficient ones, refresh repetitive language, and uphold accurate spelling, punctuation, and grammar:\n\n{text}\n\n"
     GRAMMAR_CORRECTION_PARAMS = {
         "model": "text-davinci-003",
         "temperature": 0,
@@ -174,8 +175,13 @@ AI: You."""
             return ai_resps
 
     # --- Grammar Correction ---
-    def grammar_correction(self, text: str, *, user: int, raw: bool = False) -> str | typing.Any:
-        prompt = self.GRAMMAR_CORRECTION_START_STRING.format(text=text)
+    def grammar_correction(self, text: str, *, user: int, rephrase: bool = False, raw: bool = False) -> str | typing.Any:
+        if rephrase:
+            prompt = self.GRAMMAR_CORRECTION_REPHRASE_START_STRING
+        else:
+            prompt = self.GRAMMAR_CORRECTION_START_STRING
+        
+        prompt = prompt.format(text=text)
 
         response = openai.Completion.create(prompt=prompt, user=str(user), **self.GRAMMAR_CORRECTION_PARAMS)
 

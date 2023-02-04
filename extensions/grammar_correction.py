@@ -44,9 +44,9 @@ class GrammarCorrection(commands.Cog):
 
         self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
 
-    async def grammar_correction(self, user, text: str) -> discord.Embed | tuple[str, Exception]:
+    async def grammar_correction(self, user, text: str, rephrase: bool=False) -> discord.Embed | tuple[str, Exception]:
         try:
-            new_text = self.openai.grammar_correction(text, user=user.id)
+            new_text = self.openai.grammar_correction(text, user=user.id, rephrase=rephrase)
         except Exception as e:
             return "SOMETHING_WENT_WRONG", e
 
@@ -54,6 +54,10 @@ class GrammarCorrection(commands.Cog):
 
         embed = discord.Embed(color=self.bot.color)
         embed.set_author(name="Grammar Correction Result:", icon_url=user.display_avatar.url)
+        
+        if rephrase:
+            embed.set_author(name="Grammar Correction & Rephrasing Result:")
+            
         embed.add_field(name="Original Text:", value=text, inline=False)
         embed.add_field(name="Corrected Text:", value=new_text, inline=False)
         embed.add_field(name="Is The Same?", value=str(is_same), inline=False)
@@ -63,7 +67,11 @@ class GrammarCorrection(commands.Cog):
     @app_commands.command(name=_T("check-grammar"))
     @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.describe(text="The text to be checked for grammar.")
-    async def check_grammar_slash(self, interaction: discord.Interaction, text: str = None):
+    @app_commands.choices(rephrase=[
+        app_commands.Choice("Rephrase", str(True)), 
+        app_commands.Choice("Don't Rephrase", str(False))
+    ])
+    async def check_grammar_slash(self, interaction: discord.Interaction, text: str = None, rephrase: str = "False"):
         """
         Fix grammar mistakes in a text using AI.
 
@@ -71,6 +79,8 @@ class GrammarCorrection(commands.Cog):
         """
 
         original_text = text
+        
+        rephrase = rephrase == "True"
 
         if text is None:
 
@@ -83,6 +93,7 @@ class GrammarCorrection(commands.Cog):
 
                 def __init__(self, *args, **kwargs):
                     self.func = kwargs.pop("func")
+                    self.rephrase = kwargs.pop("rephrase")
                     super().__init__(*args, **kwargs)
 
                 async def on_submit(self, inter: discord.Interaction):
@@ -93,7 +104,7 @@ class GrammarCorrection(commands.Cog):
 
                     original_text = discord.utils.escape_markdown(original_text)
 
-                    embed = await self.func(interaction.user, original_text)
+                    embed = await self.func(interaction.user, original_text, self.rephrase)
 
                     if isinstance(embed, tuple):
                         interaction.client.tree.on_error(interaction, (embed[1], False))
@@ -104,7 +115,7 @@ class GrammarCorrection(commands.Cog):
                     return await interaction.followup.send(embed=embed)
 
             return await interaction.response.send_modal(
-                Modal(title="Grammar Correction", func=self.grammar_correction)
+                Modal(title="Grammar Correction", func=self.grammar_correction, rephrase=rephrase)
             )
         else:
             await interaction.response.defer()
@@ -113,7 +124,7 @@ class GrammarCorrection(commands.Cog):
             await Context.from_interaction(interaction), original_text
         )
 
-        embed = await self.grammar_correction(interaction.user, original_text)
+        embed = await self.grammar_correction(interaction.user, original_text, rephrase)
 
         if isinstance(embed, tuple):
             self.bot.tree.on_error(interaction, (embed[1], False))
@@ -143,6 +154,8 @@ class GrammarCorrection(commands.Cog):
 
         Note: only English texts are currently supported.
         """
+        
+        rephrase = text.strip().endswith("--rephrase")
 
         if text is None:
             if not (ref := ctx.message.reference):
@@ -158,7 +171,7 @@ class GrammarCorrection(commands.Cog):
             await ctx.send("Please enter text to be checked for grammar.")
             return
 
-        embed = await self.grammar_correction(ctx.author, original_text)
+        embed = await self.grammar_correction(ctx.author, original_text, rephrase)
 
         if isinstance(embed, tuple):
             self.bot.dispatch("command_error", ctx, embed[1], force=True, send_msg=False)
