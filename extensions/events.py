@@ -11,6 +11,9 @@ from discord.ext import commands
 
 from core.context import Context
 
+from rich.console import Console
+from rich.traceback import Traceback
+
 if TYPE_CHECKING:
     from core.bot import Bot
 
@@ -18,6 +21,7 @@ if TYPE_CHECKING:
 class Events(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot: Bot = bot
+        self.console = Console()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -69,8 +73,10 @@ class Events(commands.Cog):
         except:
             pass
 
+        t = Traceback.from_exception(error)
         print(f"Ignoring exception in command {ctx.command}:", file=sys.stderr)
-        traceback.print_exception(error)
+        self.console.print(t)
+        
 
         with sentry_sdk.push_scope() as scope:
             scope.set_user({"username": str(ctx.author), "id": ctx.author.id})
