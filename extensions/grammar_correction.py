@@ -68,8 +68,8 @@ class GrammarCorrection(commands.Cog):
     @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.describe(text="The text to be checked for grammar.")
     @app_commands.choices(rephrase=[
-        app_commands.Choice("Rephrase", str(True)), 
-        app_commands.Choice("Don't Rephrase", str(False))
+        app_commands.Choice(name=_T("Rephrase"), value=str(True)), 
+        app_commands.Choice(name=_T("Don't Rephrase"), value=str(False))
     ])
     async def check_grammar_slash(self, interaction: discord.Interaction, text: str = None, rephrase: str = "False"):
         """
