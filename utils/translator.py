@@ -174,6 +174,9 @@ class Translator(app_commands.Translator):
 
         if context.location is app_commands.TranslationContextLocation.choice_name:
             return None
+        
+        if target in ["american_english", "british_english"]:
+            return message
 
         trans = await self.search_persistent_cache(target, message)
 

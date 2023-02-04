@@ -226,11 +226,11 @@ class Translate:
             source_language = source_language["languageCode"]
         else:
             source_language = (await self.detect_language(text))["languageCode"]
-
-        text = (await self.input_tools(text, source_language))["choices"][0]
-
+            
         if check_duplicate and target_language == source_language:
             return {"translated": text, "sourceLanguageCode": source_language}
+
+        text = (await self.input_tools(text, source_language))["choices"][0]
 
         key = get_gcp_token(from_gcloud=True)
 
