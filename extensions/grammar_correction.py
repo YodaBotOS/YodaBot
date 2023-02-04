@@ -60,7 +60,7 @@ class GrammarCorrection(commands.Cog):
         embed = discord.Embed(color=self.bot.color)
         embed.set_author(name=title, icon_url=user.display_avatar.url)
         embed.add_field(name="Original Text:", value=text, inline=False)
-        embed.add_field(name="Corrected Text:", value=new_text, inline=False)
+        embed.add_field(name="Corrected & Rephrased Text:" if rephrase else "Corrected Text:", value=new_text, inline=False)
         embed.add_field(name="Is The Same?", value=str(is_same), inline=False)
 
         return embed
