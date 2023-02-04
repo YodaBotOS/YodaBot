@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import datetime
 import json
 import os
 import typing
-import datetime
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -80,7 +80,8 @@ class Translator(app_commands.Translator):
         # self.bot.loop.create_task(self.translate_task())
 
     async def unload(self):
-        await self.session.close()
+        # await self.session.close()
+        ...
 
     async def add_to_persistent_cache(self, target: str, message: str, trans: str):
         # if not os.path.exists('data'):
@@ -102,11 +103,11 @@ class Translator(app_commands.Translator):
 
         # with open('data/translate/translated.json', 'w') as f:
         #     json.dump(d, f, indent=4)
-        
+
         ttl = datetime.datetime.utcnow() + datetime.timedelta(days=30)
 
         q = "INSERT INTO translations (target, message, translation, ttl) VALUES ($1, $2, $3, $4) ON CONFLICT (target, message) DO UPDATE SET translation = $3, ttl = $4;"
-        
+
         async with self.bot.pool.acquire() as conn:
             await conn.execute(q, target, message, trans, ttl)
 
@@ -128,7 +129,7 @@ class Translator(app_commands.Translator):
         #         return d[message][target]
 
         q = "SELECT translation FROM translations WHERE target = $1 AND message = $2;"
-        
+
         async with self.bot.pool.acquire() as conn:
             return await conn.fetchval(q, target, message)
 
@@ -174,9 +175,9 @@ class Translator(app_commands.Translator):
 
         if context.location is app_commands.TranslationContextLocation.choice_name:
             return None
-        
+
         if target in ["american_english", "british_english"]:
-            return message
+            return None
 
         trans = await self.search_persistent_cache(target, message)
 
@@ -200,18 +201,20 @@ class Translator(app_commands.Translator):
             return None
 
         return res
-    
+
     async def translate_task(self):
         await self.bot.wait_until_ready()
-        
-        q = 'SELECT * FROM translations ORDER BY ttl ASC LIMIT 1;'
-        
+
+        q = "SELECT * FROM translations ORDER BY ttl ASC LIMIT 1;"
+
         oldest = await self.bot.pool.fetchrow(q)
-        
+
         while not self.bot.is_closed():
-            if oldest['ttl'] < datetime.datetime.utcnow():
+            if oldest["ttl"] < datetime.datetime.utcnow():
                 try:
-                    trans = await self._translate.translate(oldest['message'], oldest['target'], source_language="en", check_duplicate=True)
+                    trans = await self._translate.translate(
+                        oldest["message"], oldest["target"], source_language="en", check_duplicate=True
+                    )
                 except:
                     return None
 
@@ -221,9 +224,9 @@ class Translator(app_commands.Translator):
 
                 res = res2 or res
 
-                await self.add_to_persistent_cache(oldest['target'], oldest['message'], res)
-                
-                q = 'SELECT * FROM translations ORDER BY ttl ASC LIMIT 1;'
+                await self.add_to_persistent_cache(oldest["target"], oldest["message"], res)
+
+                q = "SELECT * FROM translations ORDER BY ttl ASC LIMIT 1;"
                 oldest = await self.bot.pool.fetchrow(q)
 
                 if not res2:

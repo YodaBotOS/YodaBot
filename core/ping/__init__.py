@@ -21,7 +21,7 @@ class APIPing:
 
     async def yodabot(self, format: str = "ms") -> int | float:
         # API ping test, the fastest endpoint to test as it just returns a static text.
-        url = self.URLS['yodabot']
+        url = self.URLS["yodabot"]
 
         start = time.perf_counter()
         async with self._ping._bot.session.get(url) as resp:
@@ -33,6 +33,7 @@ class APIPing:
                 case _:
                     return end - start
 
+
 class Ping:
     EMOJIS = {
         "postgresql": "<:postgresql:903286241066385458>",
@@ -41,13 +42,10 @@ class Ping:
         "discord": "<:BlueDiscord:842701102381269022>",
         "typing": "<a:typing:597589448607399949>",
         "yodabot-api": "<:yoda:1041177124784054333>",
-        "r2": "<:r2white:976076378854260749>"
+        "r2": "<:r2white:976076378854260749>",
     }
 
-    URLS = {
-        "discord": "https://discordapp.com/",
-        "r2": "https://cdn.yodabot.xyz/"
-    }
+    URLS = {"discord": "https://discordapp.com/", "r2": "https://cdn.yodabot.xyz/"}
 
     def __init__(self, bot: Bot):
         self._bot = bot
@@ -67,7 +65,7 @@ class Ping:
                 return latency
 
     async def discord(self, format: str = "ms") -> int | float:
-        url = self.URLS['discord']
+        url = self.URLS["discord"]
 
         start = time.perf_counter()
         async with self._bot.session.get(url) as resp:
@@ -93,7 +91,7 @@ class Ping:
                 return end - start
 
     async def r2(self, format: str = "ms") -> int | float:
-        url = self.URLS['r2']
+        url = self.URLS["r2"]
 
         start = time.perf_counter()
         async with self._bot.session.get(url) as resp:
@@ -104,7 +102,7 @@ class Ping:
                 return (end - start) * 1000
             case _:
                 return end - start
-            
+
     async def postgresql(self, format: str = "ms") -> int | float:
         async with self._bot.pool.acquire() as conn:
             start = time.perf_counter()

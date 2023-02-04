@@ -226,7 +226,7 @@ class Translate:
             source_language = source_language["languageCode"]
         else:
             source_language = (await self.detect_language(text))["languageCode"]
-            
+
         if check_duplicate and target_language == source_language:
             return {"translated": text, "sourceLanguageCode": source_language}
 

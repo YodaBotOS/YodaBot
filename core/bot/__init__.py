@@ -13,16 +13,19 @@ import mystbin
 import sentry_sdk
 from discord import app_commands
 from discord.ext import commands
+from rich.traceback import install as install_rich_traceback
 
 import config as cfg
 from core.context import Context
 from core.openai import OpenAI
+from core.ping import Ping
 from utils.app_commands import CommandTree
 from utils.translator import Translator
-from core.ping import Ping
 
 if TYPE_CHECKING:
     from mypy_boto3_s3 import Client as S3Client
+
+install_rich_traceback()
 
 
 EXTENSIONS = [
@@ -123,7 +126,7 @@ class Bot(commands.Bot):
         )
 
         self.pool = await asyncpg.create_pool(cfg.POSTGRESQL_DSN)
-        
+
         self.ping = Ping(self)
 
         with open("schema.sql") as f:

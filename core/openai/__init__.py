@@ -64,11 +64,15 @@ AI: You."""
     def _create_chat(self, user, channel, usr, *, force=False):
         if (user, channel) in self.chat_ids:
             if force:
-                self.chat_ids[(user, channel)] = {"text": self.CHAT_START_STRING.strip().format(user=usr.name, username=str(usr), userid=usr.id)}
+                self.chat_ids[(user, channel)] = {
+                    "text": self.CHAT_START_STRING.strip().format(user=usr.name, username=str(usr), userid=usr.id)
+                }
 
             return self.chat_ids[(user, channel)]
 
-        self.chat_ids[(user, channel)] = {"text": self.CHAT_START_STRING.strip().format(user=usr.name, username=str(usr), userid=usr.id)}
+        self.chat_ids[(user, channel)] = {
+            "text": self.CHAT_START_STRING.strip().format(user=usr.name, username=str(usr), userid=usr.id)
+        }
 
         return self.chat_ids[(user, channel)]
 
@@ -128,7 +132,7 @@ AI: You."""
         user: int = None,
         channel: int = None,
         force_return_data: bool = False,
-        usr = None,
+        usr=None,
     ) -> str:
         text = self.clean_chat(text)
 
@@ -155,7 +159,10 @@ AI: You."""
         elif user or channel:
             raise Exception("Both user and channel must be specified")
         else:
-            start_string = self.CHAT_START_STRING.strip().format(user=usr.name, username=str(usr), userid=usr.id) + f"Human: {text}\nAI: "
+            start_string = (
+                self.CHAT_START_STRING.strip().format(user=usr.name, username=str(usr), userid=usr.id)
+                + f"Human: {text}\nAI: "
+            )
 
             response = openai.Completion.create(prompt=start_string, user=str(user), **self.CHAT_PARAMS)
 

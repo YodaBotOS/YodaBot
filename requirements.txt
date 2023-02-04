@@ -15,3 +15,4 @@ async-timeout
 asyncpg
 regex
 psutil
+rich
