@@ -36,7 +36,7 @@ class CommandTree(app_commands.CommandTree):
 
         console = Console()
 
-        t = Traceback.from_exception(error)
+        t = Traceback.from_exception(type(error), error, error.__traceback__)
         console.print(t)
 
         if interaction.command:

@@ -72,7 +72,7 @@ class Events(commands.Cog):
         except:
             pass
 
-        t = Traceback.from_exception(error)
+        t = Traceback.from_exception(type(error), error, error.__traceback__)
         print(f"Ignoring exception in command {ctx.command}:", file=sys.stderr)
         self.console.print(t)
 
