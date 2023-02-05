@@ -247,16 +247,15 @@ class Text(commands.Cog):
             
         ori_text = await commands.clean_content(fix_channel_mentions=True).convert(ctx, text)
         
-        async with ctx.typing():
-            r_text = await self.openai.wordtune(text, tunes, amount, user=ctx.author.id)
-            
-            embed = discord.Embed()
-            embed.set_author(name="Word Tune Results:", icon_url=ctx.author.avatar.url)
-            embed.title = ", ".join(tunes)
-            embed.add_field(name="Original Text:", value=text, inline=False)
-            embed.add_field(name="Result:", value=r_text, inline=False)
-            
-            await ctx.send(embed=embed)
+        r_text = await self.openai.wordtune(ori_text, tunes, amount, user=ctx.author.id)
+        
+        embed = discord.Embed()
+        embed.set_author(name="Word Tune Results:", icon_url=ctx.author.avatar.url)
+        embed.title = ", ".join(tunes)
+        embed.add_field(name="Original Text:", value=text, inline=False)
+        embed.add_field(name="Result:", value=r_text, inline=False)
+        
+        await ctx.send(embed=embed)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Text(bot))
