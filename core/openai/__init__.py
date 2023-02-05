@@ -77,7 +77,7 @@ AI: You."""
     }
     WORDTUNES_LITERAL = typing.Literal["Formal", "Informal", "Casual", "Sad", "Confident", "Curious", "Surprised", "Unassuming", "Concerned", "Joyful", "Disheartening", "Worried", "Excited", "Regretful", "Encouraging", "Assertive", "Optimistic", "Accusatory", "Egocentric", "Appreciative", "Disapproving"]
     WORDTUNES_START_STRING = "Make {amount} sentences about this with {tones} tone:\n\n{text}\n\n1."
-    WORDTUNES_CORRECTION_PARAMS = {
+    WORDTUNES_PARAMS = {
         "model": "text-davinci-003",
         "temperature": 0,
         "max_tokens": 400,
@@ -252,7 +252,7 @@ AI: You."""
             
         prompt = self.WORDTUNES_START_STRING.format(text=text, amount=amount, tones=tones)
 
-        response = openai.Completion.create(prompt=prompt, user=str(user), **self.WORDTUNE_PARAMS)
+        response = openai.Completion.create(prompt=prompt, user=str(user), **self.WORDTUNES_PARAMS)
 
         if raw:
             return response
