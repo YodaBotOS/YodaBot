@@ -247,7 +247,7 @@ class Text(commands.Cog):
             
         ori_text = await commands.clean_content(fix_channel_mentions=True).convert(ctx, text)
         
-        r_text = await self.openai.wordtune(ori_text, tunes, amount, user=ctx.author.id)
+        r_text = self.openai.wordtune(ori_text, tunes, amount, user=ctx.author.id)
         
         embed = discord.Embed()
         embed.set_author(name="Word Tune Results:", icon_url=ctx.author.avatar.url)
