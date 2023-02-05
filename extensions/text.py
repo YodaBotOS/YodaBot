@@ -240,6 +240,9 @@ class Text(commands.Cog):
             await view.wait()
             tunes = view.tunes
         else:
+            if ctx.interaction:
+                await ctx.interaction.response.defer()
+                
             tunes = [tunes]
             
         if len(text) > 500:
