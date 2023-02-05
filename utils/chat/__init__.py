@@ -33,8 +33,8 @@ class ChatModal(discord.ui.Modal):
 
         embed = discord.Embed(color=interaction.client.color)
         embed.set_author(name="Chat:", icon_url=interaction.user.display_avatar.url)
-        embed.add_field(name="Input/Prompt:", value=text_prompt)
-        embed.add_field(name="Output/Response:", value=text)
+        embed.add_field(name="Input/Prompt:", value=text_prompt, inline=False)
+        embed.add_field(name="Output/Response:", value=text, inline=False)
 
         if self.prev_msg:
             await self.prev_msg.edit(view=None)

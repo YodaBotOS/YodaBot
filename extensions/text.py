@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import importlib
 import inspect
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import discord
 from discord import app_commands
@@ -12,14 +12,15 @@ from discord.ext import commands
 import config
 from core import openai as core_openai
 from core.context import Context
+from core.openai import OpenAI
 
 if TYPE_CHECKING:
     from core.bot import Bot
 
 
-class GrammarCorrection(commands.Cog):
+class Text(commands.Cog):
     """
-    Grammar Correction
+    Text-related commands
     """
 
     def __init__(self, bot: Bot):
@@ -80,6 +81,9 @@ class GrammarCorrection(commands.Cog):
         """
 
         original_text = text
+        
+        if len(text) > 500:
+            return await interaction.response.send_message("Text must be less than 500 characters.", ephemeral=True)
         
         rephrase = rephrase == "True"
 
@@ -157,6 +161,9 @@ class GrammarCorrection(commands.Cog):
         """
         
         rephrase = text.strip().endswith("--rephrase")
+        
+        if len(text.replace("--rephrase")) > 500:
+            return await ctx.send("Text must be less than 500 characters.")
 
         if text is None:
             if not (ref := ctx.message.reference):
@@ -199,7 +206,57 @@ class GrammarCorrection(commands.Cog):
             return await interaction.followup.send(f"Something went wrong. Try again later.", ephemeral=True)
 
         return await interaction.response.send(embed=embed)
-
+    
+    class TunesView(discord.ui.View):
+        class TunesSelect(discord.ui.Select):
+            def __init__(self, tunes: dict[str, str]) -> None:
+                super().__init__(min_values=1, max_values=3, placeholder="Select tune(s) to use.", options=[discord.SelectOption(label=tune, value=tune, emoji=emoji) for tune, emoji in tunes.items()])
+                
+            async def callback(self, interaction: discord.Interaction):
+                await interaction.response.send_message("Picked tunes: " + ", ".join(self.values), ephemeral=True)
+                self.view.tunes = self.values
+                self.view.stop()
+                
+        def __init__(self, tunes: dict[str, str], ctx) -> None:
+            super().__init__(timeout=None)
+            self.add_item(self.TunesSelect(tunes))
+            self.tunes = []
+            self.ctx = ctx
+            
+        async def interaction_check(self, interaction: discord.Interaction, ) -> bool:
+            if interaction.user.id != self.ctx.author.id:
+                await interaction.response.send_message("You can't use this menu.", ephemeral=True)
+                return False
+            else:
+                return True
+    
+    @commands.hybrid_command(name=_T("wordtune"), aliases=["wt"])
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    async def word_tune(self, ctx: Context, tunes: Optional[OpenAI.WORDTUNES_LITERAL] = None, amount: Optional[int] = 5, *, text: str):        
+        if not tunes:
+            view = self.TunesView(OpenAI.WORDTUNES_EMOJIS, ctx)
+            await ctx.send("Please select the tune(s) to use.", view=view)
+            
+            await view.wait()
+            tunes = view.tunes
+        else:
+            tunes = [tunes]
+            
+        if len(text) > 500:
+            return await ctx.send("Text must be less than 500 characters.")
+            
+        ori_text = await commands.clean_content(fix_channel_mentions=True).convert(ctx, text)
+        
+        async with ctx.typing():
+            r_text = await self.openai.wordtune(text, tunes, amount, user=ctx.author.id)
+            
+            embed = discord.Embed()
+            embed.set_author(name="Word Tune Results:", icon_url=ctx.author.avatar.url)
+            embed.title = ", ".join(tunes)
+            embed.add_field(name="Original Text:", value=text, inline=False)
+            embed.add_field(name="Result:", value=r_text, inline=False)
+            
+            await ctx.send(embed=embed)
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(GrammarCorrection(bot))
+    await bot.add_cog(Text(bot))
