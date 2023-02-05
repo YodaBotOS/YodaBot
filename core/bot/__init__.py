@@ -32,7 +32,7 @@ EXTENSIONS = [
     "jishaku",
     "extensions.ocr",
     "extensions.translate",
-    "extensions.grammar_correction",
+    "extensions.text",
     # "extensions.chat",
     "extensions.image",
     "extensions.study_notes",
