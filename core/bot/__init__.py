@@ -33,7 +33,7 @@ EXTENSIONS = [
     "extensions.ocr",
     "extensions.translate",
     "extensions.text",
-    # "extensions.chat",
+    "extensions.chat",
     "extensions.image",
     "extensions.study_notes",
     "extensions.music",
