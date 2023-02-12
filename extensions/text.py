@@ -27,11 +27,17 @@ class Text(commands.Cog):
         self.openai = None
         self.bot: Bot = bot
 
-        self.ctx_menu = app_commands.ContextMenu(
+        self.grammar_ctx_menu = app_commands.ContextMenu(
             name=_T("Grammar Correction"),
             callback=self.check_grammar_context_menu,
         )
-        self.bot.tree.add_command(self.ctx_menu)
+        self.bot.tree.add_command(self.grammar_ctx_menu)
+        
+        self.wordtune_ctx_menu = app_commands.ContextMenu(
+            name=_T("Wordtune"),
+            callback=self.word_tune_context_menu,
+        )
+        self.bot.tree.add_command(self.wordtune_ctx_menu)
 
     async def cog_load(self):
         importlib.reload(core_openai)
@@ -82,13 +88,9 @@ class Text(commands.Cog):
 
         original_text = text
         
-        if len(text) > 500:
-            return await interaction.response.send_message("Text must be less than 500 characters.", ephemeral=True)
-        
         rephrase = rephrase == "True"
 
         if text is None:
-
             class Modal(discord.ui.Modal):
                 text = discord.ui.TextInput(
                     label="Text",
@@ -102,10 +104,14 @@ class Text(commands.Cog):
                     super().__init__(*args, **kwargs)
 
                 async def on_submit(self, inter: discord.Interaction):
+                    original_text = self.text.value
+                    
+                    if len(original_text) > 500:
+                        return await interaction.response.send_message("Text must be less than 500 characters.", ephemeral=True)
+                    
                     await inter.response.defer(thinking=True)
 
                     interaction = inter
-                    original_text = self.text.value
 
                     original_text = discord.utils.escape_markdown(original_text)
 
@@ -122,12 +128,15 @@ class Text(commands.Cog):
             return await interaction.response.send_modal(
                 Modal(title="Grammar Correction", func=self.grammar_correction, rephrase=rephrase)
             )
-        else:
-            await interaction.response.defer()
-
+            
         original_text = await commands.clean_content(escape_markdown=True).convert(
             await Context.from_interaction(interaction), original_text
         )
+        
+        if len(original_text) > 500:
+            return await interaction.response.send_message("Text must be less than 500 characters.", ephemeral=True)
+        
+        await interaction.response.defer()
 
         embed = await self.grammar_correction(interaction.user, original_text, rephrase)
 
@@ -160,10 +169,11 @@ class Text(commands.Cog):
         Note: only English texts are currently supported.
         """
         
-        rephrase = text.strip().endswith("--rephrase")
-        
-        if len(text.replace("--rephrase")) > 500:
-            return await ctx.send("Text must be less than 500 characters.")
+        if text:
+            rephrase = text.strip().endswith("--rephrase")
+            text = text.replace("--rephrase").strip()
+        else:
+            rephrase = False
 
         if text is None:
             if not (ref := ctx.message.reference):
@@ -172,12 +182,15 @@ class Text(commands.Cog):
                 )
 
             text = ref.resolved.content
-
-        original_text = await commands.clean_content(escape_markdown=True).convert(ctx, text)
-
+            
         if text is None:
             await ctx.send("Please enter text to be checked for grammar.")
             return
+
+        original_text = await commands.clean_content(escape_markdown=True).convert(ctx, text)
+        
+        if len(original_text) > 500:
+            return await ctx.send("Text must be less than 500 characters.")
 
         embed = await self.grammar_correction(ctx.author, original_text, rephrase)
 
@@ -196,6 +209,9 @@ class Text(commands.Cog):
         original_text = await commands.clean_content(escape_markdown=True).convert(
             await Context.from_interaction(interaction), original_text
         )
+        
+        if len(original_text) > 500:
+            return await interaction.response.send_message("Text must be less than 500 characters.", ephemeral=True)
 
         await interaction.response.defer(ephemeral=True, thinking=True)
 
@@ -223,8 +239,13 @@ class Text(commands.Cog):
             self.tunes = []
             self.ctx = ctx
             
-        async def interaction_check(self, interaction: discord.Interaction, ) -> bool:
-            if interaction.user.id != self.ctx.author.id:
+        async def interaction_check(self, interaction: discord.Interaction) -> bool:
+            if isinstance(self.ctx, commands.Context):
+                author = self.ctx.author
+            else:
+                author = self.ctx.user
+                
+            if interaction.user.id != author.id:
                 await interaction.response.send_message("You can't use this menu.", ephemeral=True)
                 return False
             else:
@@ -232,7 +253,19 @@ class Text(commands.Cog):
     
     @commands.hybrid_command(name=_T("wordtune"), aliases=["wt"])
     @commands.cooldown(1, 5, commands.BucketType.member)
-    async def word_tune(self, ctx: Context, tunes: Optional[OpenAI.WORDTUNES_LITERAL] = None, amount: Optional[int] = 5, *, text: str):        
+    @app_commands.describe(tunes=_T("The tune(s) to use. Don't specify one if you want to use multiple tunes"), amount=_T("The amount of sentences to generate."), text=_T("The text to be tuned."))
+    async def word_tune(self, ctx: Context, tunes: Optional[OpenAI.WORDTUNES_LITERAL] = None, amount: Optional[int] = 5, *, text: str):
+        """
+        Tunes/Changes sentences into different feelings/moods.
+        
+        Note: only English texts are currently supported.
+        """
+        
+        ori_text = await commands.clean_content(fix_channel_mentions=True).convert(ctx, text)   
+        
+        if len(ori_text) > 500:
+            return await ctx.send("Text must be less than 500 characters.")
+        
         if not tunes:
             view = self.TunesView(OpenAI.WORDTUNES_EMOJIS, ctx)
             await ctx.send("Please select the tune(s) to use.", view=view)
@@ -244,11 +277,6 @@ class Text(commands.Cog):
                 await ctx.interaction.response.defer()
                 
             tunes = [tunes]
-            
-        if len(text) > 500:
-            return await ctx.send("Text must be less than 500 characters.")
-            
-        ori_text = await commands.clean_content(fix_channel_mentions=True).convert(ctx, text)
         
         r_text = self.openai.wordtune(ori_text, tunes, amount, user=ctx.author.id)
         
@@ -259,6 +287,28 @@ class Text(commands.Cog):
         embed.add_field(name="Result:", value=r_text, inline=False)
         
         await ctx.send(embed=embed)
+        
+    async def word_tune_context_menu(self, interaction: discord.Interaction, message: discord.Message): 
+        text = message.content
+        
+        if len(text) > 500:
+            return await interaction.followup.send("Text must be less than 500 characters.", ephemeral=True)
+        
+        view = self.TunesView(OpenAI.WORDTUNES_EMOJIS, interaction)
+        await interaction.response.send_message("Please select the tune(s) to use.", view=view, ephemeral=True)
+        
+        await view.wait()
+        tunes = view.tunes
+        
+        r_text = self.openai.wordtune(text, tunes, 5, user=interaction.user.id)
+        
+        embed = discord.Embed()
+        embed.set_author(name="Word Tune Results:", icon_url=interaction.user.avatar.url)
+        embed.title = ", ".join(tunes)
+        embed.add_field(name="Original Text:", value=text, inline=False)
+        embed.add_field(name="Result:", value=r_text, inline=False)
+        
+        await interaction.followup.send(embed=embed, ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Text(bot))

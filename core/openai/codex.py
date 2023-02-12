@@ -67,6 +67,8 @@ class Codex:
         "presence_penalty": 0.0,
         "stop": ['"""'],
     }
+    
+    lock = asyncio.Semaphore()
 
     @staticmethod
     def _do_comments(language: SUPPORTED_LANGUAGES_LITERAL, text: str) -> str:
@@ -101,34 +103,35 @@ class Codex:
 
         passed_prompt = f"{comment_prefix} {language}\n{parsed_prompt}\n\n"
 
-        response = openai.Completion.create(
-            **Codex.COMPLETION_KWARGS,
-            prompt=passed_prompt,
-            n=n,
-            user=str(user),
-        )
+        async with Codex.lock:
+            response = openai.Completion.create(
+                **Codex.COMPLETION_KWARGS,
+                prompt=passed_prompt,
+                n=n,
+                user=str(user),
+            )
 
-        choices = []
+            choices = []
 
-        for choice in response["choices"]:
-            text = choice["text"].strip()
+            for choice in response["choices"]:
+                text = choice["text"].strip()
 
-            c = choice.copy()
+                c = choice.copy()
 
-            while c["finish_reason"] == "length":
-                await asyncio.sleep(1)
+                while c["finish_reason"] == "length":
+                    await asyncio.sleep(1.5)
 
-                response = openai.Completion.create(
-                    **Codex.COMPLETION_KWARGS,
-                    prompt=passed_prompt + text,
-                    user=str(user),
-                )
+                    response = openai.Completion.create(
+                        **Codex.COMPLETION_KWARGS,
+                        prompt=passed_prompt + text,
+                        user=str(user),
+                    )
 
-                c = response["choices"][0]
+                    c = response["choices"][0]
 
-                text += c["text"]
+                    text += c["text"]
 
-            choices.append(text)
+                choices.append(text)
 
         return list(set(choices))  # remove duplicates (lazy to do it the hard way)
 
@@ -144,35 +147,36 @@ class Codex:
         else:
             passed_prompt = f"{code}\n\n{Codex._do_comments(language, prompt)}"
 
-        response = openai.Completion.create(
-            **Codex.EXPLAIN_KWARGS,
-            prompt=passed_prompt,
-            user=str(user),
-        )
-
-        choice = response["choices"][0]
-
-        text = choice["text"].strip()
-
-        if language != "Python":
-            text = Codex._remove_comments(language, text)
-
-        c = choice.copy()
-
-        while c["finish_reason"] == "length":
-            await asyncio.sleep(1)
-
+        async with Codex.lock:
             response = openai.Completion.create(
                 **Codex.EXPLAIN_KWARGS,
-                prompt=passed_prompt + text,
+                prompt=passed_prompt,
                 user=str(user),
             )
 
-            c = response["choices"][0]
+            choice = response["choices"][0]
+
+            text = choice["text"].strip()
 
             if language != "Python":
-                c["text"] = Codex._remove_comments(language, c["text"])
+                text = Codex._remove_comments(language, text)
 
-            text += c["text"]
+            c = choice.copy()
+
+            while c["finish_reason"] == "length":
+                await asyncio.sleep(1.5)
+
+                response = openai.Completion.create(
+                    **Codex.EXPLAIN_KWARGS,
+                    prompt=passed_prompt + text,
+                    user=str(user),
+                )
+
+                c = response["choices"][0]
+
+                if language != "Python":
+                    c["text"] = Codex._remove_comments(language, c["text"])
+
+                text += c["text"]
 
         return text

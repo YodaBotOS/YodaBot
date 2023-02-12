@@ -26,6 +26,8 @@ if TYPE_CHECKING:
 
 
 class CodeUtils(commands.Cog):
+    TIMEOUT_LIMIT = 15
+    
     def __init__(self, bot: Bot):
         self.bot: Bot = bot
 
@@ -64,7 +66,7 @@ class CodeUtils(commands.Cog):
 
         async with ctx.typing():
             try:
-                async with timeout(60):
+                async with timeout(self.TIMEOUT_LIMIT):
                     completion = await self.codex.completion(language, prompt, user=ctx.author.id, n=1)
                     completion = completion[0]
 
@@ -135,7 +137,7 @@ class CodeUtils(commands.Cog):
 
         async with ctx.typing():
             try:
-                async with timeout(60):
+                async with timeout(self.TIMEOUT_LIMIT):
                     explain = await self.codex.explain(lang, code, user=ctx.author.id)
 
                     embed = discord.Embed(color=self.bot.color)
