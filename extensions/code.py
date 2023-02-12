@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 class CodeUtils(commands.Cog):
     TIMEOUT_LIMIT = 15
-    
+
     def __init__(self, bot: Bot):
         self.bot: Bot = bot
 

@@ -53,7 +53,7 @@ class StudyNotes(commands.Cog):
         """
 
         await self.STUDY_NOTES_MAX_CONCURRENCY.acquire(ctx.message)
-        
+
         if len(topic) > 500:
             return await ctx.send("Topic must be less than 500 characters.")
 
@@ -93,7 +93,7 @@ class StudyNotes(commands.Cog):
         # callback.
         ctx = await Context.from_interaction(interaction)
         await self.STUDY_NOTES_MAX_CONCURRENCY.acquire(ctx.message)
-        
+
         if len(topic) > 500:
             return await interaction.followup.send("Topic must be less than 500 characters.", ephemeral=True)
 

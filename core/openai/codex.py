@@ -67,7 +67,7 @@ class Codex:
         "presence_penalty": 0.0,
         "stop": ['"""'],
     }
-    
+
     lock = asyncio.Semaphore()
 
     @staticmethod

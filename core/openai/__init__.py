@@ -49,8 +49,30 @@ AI: You."""
         "frequency_penalty": 0.0,
         "presence_penalty": 0.0,
     }
-    
-    WORDTUNES = {"Formal", "Informal", "Casual", "Sad", "Confident", "Curious", "Surprised", "Unassuming", "Concerned", "Joyful", "Disheartening", "Worried", "Excited", "Regretful", "Encouraging", "Assertive", "Optimistic", "Accusatory", "Egocentric", "Appreciative", "Disapproving"}
+
+    WORDTUNES = {
+        "Formal",
+        "Informal",
+        "Casual",
+        "Sad",
+        "Confident",
+        "Curious",
+        "Surprised",
+        "Unassuming",
+        "Concerned",
+        "Joyful",
+        "Disheartening",
+        "Worried",
+        "Excited",
+        "Regretful",
+        "Encouraging",
+        "Assertive",
+        "Optimistic",
+        "Accusatory",
+        "Egocentric",
+        "Appreciative",
+        "Disapproving",
+    }
     WORDTUNES_EMOJIS = {
         "Formal": None,
         "Informal": None,
@@ -75,7 +97,29 @@ AI: You."""
         "Appreciative": "\U0001f64c",
         "Disapproving": "\U0001f645",
     }
-    WORDTUNES_LITERAL = typing.Literal["Formal", "Informal", "Casual", "Sad", "Confident", "Curious", "Surprised", "Unassuming", "Concerned", "Joyful", "Disheartening", "Worried", "Excited", "Regretful", "Encouraging", "Assertive", "Optimistic", "Accusatory", "Egocentric", "Appreciative", "Disapproving"]
+    WORDTUNES_LITERAL = typing.Literal[
+        "Formal",
+        "Informal",
+        "Casual",
+        "Sad",
+        "Confident",
+        "Curious",
+        "Surprised",
+        "Unassuming",
+        "Concerned",
+        "Joyful",
+        "Disheartening",
+        "Worried",
+        "Excited",
+        "Regretful",
+        "Encouraging",
+        "Assertive",
+        "Optimistic",
+        "Accusatory",
+        "Egocentric",
+        "Appreciative",
+        "Disapproving",
+    ]
     WORDTUNES_START_STRING = "Make {amount} sentences about this with {tones} tone:\n\n{text}\n\n1."
     WORDTUNES_PARAMS = {
         "model": "text-davinci-003",
@@ -211,12 +255,14 @@ AI: You."""
             return ai_resps
 
     # --- Grammar Correction ---
-    def grammar_correction(self, text: str, *, user: int, rephrase: bool = False, raw: bool = False) -> str | typing.Any:
+    def grammar_correction(
+        self, text: str, *, user: int, rephrase: bool = False, raw: bool = False
+    ) -> str | typing.Any:
         if rephrase:
             prompt = self.GRAMMAR_CORRECTION_REPHRASE_START_STRING
         else:
             prompt = self.GRAMMAR_CORRECTION_START_STRING
-        
+
         prompt = prompt.format(text=text)
 
         response = openai.Completion.create(prompt=prompt, user=str(user), **self.GRAMMAR_CORRECTION_PARAMS)
@@ -242,14 +288,16 @@ AI: You."""
         text = re.sub("\n+", "\n", text)
 
         return text
-    
+
     # --- Wordtune ---
-    def wordtune(self, text: str, tones: list[str], amount: int = 5, *, user: int, raw: bool = False) -> str | typing.Any:
+    def wordtune(
+        self, text: str, tones: list[str], amount: int = 5, *, user: int, raw: bool = False
+    ) -> str | typing.Any:
         amount = min(max(1, amount), 10)  # only numbers between 1-10 only allowed
-        
+
         if isinstance(tones, list):
-            tones = ', '.join(tones)
-            
+            tones = ", ".join(tones)
+
         prompt = self.WORDTUNES_START_STRING.format(text=text, amount=amount, tones=tones)
 
         response = openai.Completion.create(prompt=prompt, user=str(user), **self.WORDTUNES_PARAMS)
