@@ -8,8 +8,8 @@ if typing.TYPE_CHECKING:
 
 import openai
 
-from .codex import Codex
 from .chat import Chat
+from .codex import Codex
 
 
 class OpenAI:
@@ -124,7 +124,7 @@ class OpenAI:
         self.strip_strings = strip_strings
 
         self.chat_ids = {}
-        
+
         self.bot = bot
 
     # --- Grammar Correction ---
@@ -187,7 +187,7 @@ class OpenAI:
     @property
     def codex(self) -> Codex:
         return Codex()
-    
+
     @property
     def chat(self) -> Chat:
         return Chat(self)

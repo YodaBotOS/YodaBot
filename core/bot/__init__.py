@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import datetime
+import json
 import os
 import typing
-import json
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -127,14 +127,9 @@ class Bot(commands.Bot):
         )
 
         self.pool: asyncpg.Connection = await asyncpg.connect(cfg.POSTGRESQL_DSN)
-        
-        await self.pool.set_type_codec(
-            'json',
-            encoder=json.dumps,
-            decoder=json.loads,
-            schema='pg_catalog'
-        )
-        
+
+        await self.pool.set_type_codec("json", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
+
         with open("schema.sql") as f:
             await self.pool.execute(f.read())
 

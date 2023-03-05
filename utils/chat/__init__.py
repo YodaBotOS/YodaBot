@@ -21,9 +21,7 @@ class ChatModal(discord.ui.Modal):
         text_prompt = discord.utils.escape_markdown(text_prompt)
 
         try:
-            text = await self.openai.reply(
-                interaction, text_prompt
-            )
+            text = await self.openai.reply(interaction, text_prompt)
         except Exception as e:
             return await interaction.followup.send(
                 f"Something went wrong. Try again later.",

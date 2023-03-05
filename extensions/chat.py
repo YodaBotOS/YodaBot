@@ -152,15 +152,15 @@ class Chat(commands.Cog):
             await view.wait()
         finally:
             await self.CHAT_SLASH_MAX_CONCURRENCY.release(ctx.message)
-            
+
     @chat_slash.autocomplete("role")
     async def chat_slash_autocomplete(self, interaction: discord.Interaction, role: str):
         roles = [x.title() for x in self.openai.chat.CHAT_ROLES.keys()]
-        
+
         results = [x for x in roles if x.lower().startswith(role.lower()) or role.lower() in x.lower()][:25]
-        
+
         results = results or roles[:25]
-        
+
         return [app_commands.Choice(name=x, value=x) for x in results]
 
 
