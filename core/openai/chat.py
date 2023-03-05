@@ -272,7 +272,7 @@ class Chat:
     async def _perf_db(self, user_id: int, channel_id: int, messages: list[dict[str, str]]):
         x = await self._get(user_id, channel_id)
         
-        if x["ttl"] > discord.utils.utcnow():
+        if x and x["ttl"] > discord.utils.utcnow():
             try:
                 await self._delete(user_id, channel_id)
             except:
