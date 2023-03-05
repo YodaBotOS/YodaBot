@@ -272,7 +272,7 @@ class Chat:
     async def _perf_db(self, user_id: int, channel_id: int, messages: list[dict[str, str]]):
         x = await self._get(user_id, channel_id)
         
-        if x and x["ttl"] > datetime.datetime.utcnow():
+        if x and x["ttl"] < discord.utils.utcnow():
             try:
                 await self._delete(user_id, channel_id)
             except:
@@ -289,7 +289,7 @@ class Chat:
                     user_id,
                     channel_id,
                     messages,
-                    datetime.datetime.utcnow() + self.TTL,
+                    discord.utils.utcnow() + self.TTL,
                 )
             else:
                 await conn.execute(
@@ -297,7 +297,7 @@ class Chat:
                     user_id,
                     channel_id,
                     messages,
-                    datetime.datetime.utcnow() + self.TTL,
+                    discord.utils.utcnow() + self.TTL,
                 )
 
     async def _delete(self, user_id: int, channel_id: int):
@@ -353,7 +353,7 @@ class Chat:
         if data is None:
             raise ValueError("Chat session not found. Create one by doing `.new(...)`")
 
-        if data["ttl"] > datetime.datetime.utcnow():
+        if data["ttl"] < discord.utils.utcnow():
             try:
                 await self.stop(context)
             except:
@@ -386,9 +386,6 @@ class Chat:
     async def __call__(self, context: Context | discord.Interaction, message: str, *, role: str = "assistant"):
         await self.new(context, role)
         x = await self.reply(context, message)
-        try:
-            await self.stop(context)
-        except:
-            pass
+        await self.stop(context)
 
         return x
