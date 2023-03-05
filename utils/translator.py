@@ -128,7 +128,7 @@ class Translator(app_commands.Translator):
         #     if target in d[message]:
         #         return d[message][target]
 
-        q = "SELECT translation FROM translations WHERE target = $1 AND message = $2;"
+        q = "SELECT translations FROM translations WHERE target = $1 AND message = $2;"
 
         async with self.bot.pool.acquire() as conn:
             return await conn.fetchval(q, target, message)
