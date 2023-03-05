@@ -37,7 +37,7 @@ class Utilities(commands.Cog):
             typing_p = round(await self.bot.ping.typing(), 2)
             r2_p = round(await self.bot.ping.r2(), 2)
             psql_p = round(await self.bot.ping.postgresql(), 2)
-            yodabot_api_p = round(await self.bot.ping.api.yodabot(), 2)
+            # yodabot_api_p = round(await self.bot.ping.api.yodabot(), 2)
 
             embed = discord.Embed(title="Ping/Latency:")
 
@@ -45,7 +45,7 @@ class Utilities(commands.Cog):
                 embed.add_field(name=f'{self.bot.ping.EMOJIS["bot"]} Bot (Websocket)', value=f"{bot_p}ms")
                 embed.add_field(name=f'{self.bot.ping.EMOJIS["discord"]} Discord (API)', value=f"{discord_p}ms")
                 embed.add_field(name=f'{self.bot.ping.EMOJIS["typing"]} Discord (Typing)', value=f"{typing_p}ms")
-                embed.add_field(name=f'{self.bot.ping.EMOJIS["yodabot-api"]} API (YodaBot)', value=f"{yodabot_api_p}ms")
+                # embed.add_field(name=f'{self.bot.ping.EMOJIS["yodabot-api"]} API (YodaBot)', value=f"{yodabot_api_p}ms")
                 embed.add_field(name=f'{self.bot.ping.EMOJIS["postgresql"]} Database', value=f"{psql_p}ms")
                 embed.add_field(name=f'{self.bot.ping.EMOJIS["r2"]} CDN (R2)', value=f"{r2_p}ms")
             else:
@@ -55,7 +55,7 @@ class Utilities(commands.Cog):
                 entries.append(self.ansi(f"Bot (Websocket)", bot_p, spaces))
                 entries.append(self.ansi(f"Discord (API)", discord_p, spaces))
                 entries.append(self.ansi(f"Discord (Typing)", typing_p, spaces))
-                entries.append(self.ansi(f"API (YodaBot)", yodabot_api_p, spaces))
+                # entries.append(self.ansi(f"API (YodaBot)", yodabot_api_p, spaces))
                 entries.append(self.ansi(f"Database", psql_p, spaces))
                 entries.append(self.ansi(f"CDN (R2)", r2_p, spaces))
 
