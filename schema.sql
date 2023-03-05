@@ -8,11 +8,9 @@ CREATE TABLE IF NOT EXISTS translations (
 
 CREATE TABLE IF NOT EXISTS chat(
     id SERIAL PRIMARY KEY,
-    chat_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
     channel_id BIGINT NOT NULL,
-    messages JSON[] NOT NULL DEFAULT '[]',
+    messages JSON[] NOT NULL,
     created TIMESTAMPTZ DEFAULT now(),
-    ttl TIMESTAMPTZ DEFAULT now() + interval '3 minutes',
-    PRIMARY KEY (user_id, channel_id)
+    ttl TIMESTAMPTZ DEFAULT now() + interval '3 minutes'
 );
