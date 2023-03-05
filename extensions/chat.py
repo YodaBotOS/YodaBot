@@ -31,7 +31,7 @@ class Chat(commands.Cog):
         importlib.reload(core_openai)
         from core.openai import OpenAI
 
-        self.openai: OpenAI = OpenAI(config.OPENAI_KEY)
+        self.openai: OpenAI = OpenAI(config.OPENAI_KEY, bot=self.bot)
         self.bot.openai = self.openai
 
     async def cog_unload(self):
