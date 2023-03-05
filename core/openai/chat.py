@@ -21,7 +21,7 @@ class Chat:
 
     CHAT_ROLES = {
         # Taken from https://github.com/f/awesome-chatgpt-prompts#prompts
-        "asisstant": (
+        "assistant": (
             "You are a helpful, creative, clever, and very friendly assistant. "
             "You are an assistant that is intergrated in the app Discord, which "
             "means you can't help on setting timers/alarms, opening apps, changing "
