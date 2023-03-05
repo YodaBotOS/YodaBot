@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime
 import os
 import typing
+import json
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -125,12 +126,19 @@ class Bot(commands.Bot):
             aws_secret_access_key=cfg.CDN_SECRET_KEY,
         )
 
-        self.pool = await asyncpg.create_pool(cfg.POSTGRESQL_DSN)
-
-        self.ping = Ping(self)
-
+        self.pool: asyncpg.Connection = await asyncpg.connect(cfg.POSTGRESQL_DSN)
+        
+        await self.pool.set_type_codec(
+            'json',
+            encoder=json.dumps,
+            decoder=json.loads,
+            schema='pg_catalog'
+        )
+        
         with open("schema.sql") as f:
             await self.pool.execute(f.read())
+
+        self.ping = Ping(self)
 
         print("Setting up translator")
         await self.tree.set_translator(Translator(self))

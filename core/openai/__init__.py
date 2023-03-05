@@ -1,34 +1,18 @@
+from __future__ import annotations
+
 import re
 import typing
+
+if typing.TYPE_CHECKING:
+    from core.bot import Bot
 
 import openai
 
 from .codex import Codex
+from .chat import Chat
 
 
 class OpenAI:
-    CHAT_START_STRING = """
-The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly. This AI is more into human conversations than as an Assistant, but still gives out inforrmation/facts. The AI is chatting with "{username}" (with a whole username of "{user}") with the user ID of {userid}.
-
-Human: Hello, who are you?
-AI: I am YodaBot.
-Human: Who are you?
-AI: I am YodaBot.
-Human: Who am I?
-AI: Your name is {username} ({user})
-Human: Who is {username}?
-AI: You."""
-
-    CHAT_PARAMS = {
-        "model": "text-curie-001",
-        "temperature": 0.9,
-        "max_tokens": 150,
-        "top_p": 1,
-        "frequency_penalty": 0.0,
-        "presence_penalty": 0.6,
-        "stop": [" Human:", " AI:", "Human:", "AI:"],
-    }
-
     GRAMMAR_CORRECTION_START_STRING = "Correct this to standard English:\n\n{text}\n\n"
     GRAMMAR_CORRECTION_REPHRASE_START_STRING = "Correct this to standard English as well as replace complicated sentences with more efficient ones, refresh repetitive language, and uphold accurate spelling, punctuation, and grammar:\n\n{text}\n\n"
     GRAMMAR_CORRECTION_PARAMS = {
@@ -130,7 +114,7 @@ AI: You."""
         "presence_penalty": 0.0,
     }
 
-    def __init__(self, key: str = None, *, strip_strings: bool = True):
+    def __init__(self, key: str = None, *, strip_strings: bool = True, bot: Bot = None):
         if key is not None:
             self.key = key
             openai.api_key = key
@@ -140,119 +124,8 @@ AI: You."""
         self.strip_strings = strip_strings
 
         self.chat_ids = {}
-
-    # --- Chat ---
-    def _create_chat(self, user, channel, usr, *, force=False):
-        if (user, channel) in self.chat_ids:
-            if force:
-                self.chat_ids[(user, channel)] = {
-                    "text": self.CHAT_START_STRING.strip().format(user=usr.name, username=str(usr), userid=usr.id)
-                }
-
-            return self.chat_ids[(user, channel)]
-
-        self.chat_ids[(user, channel)] = {
-            "text": self.CHAT_START_STRING.strip().format(user=usr.name, username=str(usr), userid=usr.id)
-        }
-
-        return self.chat_ids[(user, channel)]
-
-    def _set_chat(self, text, user, channel, usr):
-        chat_id = self._create_chat(user, channel, usr)
-
-        chat_id["text"] = text
-
-        return chat_id
-
-    def _append_chat(self, text, user, channel, usr, *, human=True):
-        chat_id = self._create_chat(user, channel, usr)
-
-        if human:
-            x = "Human"
-            y = "AI"
-        else:
-            x = "AI"
-            y = "Human"
-
-        chat_id["text"] += f" {text}\n{y}:"
-
-        return chat_id
-
-    def _strip_chat(self, user, channel, usr, *, force=True):
-        chat_id = self._create_chat(user, channel, usr)
-        text = chat_id["text"]
-
-        if self.strip_strings:
-            text = text.strip()
-        else:
-            if force:
-                text = text.strip()
-
-        chat_id["text"] = text
-
-        return chat_id
-
-    def clean_chat(self, text):
-        if self.strip_strings:
-            text = text.strip()
-
-        text = text.replace("\n", " ").replace("AI:", "").replace("Human:", "")
-
-        return text
-
-    def stop_chat(self, user: int, channel: int):
-        try:
-            del self.chat_ids[(user, channel)]
-        except KeyError:
-            pass
-
-    def chat(
-        self,
-        text: str,
-        *,
-        user: int = None,
-        channel: int = None,
-        force_return_data: bool = False,
-        usr=None,
-    ) -> str:
-        text = self.clean_chat(text)
-
-        if user and channel:
-            self._append_chat(text, user, channel, usr, human=True)
-
-            chat_id = self._create_chat(user, channel, usr=usr)
-
-            text = chat_id["text"]
-
-            response = openai.Completion.create(prompt=text, user=str(user), **self.CHAT_PARAMS)
-
-            if force_return_data:
-                return response
-
-            ai_resps = response["choices"][0]["text"].strip()
-
-            if not ai_resps:
-                ai_resps = "Sorry, I did not understand."
-
-            self._append_chat(ai_resps, user, channel, usr, human=False)
-
-            return ai_resps
-        elif user or channel:
-            raise Exception("Both user and channel must be specified")
-        else:
-            start_string = (
-                self.CHAT_START_STRING.strip().format(user=usr.name, username=str(usr), userid=usr.id)
-                + f"Human: {text}\nAI: "
-            )
-
-            response = openai.Completion.create(prompt=start_string, user=str(user), **self.CHAT_PARAMS)
-
-            ai_resps = response["choices"][0]["text"].strip()
-
-            if not ai_resps:
-                ai_resps = "Sorry, I did not understand."
-
-            return ai_resps
+        
+        self.bot = bot
 
     # --- Grammar Correction ---
     def grammar_correction(
@@ -314,3 +187,7 @@ AI: You."""
     @property
     def codex(self) -> Codex:
         return Codex()
+    
+    @property
+    def chat(self) -> Chat:
+        return Chat(self)
