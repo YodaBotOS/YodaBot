@@ -104,7 +104,7 @@ class Codex:
         passed_prompt = f"{comment_prefix} {language}\n{parsed_prompt}\n\n"
 
         async with Codex.lock:
-            response = openai.Completion.create(
+            response = await openai.Completion.acreate(
                 **Codex.COMPLETION_KWARGS,
                 prompt=passed_prompt,
                 n=n,
@@ -121,7 +121,7 @@ class Codex:
                 while c["finish_reason"] == "length":
                     await asyncio.sleep(1.5)
 
-                    response = openai.Completion.create(
+                    response = await openai.Completion.acreate(
                         **Codex.COMPLETION_KWARGS,
                         prompt=passed_prompt + text,
                         user=str(user),
@@ -148,7 +148,7 @@ class Codex:
             passed_prompt = f"{code}\n\n{Codex._do_comments(language, prompt)}"
 
         async with Codex.lock:
-            response = openai.Completion.create(
+            response = await openai.Completion.acreate(
                 **Codex.EXPLAIN_KWARGS,
                 prompt=passed_prompt,
                 user=str(user),
@@ -166,7 +166,7 @@ class Codex:
             while c["finish_reason"] == "length":
                 await asyncio.sleep(1.5)
 
-                response = openai.Completion.create(
+                response = await openai.Completion.acreate(
                     **Codex.EXPLAIN_KWARGS,
                     prompt=passed_prompt + text,
                     user=str(user),

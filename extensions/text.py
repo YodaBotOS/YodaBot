@@ -55,7 +55,7 @@ class Text(commands.Cog):
         self, user, text: str, rephrase: bool = False
     ) -> discord.Embed | tuple[str, Exception]:
         try:
-            new_text = self.openai.grammar_correction(text, user=user.id, rephrase=rephrase)
+            new_text = await self.openai.grammar_correction(text, user=user.id, rephrase=rephrase)
         except Exception as e:
             return "SOMETHING_WENT_WRONG", e
 
@@ -97,7 +97,6 @@ class Text(commands.Cog):
         rephrase = rephrase == "True"
 
         if text is None:
-
             class Modal(discord.ui.Modal):
                 text = discord.ui.TextInput(
                     label="Text",
@@ -300,7 +299,7 @@ class Text(commands.Cog):
 
             tunes = [tunes]
 
-        r_text = self.openai.wordtune(ori_text, tunes, amount, user=ctx.author.id)
+        r_text = await self.openai.wordtune(ori_text, tunes, amount, user=ctx.author.id)
 
         embed = discord.Embed()
         embed.set_author(name="Word Tune Results:", icon_url=ctx.author.avatar.url)
@@ -322,7 +321,7 @@ class Text(commands.Cog):
         await view.wait()
         tunes = view.tunes
 
-        r_text = self.openai.wordtune(text, tunes, 5, user=interaction.user.id)
+        r_text = await self.openai.wordtune(text, tunes, 5, user=interaction.user.id)
 
         embed = discord.Embed()
         embed.set_author(name="Word Tune Results:", icon_url=interaction.user.avatar.url)

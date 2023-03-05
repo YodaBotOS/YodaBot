@@ -128,7 +128,7 @@ class OpenAI:
         self.bot = bot
 
     # --- Grammar Correction ---
-    def grammar_correction(
+    async def grammar_correction(
         self, text: str, *, user: int, rephrase: bool = False, raw: bool = False
     ) -> str | typing.Any:
         if rephrase:
@@ -138,7 +138,7 @@ class OpenAI:
 
         prompt = prompt.format(text=text)
 
-        response = openai.Completion.create(prompt=prompt, user=str(user), **self.GRAMMAR_CORRECTION_PARAMS)
+        response = await openai.Completion.acreate(prompt=prompt, user=str(user), **self.GRAMMAR_CORRECTION_PARAMS)
 
         if raw:
             return response
@@ -146,12 +146,12 @@ class OpenAI:
         return response["choices"][0]["text"].strip()
 
     # --- Study Notes ---
-    def study_notes(self, topic: str, *, user: int, amount: int = 5, raw: bool = False) -> str | typing.Any:
+    async def study_notes(self, topic: str, *, user: int, amount: int = 5, raw: bool = False) -> str | typing.Any:
         amount = min(max(1, amount), 10)  # only numbers between 1-10 only allowed
 
         prompt = self.STUDY_NOTES_START_STRING.format(topic=topic, amount=amount)
 
-        response = openai.Completion.create(prompt=prompt, user=str(user), **self.STUDY_NOTES_PARAMS)
+        response = await openai.Completion.acreate(prompt=prompt, user=str(user), **self.STUDY_NOTES_PARAMS)
 
         if raw:
             return response
@@ -163,7 +163,7 @@ class OpenAI:
         return text
 
     # --- Wordtune ---
-    def wordtune(
+    async def wordtune(
         self, text: str, tones: list[str], amount: int = 5, *, user: int, raw: bool = False
     ) -> str | typing.Any:
         amount = min(max(1, amount), 10)  # only numbers between 1-10 only allowed
@@ -173,7 +173,7 @@ class OpenAI:
 
         prompt = self.WORDTUNES_START_STRING.format(text=text, amount=amount, tones=tones)
 
-        response = openai.Completion.create(prompt=prompt, user=str(user), **self.WORDTUNES_PARAMS)
+        response = await openai.Completion.acreate(prompt=prompt, user=str(user), **self.WORDTUNES_PARAMS)
 
         if raw:
             return response

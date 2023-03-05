@@ -370,7 +370,7 @@ class Chat:
         else:
             user = context.user.id
 
-        resp = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages, user=str(user))
+        resp = await openai.ChatCompletion.acreate(model="gpt-3.5-turbo", messages=messages, user=str(user))
 
         response = resp["choices"][0]["message"]
 
