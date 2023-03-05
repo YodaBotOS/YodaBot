@@ -135,8 +135,8 @@ class Bot(commands.Bot):
 
         self.ping = Ping(self)
 
-        print("Setting up translator")
-        await self.tree.set_translator(Translator(self))
+        # print("Setting up translator")
+        # await self.tree.set_translator(Translator(self))
 
         # Load cogs
         for extension in EXTENSIONS:
