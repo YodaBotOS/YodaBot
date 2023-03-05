@@ -46,7 +46,7 @@ class Chat(commands.Cog):
 
         if text is not None:
             try:
-                text = self.openai.chat(ctx, text)
+                text = await self.openai.chat(ctx, text)
             except Exception as e:
                 await ctx.send(f"Something went wrong, try again later.")
                 self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
@@ -129,7 +129,7 @@ class Chat(commands.Cog):
         try:
             if text is not None:
                 try:
-                    text = self.openai.chat(interaction, text, role=role)
+                    text = await self.openai.chat(interaction, text, role=role)
                 except Exception as e:
                     await interaction.followup.send(f"Something went wrong, try again later.", ephemeral=True)
                     await self.bot.tree.on_error(interaction, (e, False))
