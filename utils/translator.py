@@ -106,7 +106,7 @@ class Translator(app_commands.Translator):
 
         ttl = datetime.datetime.utcnow() + datetime.timedelta(days=30)
 
-        q = "INSERT INTO translations (target, message, translation, ttl) VALUES ($1, $2, $3, $4) ON CONFLICT (target, message) DO UPDATE SET translation = $3, ttl = $4;"
+        q = "INSERT INTO translations (target, message, trans, ttl) VALUES ($1, $2, $3, $4) ON CONFLICT (target, message) DO UPDATE SET trans = $3, ttl = $4;"
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(q, target, message, trans, ttl)
