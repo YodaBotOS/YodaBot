@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS chat(
     id SERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     channel_id BIGINT NOT NULL,
-    messages JSON[] NOT NULL,
+    messages JSON NOT NULL,
     created TIMESTAMPTZ DEFAULT now(),
     ttl TIMESTAMPTZ DEFAULT now() + interval '3 minutes'
 );
