@@ -126,9 +126,9 @@ class Bot(commands.Bot):
             aws_secret_access_key=cfg.CDN_SECRET_KEY,
         )
 
-        self.pool: asyncpg.Connection = await asyncpg.connect(cfg.POSTGRESQL_DSN)
+        self.pool: asyncpg.Pool = await asyncpg.create_pool(cfg.POSTGRESQL_DSN)
 
-        await self.pool.set_type_codec("json", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
+        # await self.pool.set_type_codec("json", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
 
         with open("schema.sql") as f:
             await self.pool.execute(f.read())

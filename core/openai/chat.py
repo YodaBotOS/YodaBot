@@ -4,6 +4,7 @@ import datetime
 import typing
 
 import discord
+import json
 
 from core.context import Context
 
@@ -279,22 +280,25 @@ class Chat:
             
             x = None
         
-        if not x:
-            await self.bot.pool.execute(
-                "INSERT INTO chat (user_id, channel_id, messages, ttl) VALUES ($1, $2, $3::json, $4)",
-                user_id,
-                channel_id,
-                messages,
-                discord.utils.utcnow() + self.TTL,
-            )
-        else:
-            await self.bot.pool.execute(
-                "UPDATE chat SET messages=$3::json, ttl=$4 WHERE user_id=$1 AND channel_id=$2",
-                user_id,
-                channel_id,
-                messages,
-                discord.utils.utcnow() + self.TTL,
-            )
+        async with self.bot.pool.acquire() as conn:
+            await conn.set_type_codec("json", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
+            
+            if not x:
+                await conn.execute(
+                    "INSERT INTO chat (user_id, channel_id, messages, ttl) VALUES ($1, $2, $3::json, $4)",
+                    user_id,
+                    channel_id,
+                    messages,
+                    discord.utils.utcnow() + self.TTL,
+                )
+            else:
+                await conn.execute(
+                    "UPDATE chat SET messages=$3::json, ttl=$4 WHERE user_id=$1 AND channel_id=$2",
+                    user_id,
+                    channel_id,
+                    messages,
+                    discord.utils.utcnow() + self.TTL,
+                )
 
     async def _delete(self, user_id: int, channel_id: int):
         await self.bot.pool.execute("DELETE FROM chat WHERE user_id=$1 AND channel_id=$2", user_id, channel_id)
