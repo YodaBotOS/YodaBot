@@ -14,5 +14,5 @@ CREATE TABLE IF NOT EXISTS chat(
     messages JSON[] NOT NULL DEFAULT '[]',
     created TIMESTAMPTZ DEFAULT now(),
     ttl TIMESTAMPTZ DEFAULT now() + interval '3 minutes',
-    PRIMARY KEY (user_id, channel_id, is_stopped)
+    PRIMARY KEY (user_id, channel_id)
 );

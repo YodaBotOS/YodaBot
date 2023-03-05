@@ -262,14 +262,24 @@ class Chat:
         openai.api_key = self.openai.key
 
     # Backend functions
-    def _get(self, user_id: int, channel_id: int) -> dict | None:
-        row = self.bot.pool.fetchrow("SELECT * FROM chat WHERE user_id=$1 AND channel_id=$2", user_id, channel_id)
+    async def _get(self, user_id: int, channel_id: int) -> dict | None:
+        row = await self.bot.pool.fetchrow("SELECT * FROM chat WHERE user_id=$1 AND channel_id=$2", user_id, channel_id)
 
         if row is not None:
             return dict(row)
 
     async def _perf_db(self, user_id: int, channel_id: int, messages: list[dict[str, str]]):
-        if not self._get(user_id, channel_id):
+        x = await self._get(user_id, channel_id)
+        
+        if x["ttl"] > discord.utils.utcnow():
+            try:
+                await self._delete(user_id, channel_id)
+            except:
+                pass
+            
+            x = None
+        
+        if not x:
             await self.bot.pool.execute(
                 "INSERT INTO chat (user_id, channel_id, messages, ttl) VALUES ($1, $2, $3::json, $4)",
                 user_id,
@@ -308,9 +318,9 @@ class Chat:
     # Chat methods
     async def get(self, context: Context | discord.Interaction) -> dict | None:
         if isinstance(context, Context):
-            await self._get(context.author.id, context.channel.id)
+            return await self._get(context.author.id, context.channel.id)
         else:
-            await self._get(context.user.id, context.channel.id)
+            return await self._get(context.user.id, context.channel.id)
 
     async def perf_db(self, context: Context | discord.Interaction, messages: list[dict[str, str]]) -> None:
         if isinstance(context, Context):
@@ -323,7 +333,7 @@ class Chat:
         await self.perf_db(context, messages)
 
     async def stop(self, context: Context | discord.Interaction) -> None:
-        data = self.get(context)
+        data = await self.get(context)
 
         if data is None:
             raise ValueError("Chat session not found. Might have already been deleted.")
@@ -334,12 +344,17 @@ class Chat:
             await self._delete(context.user.id, context.channel.id)
 
     async def reply(self, context: Context | discord.Interaction, message: str) -> str:
-        data = self.get(context)
+        data = await self.get(context)
 
         if data is None:
             raise ValueError("Chat session not found. Create one by doing `.new(...)`")
 
         if data["ttl"] > discord.utils.utcnow():
+            try:
+                await self.stop(context)
+            except:
+                pass
+            
             return
 
         messages = data["messages"]
