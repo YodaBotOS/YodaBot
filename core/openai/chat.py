@@ -386,6 +386,9 @@ class Chat:
     async def __call__(self, context: Context | discord.Interaction, message: str, *, role: str = "assistant"):
         await self.new(context, role)
         x = await self.reply(context, message)
-        await self.stop(context)
+        try:
+            await self.stop(context)
+        except:
+            pass
 
         return x
