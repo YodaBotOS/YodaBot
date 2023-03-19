@@ -1,5 +1,6 @@
 core/maps/maps_.py
 formatter.bash
+extensions/player.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

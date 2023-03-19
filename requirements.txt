@@ -15,4 +15,5 @@ async-timeout
 asyncpg
 regex
 psutil
+wavelink
 rich

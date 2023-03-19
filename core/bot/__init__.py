@@ -5,6 +5,8 @@ import json
 import os
 import typing
 from typing import TYPE_CHECKING
+import wavelink
+from wavelink.ext import spotify
 
 import aiohttp
 import asyncpg
@@ -137,11 +139,19 @@ class Bot(commands.Bot):
 
         # print("Setting up translator")
         # await self.tree.set_translator(Translator(self))
+        
+        # TODO: Wavelink
+        # nodes = []
+        
+        # for n in cfg.WAVELINK_NODES:
+        #     nodes.append(wavelink.Node(uri=n['uri'], password=n['password'], session=self.session))
+            
+        # await wavelink.NodePool.connect(client=self, nodes=nodes, spotify=spotify.SpotifyClient(client_id=cfg.SPOTIFY_CLIENT_ID, client_secret=cfg.SPOTIFY_CLIENT_SECRET))
 
         # Load cogs
         for extension in EXTENSIONS:
             await self.load_extension(extension)
             print("Loaded extension:", extension)
 
-        if not self.is_selfhosted:
-            sentry_sdk.init(cfg.SENTRY_DSN, traces_sample_rate=1.0)
+        # if not self.is_selfhosted:
+        #     sentry_sdk.init(cfg.SENTRY_DSN, traces_sample_rate=1.0)

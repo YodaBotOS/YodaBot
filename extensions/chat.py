@@ -41,7 +41,7 @@ class Chat(commands.Cog):
     @commands.max_concurrency(1, commands.BucketType.member)
     async def chat(self, ctx: Context, *, text: str = None):
         """
-        Chat with an AI
+        Chat with an AI using the new GPT-4 OpenAI Model.
         """
 
         if text is not None:
@@ -116,7 +116,7 @@ class Chat(commands.Cog):
     @app_commands.describe(text="The text to chat with the AI (once)", role="The role you want the chatbot to be")
     async def chat_slash(self, interaction: discord.Interaction, text: str = None, role: str = "assistant"):
         """
-        Chat with an AI
+        Chat with an AI using the new GPT-4 OpenAI Model.
         """
 
         # As of right now, app_commands does not support max_concurrency, so we need to handle it ourselves in the

@@ -255,6 +255,8 @@ class Chat:
             "playlist name, description and the songs."
         ),
     }
+    
+    MODEL = "gpt-4"
 
     def __init__(self, openai_cls: OpenAI):
         self.openai = openai_cls
@@ -370,7 +372,7 @@ class Chat:
         else:
             user = context.user.id
 
-        resp = await openai.ChatCompletion.acreate(model="gpt-3.5-turbo", messages=messages, user=str(user))
+        resp = await openai.ChatCompletion.acreate(model=self.MODEL, messages=messages, user=str(user))
 
         response = resp["choices"][0]["message"]
 
