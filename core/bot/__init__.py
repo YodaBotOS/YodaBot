@@ -5,8 +5,6 @@ import json
 import os
 import typing
 from typing import TYPE_CHECKING
-import wavelink
-from wavelink.ext import spotify
 
 import aiohttp
 import asyncpg
@@ -14,9 +12,11 @@ import boto3
 import discord
 import mystbin
 import sentry_sdk
+import wavelink
 from discord import app_commands
 from discord.ext import commands
 from rich.traceback import install as install_rich_traceback
+from wavelink.ext import spotify
 
 import config as cfg
 from core.context import Context
@@ -139,13 +139,13 @@ class Bot(commands.Bot):
 
         # print("Setting up translator")
         # await self.tree.set_translator(Translator(self))
-        
+
         # TODO: Wavelink
         # nodes = []
-        
+
         # for n in cfg.WAVELINK_NODES:
         #     nodes.append(wavelink.Node(uri=n['uri'], password=n['password'], session=self.session))
-            
+
         # await wavelink.NodePool.connect(client=self, nodes=nodes, spotify=spotify.SpotifyClient(client_id=cfg.SPOTIFY_CLIENT_ID, client_secret=cfg.SPOTIFY_CLIENT_SECRET))
 
         # Load cogs

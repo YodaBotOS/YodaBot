@@ -97,6 +97,7 @@ class Text(commands.Cog):
         rephrase = rephrase == "True"
 
         if text is None:
+
             class Modal(discord.ui.Modal):
                 text = discord.ui.TextInput(
                     label="Text",

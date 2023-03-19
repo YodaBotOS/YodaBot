@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import inspect
+import os
 from typing import TYPE_CHECKING, Literal, Optional
 
-import inspect
 import discord
-from discord import app_commands
-import os
 import jishaku
+from discord import app_commands
 from discord.app_commands import locale_str as _T
 from discord.ext import commands
 
@@ -78,99 +78,104 @@ class Utilities(commands.Cog):
         return await ctx.send(
             f"The bot was last restarted {discord.utils.format_dt(self.bot.uptime, 'R')} ago ({discord.utils.format_dt(self.bot.uptime, 'F')})."
         )
-        
+
     @commands.hybrid_command(name=_T("source"))
     @app_commands.describe(command="The command to get the source code of.")
     async def source(self, ctx: Context, *, command: Optional[str] = None):
         """
         Get the source code of a command.
         """
-        
-        source_url = 'https://github.com/Rapptz/RoboDanny'
-        branch = 'main'
-        
+
+        source_url = "https://github.com/Rapptz/RoboDanny"
+        branch = "main"
+
         if command is None:
             return await ctx.send(source_url, embed_content=False)
-        
-        if command == 'help':
+
+        if command == "help":
             src = type(self.bot.help_command)
             module = src.__module__
             filename = inspect.getsourcefile(src)
         else:
             obj = self.bot.get_command(command)
             if obj is None:
-                return await ctx.send('Could not find command.', embed_content=False, ephemeral=True)
-            
+                return await ctx.send("Could not find command.", embed_content=False, ephemeral=True)
+
             src = obj.callback.__code__
             module = obj.callback.__module__
             filename = src.co_filename
-            
+
         lines, firstlineno = inspect.getsourcelines(src)
-        
-        if module.startswith('discord'):
-            location = module.replace('.', '/') + '.py'
-            source_url = 'https://github.com/Rapptz/discord.py'
-            
-            if discord.__version__.endswith(('a', 'b', 'rc')):
-                branch = 'master'
-                identifier = 'blob'
+
+        if module.startswith("discord"):
+            location = module.replace(".", "/") + ".py"
+            source_url = "https://github.com/Rapptz/discord.py"
+
+            if discord.__version__.endswith(("a", "b", "rc")):
+                branch = "master"
+                identifier = "blob"
             else:
                 branch = discord.__version__
-                identifier = 'tree'
-        elif module.startswith('jishaku'):
-            location = module.replace('.', '/') + '.py'
-            source_url = 'https://github.com/Gorialis/Jishaku'
-            
+                identifier = "tree"
+        elif module.startswith("jishaku"):
+            location = module.replace(".", "/") + ".py"
+            source_url = "https://github.com/Gorialis/Jishaku"
+
             # Hacky way but idc
-            with open('requirements.txt', 'r') as fp:
+            with open("requirements.txt", "r") as fp:
                 lines = [line.lower() for line in fp.readlines()]
-                
-                if 'git+https://github.com/Gorialis/jishaku'.lower() in lines or 'git+https://github.com/Gorialis/jishaku.git'.lower() in lines:
-                    branch = 'master'
-                    identifier = 'blob'
+
+                if (
+                    "git+https://github.com/Gorialis/jishaku".lower() in lines
+                    or "git+https://github.com/Gorialis/jishaku.git".lower() in lines
+                ):
+                    branch = "master"
+                    identifier = "blob"
                 else:
                     branch = jishaku.__version__
-                    identifier = 'tree'
+                    identifier = "tree"
         else:
             if filename is None:
-                return await ctx.send('Could not find source for command.')
-            
-            location = os.path.relpath(filename).replace('\\', '/')
-            
-        final_url = f'{source_url}/{identifier}/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}'
-        
+                return await ctx.send("Could not find source for command.")
+
+            location = os.path.relpath(filename).replace("\\", "/")
+
+        final_url = f"{source_url}/{identifier}/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}"
+
         return await ctx.send(final_url, embed_content=False)
-    
-    @source.autocomplete('command')
+
+    @source.autocomplete("command")
     async def source_command_autocomplete(self, interaction: discord.Interaction, current: str):
         if not current:
-            return [app_commands.Choice(name=x.qualified_name, value=x.qualified_name) for x in self.bot.walk_commands()][:25]
-        
+            return [
+                app_commands.Choice(name=x.qualified_name, value=x.qualified_name) for x in self.bot.walk_commands()
+            ][:25]
+
         commands = self.bot.all_commands
         keys = commands.keys()
-        
+
         match = []
         match2 = []
-        
+
         for key in keys:
             if key.lower().startswith(current.lower()):
                 match.append(key)
             if current.lower() in key.lower():
                 match2.append(key)
-                
+
         match += match2
-        
+
         commands_match = {commands[x] for x in match}
-        
+
         return [app_commands.Choice(name=x.qualified_name, value=x.qualified_name) for x in commands_match][:25]
-    
-    @commands.hybrid_command('owner')
+
+    @commands.hybrid_command("owner")
     async def owner(self, ctx: Context):
         """
         Displays the owner of this bot.
         """
-        
-        owner = (await self.bot.application_info())
+
+        owner = await self.bot.application_info()
 
         if owner.team:
             owner = owner.team.owner
@@ -178,11 +183,11 @@ class Utilities(commands.Cog):
             owner = owner.owner
 
         embed = discord.Embed(color=self.bot.color)
-        embed.set_author(name='Owner', icon_url=self.bot.user.avatar.url)
-        embed.description = f'I am powered by [YodaBot](https://github.com/YodaBotOS) organization, but my owner is {owner.mention} [`({owner}) - {owner.id}`](https://discord.com/users/{owner.id})'
+        embed.set_author(name="Owner", icon_url=self.bot.user.avatar.url)
+        embed.description = f"I am powered by [YodaBot](https://github.com/YodaBotOS) organization, but my owner is {owner.mention} [`({owner}) - {owner.id}`](https://discord.com/users/{owner.id})"
         embed.set_thumbnail(url=owner.avatar.url)
 
-        embed.set_footer(text='https://github.com/YodaBotOS')
+        embed.set_footer(text="https://github.com/YodaBotOS")
 
         await ctx.send(embed=embed)
 

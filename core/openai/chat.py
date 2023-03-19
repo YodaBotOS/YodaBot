@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import datetime
+import json
 import typing
 
 import discord
-import json
 
 from core.context import Context
 
@@ -255,7 +255,7 @@ class Chat:
             "playlist name, description and the songs."
         ),
     }
-    
+
     MODEL = "gpt-4"
 
     def __init__(self, openai_cls: OpenAI):
@@ -273,18 +273,18 @@ class Chat:
 
     async def _perf_db(self, user_id: int, channel_id: int, messages: list[dict[str, str]]):
         x = await self._get(user_id, channel_id)
-        
+
         if x and x["ttl"] < discord.utils.utcnow():
             try:
                 await self._delete(user_id, channel_id)
             except:
                 pass
-            
+
             x = None
-        
+
         async with self.bot.pool.acquire() as conn:
             await conn.set_type_codec("json", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
-            
+
             if not x:
                 await conn.execute(
                     "INSERT INTO chat (user_id, channel_id, messages, ttl) VALUES ($1, $2, $3::json, $4)",
@@ -360,7 +360,7 @@ class Chat:
                 await self.stop(context)
             except:
                 pass
-            
+
             return
 
         messages = data["messages"]
