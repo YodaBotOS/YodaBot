@@ -113,10 +113,8 @@ class Utilities(commands.Cog):
 
             if discord.__version__.endswith(("a", "b", "rc")):
                 branch = "master"
-                identifier = "blob"
             else:
-                branch = discord.__version__
-                identifier = "tree"
+                branch = f"v{discord.__version__}"
         elif module.startswith("jishaku"):
             location = module.replace(".", "/") + ".py"
             source_url = "https://github.com/Gorialis/Jishaku"
@@ -130,17 +128,15 @@ class Utilities(commands.Cog):
                     or "git+https://github.com/Gorialis/jishaku.git".lower() in lines
                 ):
                     branch = "master"
-                    identifier = "blob"
                 else:
                     branch = jishaku.__version__
-                    identifier = "tree"
         else:
             if filename is None:
                 return await ctx.send("Could not find source for command.")
 
             location = os.path.relpath(filename).replace("\\", "/")
 
-        final_url = f"{source_url}/{identifier}/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}"
+        final_url = f"<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>"
 
         return await ctx.send(final_url, embed_content=False)
 
@@ -152,6 +148,22 @@ class Utilities(commands.Cog):
             ][:25]
 
         commands = self.bot.all_commands
+        
+        def add_commands_with_aliases(commands, cmd):
+            for sub in cmd.walk_commands():
+                full_name = sub.full_parent_name + ' ' + sub.name
+                commands[full_name] = sub
+
+                for alias in sub.aliases:
+                    commands[sub.full_parent_name + ' ' + alias] = sub
+                    
+                if isinstance(sub, commands.Group):
+                    add_commands_with_aliases(commands, sub)
+                        
+        for cmd in self.bot.commands:
+            if isinstance(cmd, commands.Group):
+                add_commands_with_aliases(commands, cmd)
+        
         keys = commands.keys()
 
         match = []
