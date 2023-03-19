@@ -168,6 +168,9 @@ class Utilities(commands.Cog):
 
         match = []
         match2 = []
+        
+        if cmd := self.bot.get_command(current):
+            match.append(cmd.qualified_name)
 
         for key in keys:
             if key.lower().startswith(current.lower()):
