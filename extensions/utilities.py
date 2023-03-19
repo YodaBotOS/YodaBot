@@ -148,27 +148,27 @@ class Utilities(commands.Cog):
             ][:25]
 
         commands = self.bot.all_commands
-        
+
         def add_commands_with_aliases(commands, cmd):
             for sub in cmd.walk_commands():
-                full_name = sub.full_parent_name + ' ' + sub.name
+                full_name = sub.full_parent_name + " " + sub.name
                 commands[full_name] = sub
 
                 for alias in sub.aliases:
-                    commands[sub.full_parent_name + ' ' + alias] = sub
-                    
+                    commands[sub.full_parent_name + " " + alias] = sub
+
                 if isinstance(sub, commands.Group):
                     add_commands_with_aliases(commands, sub)
-                        
+
         for cmd in self.bot.commands:
             if isinstance(cmd, commands.Group):
                 add_commands_with_aliases(commands, cmd)
-        
+
         keys = commands.keys()
 
         match = []
         match2 = []
-        
+
         if cmd := self.bot.get_command(current):
             match.append(cmd.qualified_name)
 
