@@ -164,7 +164,7 @@ class Utilities(commands.Cog):
             if isinstance(cmd, commands.Group):
                 add_commands_with_aliases(_commands, cmd)
 
-        keys = commands.keys()
+        keys = _commands.keys()
 
         match = []
         match2 = []
@@ -180,7 +180,7 @@ class Utilities(commands.Cog):
 
         match += match2
 
-        commands_match = {commands[x] for x in match}
+        commands_match = {_commands[x] for x in match}
 
         return [app_commands.Choice(name=x.qualified_name, value=x.qualified_name) for x in commands_match][:25]
 
