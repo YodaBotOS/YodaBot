@@ -22,12 +22,13 @@ class Context(commands.Context):
         *,
         embed: Optional[discord.Embed] = None,
         embeds: Optional[Sequence[discord.Embed]] = None,
+        embed_content: Optional[bool] = True,
         **kwargs,
     ):
         root_parent = self.command.root_parent if self.command else None
         if (
             root_parent != self.bot.get_command("jishaku")
-            and kwargs.pop("embed_content", True)
+            and embed_content
             and not embed
             and not embeds
         ):
