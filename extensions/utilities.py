@@ -147,22 +147,22 @@ class Utilities(commands.Cog):
                 app_commands.Choice(name=x.qualified_name, value=x.qualified_name) for x in self.bot.walk_commands()
             ][:25]
 
-        commands = self.bot.all_commands
+        _commands = self.bot.all_commands
 
-        def add_commands_with_aliases(commands, cmd):
+        def add_commands_with_aliases(_commands, cmd):
             for sub in cmd.walk_commands():
                 full_name = sub.full_parent_name + " " + sub.name
-                commands[full_name] = sub
+                _commands[full_name] = sub
 
                 for alias in sub.aliases:
-                    commands[sub.full_parent_name + " " + alias] = sub
+                    _commands[sub.full_parent_name + " " + alias] = sub
 
                 if isinstance(sub, commands.Group):
-                    add_commands_with_aliases(commands, sub)
+                    add_commands_with_aliases(_commands, sub)
 
         for cmd in self.bot.commands:
             if isinstance(cmd, commands.Group):
-                add_commands_with_aliases(commands, cmd)
+                add_commands_with_aliases(_commands, cmd)
 
         keys = commands.keys()
 
