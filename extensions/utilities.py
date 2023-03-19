@@ -59,7 +59,7 @@ class Utilities(commands.Cog):
                 entries.append(self.ansi(f"Bot (Websocket)", bot_p, spaces))
                 entries.append(self.ansi(f"Discord (API)", discord_p, spaces))
                 entries.append(self.ansi(f"Discord (Typing)", typing_p, spaces))
-                # entries.append(self.ansi(f"API (YodaBot)", yodabot_api_p, spaces))
+                entries.append(self.ansi(f"API (YodaBot)", yodabot_api_p, spaces))
                 entries.append(self.ansi(f"Database", psql_p, spaces))
                 entries.append(self.ansi(f"CDN (R2)", r2_p, spaces))
 
