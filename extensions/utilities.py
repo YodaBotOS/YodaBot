@@ -86,7 +86,7 @@ class Utilities(commands.Cog):
         Get the source code of a command.
         """
 
-        source_url = "https://github.com/Rapptz/RoboDanny"
+        source_url = "https://github.com/YodaBotOS/YodaBot"
         branch = "main"
 
         if command is None:
