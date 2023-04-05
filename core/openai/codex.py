@@ -3,7 +3,7 @@ import typing
 
 import openai
 
-SUPPORTED_LANGUAGES = ["Bash", "C#", "Go", "Java", "JavaScript", "Python", "Ruby", "Rust", "SQL", "TypeScript"]
+SUPPORTED_LANGUAGES = ['Bash', 'C', 'C#', 'C++', 'CSS', 'Dart', 'Go', 'HTML', 'Java', 'JavaScript', 'Kotlin', 'PHP', 'Perl', 'Python', 'R', 'Ruby', 'Rust', 'SQL', 'Scala', 'Swift', 'TypeScript']
 SUPPORTED_LANGUAGES_LITERAL = typing.Literal[tuple(SUPPORTED_LANGUAGES)]  # type: ignore
 
 
@@ -47,28 +47,26 @@ class Codex:
         "typescript": "TypeScript",
     }
 
-    MODEL = "code-davinci-002"
+    MODEL = "gpt-4"
 
     COMPLETION_KWARGS = {
         "model": MODEL,
-        "temperature": 0,
-        "max_tokens": 512,
-        "top_p": 1,
-        "frequency_penalty": 0.0,
-        "presence_penalty": 0.3,
+        # "temperature": 0,
+        # "max_tokens": 512,
+        # "top_p": 1,
+        # "frequency_penalty": 0.0,
+        # "presence_penalty": 0.3,
     }
 
     EXPLAIN_KWARGS = {
         "model": MODEL,
-        "temperature": 0,
-        "max_tokens": 100,
-        "top_p": 1,
-        "frequency_penalty": 0.0,
-        "presence_penalty": 0.0,
-        "stop": ['"""'],
+        # "temperature": 0,
+        # "max_tokens": 100,
+        # "top_p": 1,
+        # "frequency_penalty": 0.0,
+        # "presence_penalty": 0.0,
+        # "stop": ['"""'],
     }
-
-    lock = asyncio.Semaphore()
 
     @staticmethod
     def _do_comments(language: SUPPORTED_LANGUAGES_LITERAL, text: str) -> str:
@@ -90,48 +88,22 @@ class Codex:
         return s.strip()
 
     @staticmethod
-    async def completion(language: SUPPORTED_LANGUAGES_LITERAL, prompt: str, *, user: int, n: int = 3) -> list[str]:
+    async def completion(language: SUPPORTED_LANGUAGES_LITERAL, prompt: str, *, user: int, n: int = 1) -> list[str]:
         if language not in SUPPORTED_LANGUAGES:
             raise ValueError(f"Language {language} is not supported")
 
-        comment_prefix = Codex.COMMENTS[language]
+        response = await openai.ChatCompletion.acreate(
+            **Codex.COMPLETION_KWARGS,
+            messages=[{'role': 'system', 'content': f'You are a helpful assistant that can help on generating/making code in {language}. You only return the code, nothing else (no explanations, no comments, etc).'}, {'role': 'user', 'content': prompt}],
+            n=n,
+            user=str(user),
+        )
 
-        if language == "Python":
-            parsed_prompt = f'"""\n{prompt}\n"""'
-        else:
-            parsed_prompt = Codex._do_comments(language, prompt)
+        choices = []
 
-        passed_prompt = f"{comment_prefix} {language}\n{parsed_prompt}\n\n"
-
-        async with Codex.lock:
-            response = await openai.Completion.acreate(
-                **Codex.COMPLETION_KWARGS,
-                prompt=passed_prompt,
-                n=n,
-                user=str(user),
-            )
-
-            choices = []
-
-            for choice in response["choices"]:
-                text = choice["text"].strip()
-
-                c = choice.copy()
-
-                while c["finish_reason"] == "length":
-                    await asyncio.sleep(1.5)
-
-                    response = await openai.Completion.acreate(
-                        **Codex.COMPLETION_KWARGS,
-                        prompt=passed_prompt + text,
-                        user=str(user),
-                    )
-
-                    c = response["choices"][0]
-
-                    text += c["text"]
-
-                choices.append(text)
+        for choice in response["choices"]:
+            text = choice["content"].strip()
+            choices.append(text)
 
         return list(set(choices))  # remove duplicates (lazy to do it the hard way)
 
@@ -140,43 +112,14 @@ class Codex:
         if language not in SUPPORTED_LANGUAGES:
             raise ValueError(f"Language {language} is not supported")
 
-        prompt = f"Here's what the above {language} code is doing:\n"
+        response = await openai.ChatCompletion.acreate(
+            **Codex.EXPLAIN_KWARGS,
+            messages=[{'role': 'system', 'content': f'You are a helpful assistant that can help on explaining what a code does in {language}. You only return the explanation, nothing else (no code, etc). Make it a numbered list but make it in order from top to bottom. If any additional notes/explanations are required, put it after the list.'}, {'role': 'user', 'content': code}],
+            user=str(user),
+        )
 
-        if language == "Python":
-            passed_prompt = f'{code}\n\n"""\n{prompt}'
-        else:
-            passed_prompt = f"{code}\n\n{Codex._do_comments(language, prompt)}"
+        choice = response["choices"][0]
 
-        async with Codex.lock:
-            response = await openai.Completion.acreate(
-                **Codex.EXPLAIN_KWARGS,
-                prompt=passed_prompt,
-                user=str(user),
-            )
-
-            choice = response["choices"][0]
-
-            text = choice["text"].strip()
-
-            if language != "Python":
-                text = Codex._remove_comments(language, text)
-
-            c = choice.copy()
-
-            while c["finish_reason"] == "length":
-                await asyncio.sleep(1.5)
-
-                response = await openai.Completion.acreate(
-                    **Codex.EXPLAIN_KWARGS,
-                    prompt=passed_prompt + text,
-                    user=str(user),
-                )
-
-                c = response["choices"][0]
-
-                if language != "Python":
-                    c["text"] = Codex._remove_comments(language, c["text"])
-
-                text += c["text"]
+        text = choice["content"].strip()
 
         return text

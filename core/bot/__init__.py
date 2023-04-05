@@ -69,6 +69,7 @@ class Bot(commands.Bot):
         self.connected = False
         self.main_prefix = cfg.PREFIX if isinstance(cfg.PREFIX, str) else cfg.PREFIX[0]
         self.is_selfhosted = os.environ.get("IS_SELFHOST", "1") == "1"
+        self.token = kwargs.pop("token", None) or cfg.TOKEN
 
         command_prefix = command_prefix or commands.when_mentioned_or(*list(cfg.PREFIX))
         intents: discord.Intents = kwargs.pop("intents", None) or discord.Intents.all()
@@ -155,3 +156,7 @@ class Bot(commands.Bot):
 
         # if not self.is_selfhosted:
         #     sentry_sdk.init(cfg.SENTRY_DSN, traces_sample_rate=1.0)
+        
+    def run(self, token: str = None, *args, **kwargs) -> None:
+        token = token or self.token
+        super().run(token, *args, **kwargs)

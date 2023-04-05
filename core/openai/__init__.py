@@ -13,25 +13,28 @@ from .codex import Codex
 
 
 class OpenAI:
-    GRAMMAR_CORRECTION_START_STRING = "Correct this to standard English:\n\n{text}\n\n"
-    GRAMMAR_CORRECTION_REPHRASE_START_STRING = "Correct this to standard English as well as replace complicated sentences with more efficient ones, refresh repetitive language, and uphold accurate spelling, punctuation, and grammar:\n\n{text}\n\n"
+    GRAMMAR_CORRECTION_SYSTEM = "You are a helpful assistant that can correct text to standard English. Do not explain why the text is incorrect, but rather return only the corrected text."
+    GRAMMAR_CORRECTION_START_STRING = "Correct this to standard English: {text}"
+    GRAMMAR_CORRECTION_REPHRASE_SYSTEM = "You are a helpful assistant that can correct text to standard English as well as replace complicated sentences with more efficient ones, refresh repetitive language, and uphold accurate spelling, punctuation, and grammar."
+    GRAMMAR_CORRECTION_REPHRASE_START_STRING = "Fix this sentence: {text}"
     GRAMMAR_CORRECTION_PARAMS = {
-        "model": "text-davinci-003",
-        "temperature": 0,
-        "max_tokens": 400,
-        "top_p": 1.0,
-        "frequency_penalty": 0.0,
-        "presence_penalty": 0.0,
+        "model": "gpt-4",
+        # "temperature": 0,
+        # "max_tokens": 400,
+        # "top_p": 1.0,
+        # "frequency_penalty": 0.0,
+        # "presence_penalty": 0.0,
     }
 
-    STUDY_NOTES_START_STRING = "What are {amount} key points I should know when studying {topic}?\n\n1."
+    STUDY_NOTES_SYSTEM = "You are a helpful assistant that can make some key points when studying about a certain topic. Do not explain the topic in detail, but rather make some key points that you should know when studying about it. If the user asks for multiple of them, send them in a numbered list."
+    STUDY_NOTES_START_STRING = "What are {amount} key points I should know when studying {topic}?"
     STUDY_NOTES_PARAMS = {
-        "model": "text-davinci-003",
-        "temperature": 0.3,
-        "max_tokens": 400,
-        "top_p": 1.0,
-        "frequency_penalty": 0.0,
-        "presence_penalty": 0.0,
+        "model": "gpt-4",
+        # "temperature": 0.3,
+        # "max_tokens": 400,
+        # "top_p": 1.0,
+        # "frequency_penalty": 0.0,
+        # "presence_penalty": 0.0,
     }
 
     WORDTUNES = {
@@ -104,14 +107,15 @@ class OpenAI:
         "Appreciative",
         "Disapproving",
     ]
-    WORDTUNES_START_STRING = "Make {amount} sentences about this with {tones} tone:\n\n{text}\n\n1."
+    WORDTUNES_SYSTEM = "You are a helpful assistant that can make sentences with a certain tone. Do not explain how the sentence is formed. Only return the sentence(s) with the tone. If the user asks for multiple of them, send them in a numbered list."
+    WORDTUNES_START_STRING = "Make {amount} sentences about this with {tones} tone in the following sentence: {text}"
     WORDTUNES_PARAMS = {
-        "model": "text-davinci-003",
-        "temperature": 0,
-        "max_tokens": 400,
-        "top_p": 1.0,
-        "frequency_penalty": 0.0,
-        "presence_penalty": 0.0,
+        "model": "gpt-4",
+        # "temperature": 0,
+        # "max_tokens": 400,
+        # "top_p": 1.0,
+        # "frequency_penalty": 0.0,
+        # "presence_penalty": 0.0,
     }
 
     def __init__(self, key: str = None, *, strip_strings: bool = True, bot: Bot = None):
@@ -138,12 +142,12 @@ class OpenAI:
 
         prompt = prompt.format(text=text)
 
-        response = await openai.Completion.acreate(prompt=prompt, user=str(user), **self.GRAMMAR_CORRECTION_PARAMS)
+        response = await openai.ChatCompletion.acreate(**self.GRAMMAR_CORRECTION_PARAMS, messages=[{'role': 'system', 'content': self.GRAMMAR_CORRECTION_SYSTEM}, {'role': 'user', 'content': prompt}], user=str(user))
 
         if raw:
             return response
 
-        return response["choices"][0]["text"].strip()
+        return response["choices"][0]["content"].strip()
 
     # --- Study Notes ---
     async def study_notes(self, topic: str, *, user: int, amount: int = 5, raw: bool = False) -> str | typing.Any:
@@ -151,12 +155,12 @@ class OpenAI:
 
         prompt = self.STUDY_NOTES_START_STRING.format(topic=topic, amount=amount)
 
-        response = await openai.Completion.acreate(prompt=prompt, user=str(user), **self.STUDY_NOTES_PARAMS)
+        response = await openai.ChatCompletion.acreate(**self.STUDY_NOTES_PARAMS, messages=[{'role': 'system', 'content': self.STUDY_NOTES_SYSTEM}, {'role': 'user', 'content': prompt}], user=str(user))
 
         if raw:
             return response
 
-        text = "1. " + response["choices"][0]["text"].strip()
+        text = response["choices"][0]["content"].strip()
 
         text = re.sub("\n+", "\n", text)
 
@@ -173,12 +177,12 @@ class OpenAI:
 
         prompt = self.WORDTUNES_START_STRING.format(text=text, amount=amount, tones=tones)
 
-        response = await openai.Completion.acreate(prompt=prompt, user=str(user), **self.WORDTUNES_PARAMS)
+        response = await openai.ChatCompletion.acreate(**self.WORDTUNES_PARAMS, messages=[{'role': 'system', 'content': self.WORDTUNES_SYSTEM}, {'role': 'user', 'content': prompt}], user=str(user))
 
         if raw:
             return response
 
-        text = "1. " + response["choices"][0]["text"].strip()
+        text = response["choices"][0]["content"].strip()
 
         text = re.sub("\n+", "\n", text)
 
