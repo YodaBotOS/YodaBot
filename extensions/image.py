@@ -17,10 +17,11 @@ from PIL import Image as PILImg
 
 import config
 from core import image as core_image
+from core.image import midjourney as core_midjourney
 from core.context import Context
 from core.image import GeneratedImages, Size
 from utils.converter import ImageConverter, SizeConverter
-from utils.image import DalleArtPaginator, DalleImagesPaginator
+from utils.image import DalleArtPaginator, DalleImagesPaginator, MidjourneyPaginator
 from utils.paginator import YodaMenuPages
 
 if TYPE_CHECKING:
@@ -96,22 +97,16 @@ class Image(commands.Cog):
                 return False
 
         return True
-
-    async def init(self):
+        
+    async def cog_load(self):
         importlib.reload(core_image)
         from core.image import ImageUtilities
 
         self.image: ImageUtilities = ImageUtilities(
             (self.bot.cdn, "yodabot", "https://cdn.yodabot.xyz"),
             self.bot.session,
-            (config.OPENAI_KEY, config.DREAM_KEY),
+            (config.OPENAI_KEY, config.DREAM_KEY, config.REPLICATE_API_KEY),
         )
-
-        # Hacky way, ik, idk how to do it the proper/better way.
-        # styles = [x.name for x in await self.image.style.get_styles(raw=True)]
-        # choices = [app_commands.Choice(name=x, value=x) for x in styles]
-
-        # app_commands.choices(style=choices)(self.gen_art_style_slash)
 
     async def cog_unload(self):
         del self.image
@@ -233,6 +228,38 @@ class Image(commands.Cog):
         source = DalleArtPaginator(result, prompt)
         menu = YodaMenuPages(source)
 
+        return await menu.start(ctx)
+    
+    async def midjourney_imagine(self, ctx, prompt, amount, width, height):
+        if ctx.interaction:
+            await ctx.defer()
+            m = None
+        else:
+            m = await ctx.send(f"⌛ Generating `{amount}` image(s)...")
+
+        if not await self.bot.is_owner(ctx.author):
+            check = await self.text_check(prompt)
+
+            if not check:
+                await m.delete()
+                return await ctx.send("Text seems inappropriate. Aborting.", ephemeral=True)
+            
+        try:
+            result = await self.image.midjourney.generate(prompt, amount, height=height, width=width)
+        except Exception as e:
+            if m:
+                await m.delete()
+
+            self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
+
+            return await ctx.send(f"Something went wrong, try again later.", ephemeral=True)
+        
+        if m:
+            await m.delete()
+            
+        source = MidjourneyPaginator(result.output, prompt)
+        menu = YodaMenuPages(source)
+        
         return await menu.start(ctx)
 
     MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.member, wait=False)
@@ -436,6 +463,36 @@ class Image(commands.Cog):
             return await self.generate_image_style(ctx, prompt, style, amount, width, height)
 
         await self.handle(ctx, main, prompt, style, amount, size)
+        
+    @commands.command("imagine", aliases=["midjourney", "mj"])
+    async def midjourney_imagine_cmd(self, ctx: Context, amount: typing.Optional[commands.Range[int, 1, 10]] = 5, size: typing.Optional[SizeConverter] = None, *, prompt: str):
+        """
+        Generate an image with the style of Midjourney V4.
+
+        If amount is not provided, it would default to 1. Maximum is 10.
+        
+        Width is a max of 1024 pixels and height is a max of 1024 pixels.
+
+        Usage: `yoda imagine [amount] [width x height] <prompt>`.
+        """
+        
+        async def main(ctx, prompt, amount, size):
+            if size is not None:
+                width, height = size
+
+                if width > 1024 or height > 1024:
+                    return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
+            else:
+                width, height = 512, 512
+                
+            try:
+                self.image.midjourney.check(amount, width, height)
+            except ValueError as e:
+                return await ctx.send(str(e).capitalize(), ephemeral=True)
+
+            return await self.midjourney_imagine(ctx, prompt, amount, width, height)
+        
+        await self.handle(ctx, main, prompt, amount, size)
 
     gen_art_slash = app_commands.Group(name=_T("generate-art"), description=_T("Generate an image from a prompt."))
 
@@ -617,6 +674,42 @@ class Image(commands.Cog):
         styles = styles[:25]
 
         return styles
+    
+    @app_commands.command(name=_T("imagine"))
+    @app_commands.describe(
+        prompt=_T("Prompt to generate images from"),
+        amount=_T("Amount of images to generate, maximum is 10. Defaults to 5"),
+        width=_T("Width of the image, defaults to 512"),
+        height=_T("Height of the image, defaults to 512"),
+    )
+    async def midjourney_imagine_slash(self, ctx: Context, prompt: str, amount: typing.Optional[app_commands.Range[int, 1, 10]] = 5, width: typing.Literal[128, 256, 512, 768, 1024] = 512, height: typing.Literal[128, 256, 512, 768, 1024] = 512):
+        """
+        Generate an image with the style of Midjourney V4.
+
+        If amount is not provided, it would default to 1. Maximum is 10.
+        
+        Width is a max of 1024 pixels and height is a max of 1024 pixels.
+
+        Usage: `/imagine [amount] [width x height] <prompt>`.
+        """
+
+        async def main(ctx, prompt, amount, size):
+            if size is not None:
+                width, height = size
+
+                if width > 1024 or height > 1024:
+                    return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
+            else:
+                width, height = 512, 512
+                
+            try:
+                self.image.midjourney.check(amount, width, height)
+            except ValueError as e:
+                return await ctx.send(str(e).capitalize(), ephemeral=True)
+
+            return await self.midjourney_imagine(ctx, prompt, amount, width, height)
+
+        await self.handle(ctx, main, prompt, amount, (width, height))
 
     async def analyze_image(self, ctx, url):
         async with ctx.typing():
@@ -789,7 +882,4 @@ class Image(commands.Cog):
 
 
 async def setup(bot: commands.Bot):
-    cog = Image(bot)
-    await cog.init()
-
-    await bot.add_cog(cog)
+    await bot.add_cog(Image(bot))

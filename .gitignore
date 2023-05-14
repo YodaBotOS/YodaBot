@@ -1,6 +1,7 @@
 core/maps/maps_.py
 formatter.bash
 extensions/player.py
+core/games/tictactoe
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

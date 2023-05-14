@@ -56,3 +56,28 @@ class DalleArtPaginator(MenuSource):
             embed.description = self.prompt
 
         return embed
+    
+
+class MidjourneyPaginator(MenuSource):
+    def __init__(self, entries, prompt=None):
+        super().__init__(entries, per_page=1)
+
+        self.prompt = prompt
+
+    async def format_page(self, menu: YodaMenuPages, image: list[str]):
+        embed = discord.Embed(color=menu.ctx.bot.color)
+        embed.set_image(url=image)
+        embed.set_author(
+            name=f"Midjourney Result:",
+            icon_url=menu.ctx.author.display_avatar.url,
+        )
+        embed.set_footer(
+            text=f"All images and prompts are logged for security purposes. You will get banned from "
+            f"using this feature in this bot if you are using it in a malicious/inappropriate "
+            "(pretty much anything bad) way."
+        )
+
+        if self.prompt:
+            embed.description = self.prompt
+
+        return embed
