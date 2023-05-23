@@ -142,7 +142,14 @@ class OpenAI:
 
         prompt = prompt.format(text=text)
 
-        response = await openai.ChatCompletion.acreate(**self.GRAMMAR_CORRECTION_PARAMS, messages=[{'role': 'system', 'content': self.GRAMMAR_CORRECTION_SYSTEM}, {'role': 'user', 'content': prompt}], user=str(user))
+        response = await openai.ChatCompletion.acreate(
+            **self.GRAMMAR_CORRECTION_PARAMS,
+            messages=[
+                {"role": "system", "content": self.GRAMMAR_CORRECTION_SYSTEM},
+                {"role": "user", "content": prompt},
+            ],
+            user=str(user),
+        )
 
         if raw:
             return response
@@ -155,7 +162,11 @@ class OpenAI:
 
         prompt = self.STUDY_NOTES_START_STRING.format(topic=topic, amount=amount)
 
-        response = await openai.ChatCompletion.acreate(**self.STUDY_NOTES_PARAMS, messages=[{'role': 'system', 'content': self.STUDY_NOTES_SYSTEM}, {'role': 'user', 'content': prompt}], user=str(user))
+        response = await openai.ChatCompletion.acreate(
+            **self.STUDY_NOTES_PARAMS,
+            messages=[{"role": "system", "content": self.STUDY_NOTES_SYSTEM}, {"role": "user", "content": prompt}],
+            user=str(user),
+        )
 
         if raw:
             return response
@@ -177,7 +188,11 @@ class OpenAI:
 
         prompt = self.WORDTUNES_START_STRING.format(text=text, amount=amount, tones=tones)
 
-        response = await openai.ChatCompletion.acreate(**self.WORDTUNES_PARAMS, messages=[{'role': 'system', 'content': self.WORDTUNES_SYSTEM}, {'role': 'user', 'content': prompt}], user=str(user))
+        response = await openai.ChatCompletion.acreate(
+            **self.WORDTUNES_PARAMS,
+            messages=[{"role": "system", "content": self.WORDTUNES_SYSTEM}, {"role": "user", "content": prompt}],
+            user=str(user),
+        )
 
         if raw:
             return response

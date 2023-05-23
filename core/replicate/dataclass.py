@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 def from_iso(iso: str = None):
     if not iso:
         return None
-    
+
     return datetime.datetime.fromisoformat(iso.rstrip("Z"))
 
 

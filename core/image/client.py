@@ -7,8 +7,8 @@ import openai
 from .dataclass import AnalyzeResult
 from .enums import *
 from .image import *
-from .style import *
 from .midjourney import *
+from .style import *
 
 
 class ImageUtilities:
@@ -24,7 +24,7 @@ class ImageUtilities:
     @property
     def style(self):
         return GenerateStyleArt((self.s3, self.bucket, self.host), self.session, self.dream_key)
-    
+
     @property
     def midjourney(self):
         return Midjourney(self.replicate_key, session=self.session, cdn=(self.s3, self.bucket, self.host))

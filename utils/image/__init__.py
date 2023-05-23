@@ -56,7 +56,7 @@ class DalleArtPaginator(MenuSource):
             embed.description = self.prompt
 
         return embed
-    
+
 
 class MidjourneyPaginator(MenuSource):
     def __init__(self, entries, prompt=None):

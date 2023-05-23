@@ -129,12 +129,16 @@ class Bot(commands.Bot):
             aws_secret_access_key=cfg.CDN_SECRET_KEY,
         )
 
-        self.pool: asyncpg.Pool = await asyncpg.create_pool(cfg.POSTGRESQL_DSN)
+        if not self.is_selfhosted:
+            self.pool: asyncpg.Pool = await asyncpg.create_pool(cfg.POSTGRESQL_DSN)
+        else:
+            self.pool = None
 
         # await self.pool.set_type_codec("json", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
 
-        with open("schema.sql") as f:
-            await self.pool.execute(f.read())
+        if not self.is_selfhosted:
+            with open("schema.sql") as f:
+                await self.pool.execute(f.read())
 
         self.ping = Ping(self)
 
@@ -156,7 +160,7 @@ class Bot(commands.Bot):
 
         # if not self.is_selfhosted:
         #     sentry_sdk.init(cfg.SENTRY_DSN, traces_sample_rate=1.0)
-        
+
     def run(self, token: str = None, *args, **kwargs) -> None:
         token = token or self.token
         super().run(token, *args, **kwargs)

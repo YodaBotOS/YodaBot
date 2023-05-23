@@ -3,7 +3,29 @@ import typing
 
 import openai
 
-SUPPORTED_LANGUAGES = ['Bash', 'C', 'C#', 'C++', 'CSS', 'Dart', 'Go', 'HTML', 'Java', 'JavaScript', 'Kotlin', 'PHP', 'Perl', 'Python', 'R', 'Ruby', 'Rust', 'SQL', 'Scala', 'Swift', 'TypeScript']
+SUPPORTED_LANGUAGES = [
+    "Bash",
+    "C",
+    "C#",
+    "C++",
+    "CSS",
+    "Dart",
+    "Go",
+    "HTML",
+    "Java",
+    "JavaScript",
+    "Kotlin",
+    "PHP",
+    "Perl",
+    "Python",
+    "R",
+    "Ruby",
+    "Rust",
+    "SQL",
+    "Scala",
+    "Swift",
+    "TypeScript",
+]
 SUPPORTED_LANGUAGES_LITERAL = typing.Literal[tuple(SUPPORTED_LANGUAGES)]  # type: ignore
 
 
@@ -94,7 +116,13 @@ class Codex:
 
         response = await openai.ChatCompletion.acreate(
             **Codex.COMPLETION_KWARGS,
-            messages=[{'role': 'system', 'content': f'You are a helpful assistant that can help on generating/making code in {language}. You only return the code, nothing else (no explanations, no comments, etc).'}, {'role': 'user', 'content': prompt}],
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"You are a helpful assistant that can help on generating/making code in {language}. You only return the code, nothing else (no explanations, no comments, etc).",
+                },
+                {"role": "user", "content": prompt},
+            ],
             n=n,
             user=str(user),
         )
@@ -114,7 +142,13 @@ class Codex:
 
         response = await openai.ChatCompletion.acreate(
             **Codex.EXPLAIN_KWARGS,
-            messages=[{'role': 'system', 'content': f'You are a helpful assistant that can help on explaining what a code does in {language}. You only return the explanation, nothing else (no code, etc). Make it a numbered list but make it in order from top to bottom. If any additional notes/explanations are required, put it after the list.'}, {'role': 'user', 'content': code}],
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"You are a helpful assistant that can help on explaining what a code does in {language}. You only return the explanation, nothing else (no code, etc). Make it a numbered list but make it in order from top to bottom. If any additional notes/explanations are required, put it after the list.",
+                },
+                {"role": "user", "content": code},
+            ],
             user=str(user),
         )
 
