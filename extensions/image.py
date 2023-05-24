@@ -304,7 +304,7 @@ class Image(commands.Cog):
         prompt: str,
     ):
         """
-        Generate an image from a prompt.
+        Generate an image from a prompt using DALL-E.
 
         If amount is not provided, it would default to 5. Maximum is 10.
 
@@ -339,7 +339,7 @@ class Image(commands.Cog):
         prompt: str,
     ):
         """
-        Generate an image from a prompt.
+        Generate an image from a prompt using DALL-E.
 
         If amount is not provided, it would default to 5. Maximum is 10.
 
@@ -517,7 +517,7 @@ class Image(commands.Cog):
         size: typing.Optional[typing.Literal["small", "medium", "large"]] = "large",
     ):
         """
-        Generate an image from a prompt.
+        Generate an image from a prompt using DALL-E.
 
         If amount is not provided, it would default to 5. Maximum is 10.
 
