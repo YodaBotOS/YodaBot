@@ -126,6 +126,7 @@ class Firefly:
         fix_face: bool = True,
         seed: int = None,
     ) -> list[str]:
+        styles = styles or []
         _styles = await self.get_image_styles()
         style_prompt = []
         anchor_prompt = []
