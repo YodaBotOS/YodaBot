@@ -106,7 +106,7 @@ class FireflyTextToImagePaginator(MenuSource):
         embed.description = ""
 
         if self.res_high:
-            embed.description += "_\U000026a0 Ultrawide Resolutions might result in some streched images._\n\n" # make it italic text using `_`
+            embed.description += "_\U000026a0 Ultrawide Resolutions might result in some streched images._\n\n"  # make it italic text using `_`
 
         if self.prompt:
             embed.description += self.prompt

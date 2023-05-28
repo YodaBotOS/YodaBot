@@ -19,10 +19,15 @@ import config
 from core import image as core_image
 from core.context import Context
 from core.image import GeneratedImages, Size
-from core.image import midjourney as core_midjourney
 from core.image import firefly as core_firefly
+from core.image import midjourney as core_midjourney
 from utils.converter import ImageConverter, SizeConverter
-from utils.image import DalleArtPaginator, DalleImagesPaginator, MidjourneyPaginator, FireflyTextToImagePaginator
+from utils.image import (
+    DalleArtPaginator,
+    DalleImagesPaginator,
+    FireflyTextToImagePaginator,
+    MidjourneyPaginator,
+)
 from utils.paginator import YodaMenuPages
 
 if TYPE_CHECKING:
@@ -108,10 +113,12 @@ class Image(commands.Cog):
             self.bot.session,
             (config.OPENAI_KEY, config.DREAM_KEY, config.REPLICATE_API_KEY, config.FIREFLY_KEY),
         )
-        app_commands.choices(size=[
-            app_commands.Choice(name=f"{k} ({v[0][0]}:{v[0][1]})", value=k)
-            for k, v in self.image.firefly.SIZES.items()
-        ])(self.firefly_slash)
+        app_commands.choices(
+            size=[
+                app_commands.Choice(name=f"{k} ({v[0][0]}:{v[0][1]})", value=k)
+                for k, v in self.image.firefly.SIZES.items()
+            ]
+        )(self.firefly_slash)
 
     async def cog_unload(self):
         del self.image
@@ -280,10 +287,10 @@ class Image(commands.Cog):
             if not check:
                 await m.delete()
                 return await ctx.send("Text seems inappropriate. Aborting.", ephemeral=True)
-            
+
         width = self.image.firefly.SIZES[size][1]
         height = self.image.firefly.SIZES[size][2]
-            
+
         try:
             results = await self.image.firefly.text_to_image(prompt, amount, width=width, height=height, styles=styles)
         except Exception as e:
@@ -557,6 +564,7 @@ class Image(commands.Cog):
 
         Usage: `yoda firefly [amount] [width x height] <prompt>`.
         """
+
         async def main(ctx, prompt, amount, size):
             return await self.firefly_text_to_image(ctx, prompt, amount, size)
 
