@@ -9,6 +9,7 @@ from .enums import *
 from .image import *
 from .midjourney import *
 from .style import *
+from .firefly import *
 
 
 class ImageUtilities:
@@ -17,6 +18,7 @@ class ImageUtilities:
         openai.api_key = keys[0]
         self.dream_key = keys[1]
         self.replicate_key = keys[2]
+        self.firefly_key = keys[3]
 
         self.s3, self.bucket, self.host = s3
         self.session = session
@@ -28,6 +30,10 @@ class ImageUtilities:
     @property
     def midjourney(self):
         return Midjourney(self.replicate_key, session=self.session, cdn=(self.s3, self.bucket, self.host))
+
+    @property
+    def firefly(self):
+        return Firefly(self.firefly_key, session=self.session, cdn=(self.s3, self.bucket, self.host))
 
     def _get_headers(self):
         return {
