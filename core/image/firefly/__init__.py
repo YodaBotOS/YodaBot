@@ -156,7 +156,7 @@ class Firefly:
 
         settings = self.generate_settings(prompt, width, height, style_prompt, anchor_prompt, fix_face, seed)
 
-        images = await asyncio.gather([self._text_to_image_inner_task(settings) for _ in range(amount)])
+        images = await asyncio.gather(*[self._text_to_image_inner_task(settings) for _ in range(amount)])
         return [self.post_to_cdn(i, folder="firefly/text-to-image") for i in images]
 
     async def _text_to_image_inner_task(self, settings: dict):
