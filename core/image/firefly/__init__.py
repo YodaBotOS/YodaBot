@@ -192,7 +192,7 @@ class Firefly:
         key = folder + "/" + str(uuid.uuid4()) + ".jpg"
         url = f"{self.host}/{key}"
 
-        self.cdn.upload_fileobj(
+        self.s3.upload_fileobj(
             image,
             Bucket=self.bucket,
             Key=key,
