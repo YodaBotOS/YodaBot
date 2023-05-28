@@ -190,7 +190,7 @@ class Firefly:
 
     def post_to_cdn(self, image: io.BytesIO, *, folder: str) -> str:
         key = folder + "/" + str(uuid.uuid4()) + ".jpg"
-        url = self.host / key
+        url = f"{self.host}/{key}"
 
         self.cdn.upload_fileobj(
             image,
