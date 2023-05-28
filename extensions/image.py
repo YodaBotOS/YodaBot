@@ -106,7 +106,7 @@ class Image(commands.Cog):
         self.image: ImageUtilities = ImageUtilities(
             (self.bot.cdn, "yodabot", "https://cdn.yodabot.xyz"),
             self.bot.session,
-            (config.OPENAI_KEY, config.DREAM_KEY, config.REPLICATE_API_KEY),
+            (config.OPENAI_KEY, config.DREAM_KEY, config.REPLICATE_API_KEY, config.FIREFLY_KEY),
         )
         app_commands.choices(size=[
             app_commands.Choice(name=f"{k} ({v[0][0]}:{v[0][1]})", value=k)
