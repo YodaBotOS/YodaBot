@@ -256,7 +256,7 @@ class Chat:
         ),
     }
 
-    MODEL = "gpt-3.5-turbo"
+    MODEL = "gpt-4"
 
     def __init__(self, openai_cls: OpenAI):
         self.openai = openai_cls
