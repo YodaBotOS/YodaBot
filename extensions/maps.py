@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime
 import importlib
 import io
+import asyncio
 import re
 import typing
 from typing import TYPE_CHECKING
@@ -194,27 +195,32 @@ Periods:
             await self.MAX_CONCURRENCY.release(ctx)
 
     async def func(self, ctx, place_id, map_type, map_theme):
-        maps = SlashMaps.initialize(ctx)
+        async with ctx.typing():
+            maps = SlashMaps.initialize(ctx)
 
-        place = await maps.place_details(
-            place_id,
-            language="en",
-            fields=self.NECESSARY_FIELDS,
-        )
+            place = await maps.place_details(
+                place_id,
+                language="en",
+                fields=self.NECESSARY_FIELDS,
+            )
 
-        img = await maps.render(place_id, map_type=map_type, map_theme=map_theme, geometry=place["geometry"])
-        f = discord.File(io.BytesIO(img), filename="map.png")
+            img = await maps.render(place_id, map_type=map_type, map_theme=map_theme, geometry=place["geometry"])
+            f = discord.File(io.BytesIO(img), filename="map.png")
 
-        maps.delete_session()
+            maps.delete_session()
 
-        embed = discord.Embed(color=self.bot.color)
-        embed.set_image(url="attachment://map.png")
+            embed = discord.Embed(color=self.bot.color)
+            embed.set_image(url="attachment://map.png")
 
-        embed = self.format_embed(place, embed)
+            embed = self.format_embed(place, embed)
 
-        view = MapsView(maps, place_id, place["photos"])
+            addr = place["formatted_address"]
+            ls = await asyncio.gather(maps.aerial_view(addr, "landscape", "image"), maps.aerial_view(addr, "landscape", "video"))
+            pr = await asyncio.gather(maps.aerial_view(addr, "portrait", "image"), maps.aerial_view(addr, "portrait", "video"))
 
-        await ctx.send(embed=embed, view=view, file=f)
+            view = MapsView(maps, place_id, place["photos"], ls, pr)
+
+            await ctx.send(embed=embed, view=view, file=f)
 
     async def send_autocomplete(self, maps, ctx, place):
         res = (await maps.autocomplete(place, text_only=True))[:25]

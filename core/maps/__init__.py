@@ -20,6 +20,7 @@ class GoogleMapsAPI:
     PLACE_DETAILS_URL = BASE_URL / "place/details/json"
     RENDER_MAPS_URL = BASE_URL / "staticmap"
     GET_PHOTO_URL = BASE_URL / "place/photo"
+    AERIAL_VIEW = URL("https://aerialview.googleapis.com/v1beta/videos")
 
     MAP_IDS = {
         "standard": "23c821bf646d4f91",
@@ -211,6 +212,30 @@ class GoogleMapsAPI:
         async with self.session.get(self.GET_PHOTO_URL, params=params) as resp:
             return await resp.read()
 
+    async def aerial_view(self, address: str, orientation: typing.Literal["landscape", "portrait"], format: typing.Literal["image", "video"]) -> bytes | None:
+        params = self._get_params(
+            "aerial_view",
+            {"address": address},
+            with_language=False
+        )
+
+        async with self.session.get(self.AERIAL_VIEW, params=params) as resp:
+            js = await resp.json()
+        
+        if js.get("error", {}).get("status") == "NOT_FOUND":
+            async with self.session.post(str(self.AERIAL_VIEW) + ":renderVideo", json={"address": address}, params=self._get_params("aerial_view_post", {}, with_language=False)) as resp:
+                pass # Let Google do the rest.
+
+            return None
+
+        if format == "image":
+            g_url = js["uris"]["IMAGE"][f"{orientation}Uri"]
+        elif format == "video":
+            g_url = js["uris"]["MP4_MEDIUM"][f"{orientation}Uri"]
+
+        async with self.session.get(g_url) as resp:
+            return await resp.read()
+
 
 # This is for slash commands (make things easier)
 # It's to make things easier when using autocomplete and place_details together
@@ -320,3 +345,6 @@ class SlashMaps:
 
     async def get_photo(self, photo_reference: str) -> bytes:
         return await self.maps_obj.get_photo(photo_reference)
+    
+    async def aerial_view(self, address: str, orientation: typing.Literal["landscape", "portrait"], format: typing.Literal["image", "video"]) -> bytes | None:
+        return await self.maps_obj.aerial_view(address, orientation, format)
