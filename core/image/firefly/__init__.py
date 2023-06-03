@@ -165,7 +165,7 @@ class Firefly:
         h["x-request-id"] = str(uuid.uuid4())
 
         boundary = str(uuid.uuid4().hex)
-        boundary = "----WebKitFormBoundary" + boundary
+        boundary = "--WebKitFormBoundary" + boundary
 
         h["Content-Type"] = f"multipart/form-data; boundary={boundary}"
 
