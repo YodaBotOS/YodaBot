@@ -65,10 +65,10 @@ class MapsView(ui.View):
 
         super().__init__(timeout=None)
 
-        if not self.landscape_aerial_view:
+        if not all(self.landscape_aerial_view):
             self.remove_item(self.show_landscape)
 
-        if not self.portrait_aerial_view:
+        if not all(self.portrait_aerial_view):
             self.remove_item(self.show_portrait)
 
     def generate_menu(self):
