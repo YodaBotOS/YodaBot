@@ -227,6 +227,12 @@ class GoogleMapsAPI:
                 pass # Let Google do the rest.
 
             return None
+        elif js.get("state", "PROCESSING") == "PROCESSING" or js.get("state") != "ACTIVE":
+            return None
+    
+        if "uris" not in js:
+            # Something is going on, idk.
+            return None
 
         if format == "image":
             g_url = js["uris"]["IMAGE"][f"{orientation}Uri"]
