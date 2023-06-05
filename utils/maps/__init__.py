@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import re
 import io
+import re
 from typing import TYPE_CHECKING
 
 import discord
@@ -85,13 +85,19 @@ class MapsView(ui.View):
     @ui.button(label="Show 3D Image (Portrait)", emoji="\N{CITYSCAPE}", style=discord.ButtonStyle.blurple)
     async def show_portrait(self, interaction: discord.Interaction, button: ui.Button):
         img, vid = self.portrait_aerial_view
-        files = [discord.File(io.BytesIO(img), filename="portrait.png"), discord.File(io.BytesIO(vid), filename="portrait.mp4")]
+        files = [
+            discord.File(io.BytesIO(img), filename="portrait.png"),
+            discord.File(io.BytesIO(vid), filename="portrait.mp4"),
+        ]
 
         await interaction.response.send_message("3D Portrait Image and Video:", files=files, ephemeral=True)
 
     @ui.button(label="Show 3D Image (Landscape)", emoji="\N{CITYSCAPE}", style=discord.ButtonStyle.blurple)
     async def show_landscape(self, interaction: discord.Interaction, button: ui.Button):
         img, vid = self.landscape_aerial_view
-        files = [discord.File(io.BytesIO(img), filename="landscape.png"), discord.File(io.BytesIO(vid), filename="landscape.mp4")]
+        files = [
+            discord.File(io.BytesIO(img), filename="landscape.png"),
+            discord.File(io.BytesIO(vid), filename="landscape.mp4"),
+        ]
 
         await interaction.response.send_message("3D Landscape Image and Video:", files=files, ephemeral=True)

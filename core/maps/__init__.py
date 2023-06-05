@@ -212,24 +212,29 @@ class GoogleMapsAPI:
         async with self.session.get(self.GET_PHOTO_URL, params=params) as resp:
             return await resp.read()
 
-    async def aerial_view(self, address: str, orientation: typing.Literal["landscape", "portrait"], format: typing.Literal["image", "video"]) -> bytes | None:
-        params = self._get_params(
-            "aerial_view",
-            {"address": address},
-            with_language=False
-        )
+    async def aerial_view(
+        self,
+        address: str,
+        orientation: typing.Literal["landscape", "portrait"],
+        format: typing.Literal["image", "video"],
+    ) -> bytes | None:
+        params = self._get_params("aerial_view", {"address": address}, with_language=False)
 
         async with self.session.get(self.AERIAL_VIEW, params=params) as resp:
             js = await resp.json()
-        
+
         if js.get("error", {}).get("status") == "NOT_FOUND":
-            async with self.session.post(str(self.AERIAL_VIEW) + ":renderVideo", json={"address": address}, params=self._get_params("aerial_view_post", {}, with_language=False)) as resp:
-                pass # Let Google do the rest.
+            async with self.session.post(
+                str(self.AERIAL_VIEW) + ":renderVideo",
+                json={"address": address},
+                params=self._get_params("aerial_view_post", {}, with_language=False),
+            ) as resp:
+                pass  # Let Google do the rest.
 
             return None
         elif js.get("state", "PROCESSING") == "PROCESSING" or js.get("state") != "ACTIVE":
             return None
-    
+
         if "uris" not in js:
             # Something is going on, idk.
             return None
@@ -351,6 +356,11 @@ class SlashMaps:
 
     async def get_photo(self, photo_reference: str) -> bytes:
         return await self.maps_obj.get_photo(photo_reference)
-    
-    async def aerial_view(self, address: str, orientation: typing.Literal["landscape", "portrait"], format: typing.Literal["image", "video"]) -> bytes | None:
+
+    async def aerial_view(
+        self,
+        address: str,
+        orientation: typing.Literal["landscape", "portrait"],
+        format: typing.Literal["image", "video"],
+    ) -> bytes | None:
         return await self.maps_obj.aerial_view(address, orientation, format)

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import datetime
 import importlib
 import io
-import asyncio
 import re
 import typing
 from typing import TYPE_CHECKING
@@ -215,8 +215,12 @@ Periods:
             embed = self.format_embed(place, embed)
 
             addr = place["formatted_address"]
-            ls = await asyncio.gather(maps.aerial_view(addr, "landscape", "image"), maps.aerial_view(addr, "landscape", "video"))
-            pr = await asyncio.gather(maps.aerial_view(addr, "portrait", "image"), maps.aerial_view(addr, "portrait", "video"))
+            ls = await asyncio.gather(
+                maps.aerial_view(addr, "landscape", "image"), maps.aerial_view(addr, "landscape", "video")
+            )
+            pr = await asyncio.gather(
+                maps.aerial_view(addr, "portrait", "image"), maps.aerial_view(addr, "portrait", "video")
+            )
 
             view = MapsView(maps, place_id, place["photos"], ls, pr)
 
