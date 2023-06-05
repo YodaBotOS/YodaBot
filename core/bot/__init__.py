@@ -158,8 +158,8 @@ class Bot(commands.Bot):
             await self.load_extension(extension)
             print("Loaded extension:", extension)
 
-        # if not self.is_selfhosted:
-        #     sentry_sdk.init(cfg.SENTRY_DSN, traces_sample_rate=1.0)
+        if not self.is_selfhosted:
+            sentry_sdk.init(cfg.SENTRY_DSN, traces_sample_rate=1.0)
 
     def run(self, token: str = None, *args, **kwargs) -> None:
         token = token or self.token
