@@ -1,14 +1,14 @@
 import asyncio
 import io
-from urllib.parse import quote
 from dataclasses import dataclass, field
-import spotipy2.types
-from spotipy2 import Spotify
-from spotipy2.auth import ClientCredentialsFlow
+from urllib.parse import quote
 
 import aiohttp
+import spotipy2.types
 from discord.app_commands import Choice
 from spotify.spotify_scraper import SpotifyScraper
+from spotipy2 import Spotify
+from spotipy2.auth import ClientCredentialsFlow
 
 
 @dataclass(frozen=True, eq=True)
@@ -31,10 +31,12 @@ class LyricAutocompleteSuggestions:
 
     def __str__(self):
         return f"{self.title} - {', '.join(self.artists)}"
-    
+
 
 class LyricLocalAPI:
-    def __init__(self, session: aiohttp.ClientSession, cdn: tuple, client_id: str, client_secret: str, sp_dc: str, sp_key: str):
+    def __init__(
+        self, session: aiohttp.ClientSession, cdn: tuple, client_id: str, client_secret: str, sp_dc: str, sp_key: str
+    ):
         self.session = session
         self.cdn, self.bucket, self.host = cdn
         self.client_id = client_id
@@ -51,38 +53,42 @@ class LyricLocalAPI:
         except:
             track = await self.search_autocomplete(track_id_or_query, limit=1)
             track = track[0]
-            track = await self.get_track_info(track['id'])
+            track = await self.get_track_info(track["id"])
 
         lyrics = await self._client.get_lyrics(track.id)
         if lyrics is None:
             return LyricResult.empty()
-        
+
         if raw:
             return lyrics
-        
-        lyrics = '\n'.join([x['words'] for x in lyrics['lyrics']['lines']])
-        title = track.name
-        artist = ', '.join([a.name for a in track.artists])
-        images = {'track': await self._post_to_cdn(track.album.images[0]['url'], f'lyrics/{title.replace(" ", "_")}-{" ".join([a.name.replace(" ", "_") for a in track.artists])}/track.jpg'), 'background': await self._post_to_cdn(track.album.images[1]['url'], f'lyrics/{title.replace(" ", "_")}-{" ".join([a.name.replace(" ", "_") for a in track.artists])}/track.jpg')}
 
-        return {
-            'title': title,
-            'artist': artist,
-            'lyrics': lyrics,
-            'images': images
+        lyrics = "\n".join([x["words"] for x in lyrics["lyrics"]["lines"]])
+        title = track.name
+        artist = ", ".join([a.name for a in track.artists])
+        images = {
+            "track": await self._post_to_cdn(
+                track.album.images[0]["url"],
+                f'lyrics/{title.replace(" ", "_")}-{" ".join([a.name.replace(" ", "_") for a in track.artists])}/track.jpg',
+            ),
+            "background": await self._post_to_cdn(
+                track.album.images[1]["url"],
+                f'lyrics/{title.replace(" ", "_")}-{" ".join([a.name.replace(" ", "_") for a in track.artists])}/track.jpg',
+            ),
         }
-    
+
+        return {"title": title, "artist": artist, "lyrics": lyrics, "images": images}
+
     async def search_autocomplete(self, query: str, limit: int = 10) -> list[dict]:
         async with self.spotify as sp:
             x = await sp.search(query, types=[spotipy2.types.Track], limit=limit)
-            items = x['tracks'].items
-            return [{'title': i.name, 'artists': [a.name for a in i.artists], 'id': i.id} for i in items]
-    
+            items = x["tracks"].items
+            return [{"title": i.name, "artists": [a.name for a in i.artists], "id": i.id} for i in items]
+
     async def get_track_info(self, track_id: str):
         async with self.spotify as sp:
             x = await sp.get_track(track_id)
             return x
-        
+
     async def _post_to_cdn(self, url: str, key: str):
         async with self.session.get(url) as resp:
             data = await resp.read()
@@ -141,7 +147,7 @@ class Lyrics:
         try:
             if self._local:
                 d = await self._local.get_lyrics(query_or_id)
-                if d and d['lyrics']:
+                if d and d["lyrics"]:
                     return d
         except:
             pass
@@ -177,7 +183,7 @@ class Lyrics:
     async def autocomplete(self, query: str, amount: int = 10, *, slash_autocomplete: bool = False):
         if 1 > amount or amount > 20:
             raise ValueError("Amount must be between 1 and 20")
-        
+
         try:
             if self._local:
                 d = await self._local.search_autocomplete(query, limit=amount)

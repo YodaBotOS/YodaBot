@@ -1,5 +1,6 @@
-from config import *
 import aiohttp
+
+from config import *
 from core.music.spotify.spotify_client import SpotifyClient
 
 
@@ -17,6 +18,6 @@ class SpotifyScraper:
 
     async def get_lyrics(self, track_id: str) -> str | None:
         try:
-            return await self.get(f'https://spclient.wg.spotify.com/color-lyrics/v2/track/{track_id}')
+            return await self.get(f"https://spclient.wg.spotify.com/color-lyrics/v2/track/{track_id}")
         except Exception as ex:
             return None

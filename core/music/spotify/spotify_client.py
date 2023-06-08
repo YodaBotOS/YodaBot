@@ -1,13 +1,15 @@
 import aiohttp
+
 from core.music.spotify.config import *
+
 # from exceptions import SpotifyClientException
 
 
 class SpotifyClient:
     # _proxy = PROXY
-    _client_token = ''
-    _access_token = ''
-    _client_id = ''
+    _client_token = ""
+    _access_token = ""
+    _client_id = ""
     __USER_AGENT = USER_AGENT
     _verify_ssl = VERIFY_SSL
 
@@ -17,16 +19,16 @@ class SpotifyClient:
         self.dc = sp_dc
         self.key = sp_key
         self.__HEADERS = {
-                'User-Agent': self.__USER_AGENT,
-                'Accept': 'application/json',
-                'Origin': 'https://open.spotify.com',
-                'Sec-Fetch-Dest': 'empty',
-                'Sec-Fetch-Mode': 'cors',
-                'Sec-Fetch-Site': 'same-origin',
-                'Referer': 'https://open.spotify.com/',
-                'Te': 'trailers',
-                'App-Platform': 'WebPlayer'
-            }
+            "User-Agent": self.__USER_AGENT,
+            "Accept": "application/json",
+            "Origin": "https://open.spotify.com",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-origin",
+            "Referer": "https://open.spotify.com/",
+            "Te": "trailers",
+            "App-Platform": "WebPlayer",
+        }
 
         self.session = session
 
@@ -47,21 +49,20 @@ class SpotifyClient:
         #     session.headers.pop('client_token')
         # if 'Authorization' in session.headers:
         #     session.headers.pop('Authorization')
-        
+
         data = {
             "client_data": {
                 "client_version": "1.2.13.477.ga4363038",
                 "client_id": client_id,
-                "js_sdk_data": 
-                {
+                "js_sdk_data": {
                     "device_brand": "",
                     "device_id": "",
                     "device_model": "",
                     "device_type": "",
                     "os": "",
-                    "os_version": ""
-                }
-            } 
+                    "os_version": "",
+                },
+            }
         }
 
         # response = session.post('https://clienttoken.spotify.com/v1/clienttoken', json=data, verify=self._verify_ssl)
@@ -69,15 +70,17 @@ class SpotifyClient:
         #     rj = response.json()
         # except Exception as ex:
         #     raise SpotifyClientException('Failed to parse client token response as json!', ex)
-        
-        async with self.session.post('https://clienttoken.spotify.com/v1/clienttoken', json=data, verify_ssl=self._verify_ssl, headers=headers) as response:
+
+        async with self.session.post(
+            "https://clienttoken.spotify.com/v1/clienttoken", json=data, verify_ssl=self._verify_ssl, headers=headers
+        ) as response:
             try:
                 rj = await response.json()
             except Exception as ex:
                 # raise SpotifyClientException('Failed to parse client token response as json!', ex)
                 raise ex
 
-        return rj['granted_token']['token']
+        return rj["granted_token"]["token"]
 
     async def get_access_token(self, keys=None, sp_dc=None, sp_key=None):
         # session.proxies = self._proxy
@@ -87,24 +90,26 @@ class SpotifyClient:
         if keys is not None:
             cookie = keys
         if sp_dc is not None:
-            cookie['sp_dc'] = sp_dc
+            cookie["sp_dc"] = sp_dc
         if sp_key is not None:
-            cookie['sp_key'] = sp_key
+            cookie["sp_key"] = sp_key
         # response = session.get('https://open.spotify.com/get_access_token', verify=self._verify_ssl, cookies=cookie)
         # try:
         #     rj = response.json()
         # except Exception as ex:
         #     raise SpotifyClientException('An error occured when generating an access token!', ex)
 
-        async with self.session.get('https://open.spotify.com/get_access_token', verify_ssl=self._verify_ssl, cookies=cookie, headers=headers) as response:
+        async with self.session.get(
+            "https://open.spotify.com/get_access_token", verify_ssl=self._verify_ssl, cookies=cookie, headers=headers
+        ) as response:
             try:
                 rj = await response.json()
             except Exception as ex:
                 # raise SpotifyClientException('An error occured when generating an access token!', ex)
                 raise ex
 
-        self.is_anonymous = rj['isAnonymous']
-        return rj['accessToken'], rj['clientId'] if rj['clientId'].lower() != 'unknown' else self._client_id
+        self.is_anonymous = rj["isAnonymous"]
+        return rj["accessToken"], rj["clientId"] if rj["clientId"].lower() != "unknown" else self._client_id
 
     async def get(self, url: str) -> dict:
         # with requests.session() as session:
@@ -121,10 +126,7 @@ class SpotifyClient:
         await self.refresh_tokens()
 
         headers = self.__HEADERS.copy()
-        headers.update({
-            'Client-Token': self._client_token,
-            'Authorization': f'Bearer {self._access_token}'
-        })
+        headers.update({"Client-Token": self._client_token, "Authorization": f"Bearer {self._access_token}"})
         async with self.session.get(url, verify_ssl=self._verify_ssl, headers=headers) as resp:
             return await resp.json()
 
@@ -139,4 +141,3 @@ class SpotifyClient:
 
     #         response = session.post(url, verify=self._verify_ssl, data=payload)
     #         return response
-
