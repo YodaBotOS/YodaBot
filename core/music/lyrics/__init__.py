@@ -6,7 +6,7 @@ from urllib.parse import quote
 import aiohttp
 import spotipy2.types
 from discord.app_commands import Choice
-from spotify.spotify_scraper import SpotifyScraper
+from core.music.spotify.spotify_scraper import SpotifyScraper
 from spotipy2 import Spotify
 from spotipy2.auth import ClientCredentialsFlow
 
