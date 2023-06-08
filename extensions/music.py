@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 class Music(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot: Bot = bot
-        self.lyrics = Lyrics(loop=self.bot.loop, session=self.bot.session)
+        self.lyrics = Lyrics(Lyrics.local(self.bot.session, (self.bot.cdn, "yodabot", "https://cdn.yodabot.xyz"), self.bot.config.SPOTIFY_CLIENT_ID, self.bot.config.SPOTIFY_CLIENT_SECRET, self.bot.config.SPOTIFY_SP_DC, self.bot.config.SPOTIFY_SP_KEY), loop=self.bot.loop, session=self.bot.session)
         self.gpred = GenrePrediction(session=self.bot.session)
 
     @commands.hybrid_command(_T("lyrics"), aliases=["lyric"])
