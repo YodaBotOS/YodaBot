@@ -128,7 +128,7 @@ class Lyrics:
     async def __call__(self, query: str, *, cache: bool = True, get_from_cache: bool | None = None):
         return self.search(query, cache=cache, get_from_cache=get_from_cache)
 
-    def set_cache(self, key, value, ttl=24*60*60):
+    def set_cache(self, key, value, ttl=24 * 60 * 60):
         self.CACHE[key] = value
 
         async def task():
