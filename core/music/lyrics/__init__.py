@@ -80,15 +80,13 @@ class LyricLocalAPI:
         return {"title": title, "artist": artist, "lyrics": lyrics, "images": images}
 
     async def search_autocomplete(self, query: str, limit: int = 10) -> list[dict]:
-        async with self.spotify as sp:
-            x = await sp.search(query, types=[spotipy2.types.Track], limit=limit)
-            items = x["tracks"].items
-            return [{"title": i.name, "artists": [a.name for a in i.artists], "id": i.id} for i in items]
+        x = await self.spotify.search(query, types=[spotipy2.types.Track], limit=limit)
+        items = x["tracks"].items
+        return [{"title": i.name, "artists": [a.name for a in i.artists], "id": i.id} for i in items]
 
     async def get_track_info(self, track_id: str):
-        async with self.spotify as sp:
-            x = await sp.get_track(track_id)
-            return x
+        x = await self.spotify.get_track(track_id)
+        return x
 
     async def _post_to_cdn(self, url: str, key: str):
         async with self.session.get(url) as resp:
@@ -130,7 +128,7 @@ class Lyrics:
     async def __call__(self, query: str, *, cache: bool = True, get_from_cache: bool | None = None):
         return self.search(query, cache=cache, get_from_cache=get_from_cache)
 
-    def set_cache(self, key, value, ttl=None):
+    def set_cache(self, key, value, ttl=24*60*60):
         self.CACHE[key] = value
 
         async def task():
@@ -152,6 +150,8 @@ class Lyrics:
                     return d
         except:
             pass
+
+        return dict()
 
         params = {"q": query_or_id}
 
