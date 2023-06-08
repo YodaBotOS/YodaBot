@@ -85,7 +85,6 @@ class Midjourney:
                 )
 
                 url = f"{self.host}/{key}"
-                print(url)
 
                 result.output[i] = url
 

@@ -17,3 +17,4 @@ regex
 psutil
 wavelink
 rich
+spotipy2

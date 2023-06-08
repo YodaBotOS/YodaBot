@@ -2,6 +2,7 @@ core/maps/maps_.py
 formatter.bash
 extensions/player.py
 core/games/tictactoe
+test.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -147,3 +148,5 @@ config.py
 
 # Credentials
 credentials.json
+
+!core/music/spotify/config.py
