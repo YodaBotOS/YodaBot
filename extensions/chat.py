@@ -246,7 +246,7 @@ class Chat(commands.Cog):
         finally:
             await self.CHAT_SLASH_MAX_CONCURRENCY.release(ctx.message)
 
-    @app_commands.command(name="GoogleGPT")
+    @app_commands.command(name="google-gpt")
     @app_commands.describe(text="The text to chat with the AI (once)")
     async def google_gpt_slash(self, interaction: discord.Interaction, text: str = None):
         """
