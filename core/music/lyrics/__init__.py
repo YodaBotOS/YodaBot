@@ -151,7 +151,7 @@ class Lyrics:
         except:
             pass
 
-        return dict()
+        # return dict()
 
         params = {"q": query_or_id}
 
