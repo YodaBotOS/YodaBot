@@ -28,7 +28,7 @@ This is limited to:
 - Getting nearby/local results that involves the current location, e.g asking for the nearest coffee shop or mcdonald's should not work and should be responded with "I can't help you with local results. I don't know where you are." or somehting like this.
 - Getting references/citations for a result, e.g asking for the references of the last result. This should not work and should be responded with "I can't help you with references/citations. I don't know how to do that." or something like this."""
 
-    MODEL = "gpt-4"
+    MODEL = "gpt-4-0613"
 
     FUNCTIONS = [
         {
@@ -165,7 +165,7 @@ This is limited to:
             function_name = response["function_call"]["name"]
             fuction_to_call = available_functions[function_name]
             function_args = json.loads(response["function_call"]["arguments"])
-            function_response = fuction_to_call(
+            function_response = await fuction_to_call(
                 query=function_args.get("term"),
             )
 
