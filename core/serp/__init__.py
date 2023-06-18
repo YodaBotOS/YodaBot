@@ -1,5 +1,6 @@
 import aiohttp
 import yarl
+from urllib.parse import quote_plus
 
 
 class SerpAPI:
@@ -12,9 +13,9 @@ class SerpAPI:
     async def google_search(
         self, query: str, *, location: str = "US"
     ) -> dict:  # Purpose of location is just for language
-        params = {
-            "q": query,
-        }
+        # params = {
+        #     "q": query,
+        # }
 
         headers = {
             "X-User-Agent": "desktop",
@@ -24,5 +25,5 @@ class SerpAPI:
         if location:
             headers["X-Proxy-Location"] = location
 
-        async with self.session.get(self.URL / "search", params=params, headers=headers) as resp:
+        async with self.session.get(self.URL / f"search/q={quote_plus(query)}", headers=headers) as resp:
             return await resp.json()
