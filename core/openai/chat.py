@@ -175,6 +175,7 @@ This is limited to:
                     {"title": x["title"], "description": x["description"]} for x in function_response["results"]
                 ],
             }
+            function_content = json.dumps(function_content)
 
             messages.append(response)
             messages.append({"role": "function", "name": function_name, "content": function_content})
