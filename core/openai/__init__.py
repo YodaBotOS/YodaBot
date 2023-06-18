@@ -210,6 +210,6 @@ class OpenAI:
     @property
     def chat(self) -> Chat:
         return Chat(self)
-    
+
     def googlechat(self, serp_api_key: str) -> GoogleChat:
         return GoogleChat(serp_api_key, self)

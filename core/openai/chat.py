@@ -18,8 +18,7 @@ import openai
 class GoogleChat:  # GoogleGPT
     TTL = datetime.timedelta(minutes=3)
 
-    SYSTEM = """
-You are an AI that can help on searching things on Google and summarizing the result to the user. 
+    SYSTEM = """You are an AI that can help on searching things on Google and summarizing the result to the user. 
 User will say something like "Who is the current president of the United States", you should call the search google function with only the term, e.g (search_google("Current President of the United States"))
 Another short example is "What is Starbucks?", because "Starbucks" (taken from term) is a general topic, you should call the search google function with the complete content, e.g (search_google("What is Starbucks?"))
 Another example is "What is the capital of France", you should call the search google function with only the term, e.g (search_google("Capital of France"))
@@ -27,8 +26,7 @@ Another example is "Where is the Eifel Tower located?", you should call the sear
 
 This is limited to: 
 - Getting nearby/local results that involves the current location, e.g asking for the nearest coffee shop or mcdonald's should not work and should be responded with "I can't help you with local results. I don't know where you are." or somehting like this.
-- Getting references/citations for a result, e.g asking for the references of the last result. This should not work and should be responded with "I can't help you with references/citations. I don't know how to do that." or something like this.
-    """
+- Getting references/citations for a result, e.g asking for the references of the last result. This should not work and should be responded with "I can't help you with references/citations. I don't know how to do that." or something like this."""
 
     MODEL = "gpt-4"
 
@@ -38,14 +36,9 @@ This is limited to:
             "description": "Searches Google for the given term and returns the result for real-time data.",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "term": {
-                        "type": "string",
-                        "description": "The term/query to search for in Google."
-                    }
-                },
-                "required": ["term"]
-            }
+                "properties": {"term": {"type": "string", "description": "The term/query to search for in Google."}},
+                "required": ["term"],
+            },
         }
     ]
 
@@ -60,7 +53,9 @@ This is limited to:
 
     # Backend functions
     async def _get(self, user_id: int, channel_id: int) -> dict | None:
-        row = await self.bot.pool.fetchrow("SELECT * FROM google_chat WHERE user_id=$1 AND channel_id=$2", user_id, channel_id)
+        row = await self.bot.pool.fetchrow(
+            "SELECT * FROM google_chat WHERE user_id=$1 AND channel_id=$2", user_id, channel_id
+        )
 
         if row is not None:
             return dict(row)
@@ -121,7 +116,7 @@ This is limited to:
             await self.stop(context)
         except:
             pass
-        
+
         messages = self._init_messages()
         await self.perf_db(context, messages)
 
@@ -159,7 +154,9 @@ This is limited to:
         else:
             user = context.user.id
 
-        resp = await openai.ChatCompletion.acreate(model=self.MODEL, messages=messages, user=str(user), functions=self.FUNCTIONS, function_call="auto")
+        resp = await openai.ChatCompletion.acreate(
+            model=self.MODEL, messages=messages, user=str(user), functions=self.FUNCTIONS, function_call="auto"
+        )
 
         response = resp["choices"][0]["message"]
 
@@ -176,7 +173,7 @@ This is limited to:
                 "summarized": function_response["knowledge_graph"] or None,
                 "information": [
                     {"title": x["title"], "description": x["description"]} for x in function_response["results"]
-                ]
+                ],
             }
 
             messages.append(response)
@@ -527,7 +524,7 @@ class Chat:
             await self.stop(context)
         except:
             pass
-        
+
         messages = self._init_messages(context, role)
         await self.perf_db(context, messages)
 

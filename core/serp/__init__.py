@@ -9,7 +9,9 @@ class SerpAPI:
         self.api_key = api_key
         self.session = session
 
-    async def google_search(self, query: str, *, location: str = "US") -> dict:  # Purpose of location is just for language
+    async def google_search(
+        self, query: str, *, location: str = "US"
+    ) -> dict:  # Purpose of location is just for language
         params = {
             "q": query,
         }
