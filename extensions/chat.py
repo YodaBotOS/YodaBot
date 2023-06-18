@@ -169,7 +169,7 @@ class Chat(commands.Cog):
 
         return [app_commands.Choice(name=x, value=x) for x in results]
     
-    @commands.command("googlegpt", aliases=["googlechat", "bard", "google-gpt", "google_gpt", "google-chat", "google_chat", "gg", "gc"])
+    @commands.command("googlegpt", aliases=["googlechat", "bard", "google-gpt", "google_gpt", "google-chat", "google_chat", "gg"])
     async def google_gpt(self, ctx: Context, *, text: str = None):
         """
         OpenAI GPT-4 x Google Search. ON BETA!!
