@@ -51,18 +51,19 @@ class Chat(commands.Cog):
 
         try:
             if text is not None:
-                try:
-                    text = await self.openai.chat(ctx, text)
-                except Exception as e:
-                    await ctx.send(f"Something went wrong, try again later.")
-                    self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
-                    return
+                async with ctx.typing():
+                    try:
+                        text = await self.openai.chat(ctx, text)
+                    except Exception as e:
+                        await ctx.send(f"Something went wrong, try again later.")
+                        self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
+                        return
 
-                embed = discord.Embed(color=self.bot.color)
-                embed.set_author(name="Chat:", icon_url=ctx.author.display_avatar.url)
-                embed.description = text
+                    embed = discord.Embed(color=self.bot.color)
+                    embed.set_author(name="Chat:", icon_url=ctx.author.display_avatar.url)
+                    embed.description = text
 
-                return await ctx.send(embed=embed)
+                    return await ctx.send(embed=embed)
 
             await self.openai.chat.new(ctx, "assistant")
             view = ChatView(openai=self.openai.chat, user=ctx.author, ephemeral=False)
@@ -181,18 +182,19 @@ class Chat(commands.Cog):
 
         try:
             if text is not None:
-                try:
-                    text = await self.google(ctx, text)
-                except Exception as e:
-                    await ctx.send(f"Something went wrong, try again later.")
-                    self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
-                    return
+                async with ctx.typing():
+                    try:
+                        text = await self.google(ctx, text)
+                    except Exception as e:
+                        await ctx.send(f"Something went wrong, try again later.")
+                        self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
+                        return
 
-                embed = discord.Embed(color=self.bot.color)
-                embed.set_author(name="GoogleGPT Chat:", icon_url=ctx.author.display_avatar.url)
-                embed.description = text
+                    embed = discord.Embed(color=self.bot.color)
+                    embed.set_author(name="GoogleGPT Chat:", icon_url=ctx.author.display_avatar.url)
+                    embed.description = text
 
-                return await ctx.send(embed=embed)
+                    return await ctx.send(embed=embed)
 
             await self.google.new(ctx)
             view = ChatView(openai=self.google, user=ctx.author, ephemeral=False)
@@ -229,7 +231,7 @@ class Chat(commands.Cog):
                     # print(text)
 
                     try:
-                        text = await self.openai.chat.reply(ctx, text_prompt)
+                        text = await self.google.reply(ctx, text_prompt)
                     except Exception as e:
                         await ctx.send(f"Something went wrong. Try again later.", view=view)
                         self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
