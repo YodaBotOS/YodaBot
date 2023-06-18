@@ -14,3 +14,12 @@ CREATE TABLE IF NOT EXISTS chat(
     created TIMESTAMPTZ DEFAULT now(),
     ttl TIMESTAMPTZ DEFAULT now() + interval '3 minutes'
 );
+
+CREATE TABLE IF NOT EXISTS google_chat(
+    id SERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    channel_id BIGINT NOT NULL,
+    messages JSON NOT NULL,
+    created TIMESTAMPTZ DEFAULT now(),
+    ttl TIMESTAMPTZ DEFAULT now() + interval '3 minutes'
+);
