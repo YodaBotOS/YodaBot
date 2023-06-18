@@ -8,7 +8,7 @@ if typing.TYPE_CHECKING:
 
 import openai
 
-from .chat import Chat
+from .chat import Chat, GoogleChat
 from .codex import Codex
 
 
@@ -210,3 +210,6 @@ class OpenAI:
     @property
     def chat(self) -> Chat:
         return Chat(self)
+    
+    def googlechat(self, serp_api_key: str) -> GoogleChat:
+        return GoogleChat(serp_api_key, self)

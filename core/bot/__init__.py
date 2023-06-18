@@ -83,6 +83,7 @@ class Bot(commands.Bot):
         help_command: commands.HelpCommand = kwargs.pop("help_command", None) or commands.MinimalHelpCommand()
         strip_after_prefix: bool = kwargs.pop("strip_after_prefix", None) or True
         tree_cls: app_commands.CommandTree = kwargs.pop("tree_cls", None) or CommandTree
+        case_insensitive: bool = kwargs.pop("case_insensitive", True)
 
         super().__init__(
             command_prefix=command_prefix,
@@ -92,6 +93,7 @@ class Bot(commands.Bot):
             help_command=help_command,
             strip_after_prefix=strip_after_prefix,
             tree_cls=tree_cls,
+            case_insensitive=case_insensitive
             **kwargs,
         )
 

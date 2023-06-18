@@ -7,11 +7,199 @@ import typing
 import discord
 
 from core.context import Context
+from core.serp import SerpAPI
 
 if typing.TYPE_CHECKING:
     from . import OpenAI
 
 import openai
+
+
+class GoogleChat:  # GoogleGPT
+    TTL = datetime.timedelta(minutes=3)
+
+    SYSTEM = """
+You are an AI that can help on searching things on Google and summarizing the result to the user. 
+User will say something like "Who is the current president of the United States", you should call the search google function with only the term, e.g (search_google("Current President of the United States"))
+Another short example is "What is Starbucks?", because "Starbucks" (taken from term) is a general topic, you should call the search google function with the complete content, e.g (search_google("What is Starbucks?"))
+Another example is "What is the capital of France", you should call the search google function with only the term, e.g (search_google("Capital of France"))
+Another example is "Where is the Eifel Tower located?", you should call the search google function with only the term, e.g (search_google("Location of Eifel Tower")).
+
+This is limited to: 
+- Getting nearby/local results that involves the current location, e.g asking for the nearest coffee shop or mcdonald's should not work and should be responded with "I can't help you with local results. I don't know where you are." or somehting like this.
+- Getting references/citations for a result, e.g asking for the references of the last result. This should not work and should be responded with "I can't help you with references/citations. I don't know how to do that." or something like this.
+    """
+
+    MODEL = "gpt-4"
+
+    FUNCTIONS = [
+        {
+            "name": "search_google",
+            "description": "Searches Google for the given term and returns the result for real-time data.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "term": {
+                        "type": "string",
+                        "description": "The term/query to search for in Google."
+                    }
+                },
+                "required": ["term"]
+            }
+        }
+    ]
+
+    def __init__(self, serp_api_key: str, openai_cls: OpenAI):
+        self.serp_api_key = serp_api_key
+        self.openai = openai_cls
+        self.bot = openai_cls.bot
+
+        self.serp = SerpAPI(self.serp_api_key, session=self.bot.session)
+
+        openai.api_key = self.openai.key
+
+    # Backend functions
+    async def _get(self, user_id: int, channel_id: int) -> dict | None:
+        row = await self.bot.pool.fetchrow("SELECT * FROM google_chat WHERE user_id=$1 AND channel_id=$2", user_id, channel_id)
+
+        if row is not None:
+            return dict(row)
+
+    async def _perf_db(self, user_id: int, channel_id: int, messages: list[dict[str, str]]):
+        x = await self._get(user_id, channel_id)
+
+        if x and x["ttl"] < discord.utils.utcnow():
+            try:
+                await self._delete(user_id, channel_id)
+            except:
+                pass
+
+            x = None
+
+        async with self.bot.pool.acquire() as conn:
+            await conn.set_type_codec("json", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
+
+            if not x:
+                await conn.execute(
+                    "INSERT INTO google_chat (user_id, channel_id, messages, ttl) VALUES ($1, $2, $3::json, $4)",
+                    user_id,
+                    channel_id,
+                    messages,
+                    discord.utils.utcnow() + self.TTL,
+                )
+            else:
+                await conn.execute(
+                    "UPDATE google_chat SET messages=$3::json, ttl=$4 WHERE user_id=$1 AND channel_id=$2",
+                    user_id,
+                    channel_id,
+                    messages,
+                    discord.utils.utcnow() + self.TTL,
+                )
+
+    async def _delete(self, user_id: int, channel_id: int):
+        await self.bot.pool.execute("DELETE FROM google_chat WHERE user_id=$1 AND channel_id=$2", user_id, channel_id)
+
+    def _init_messages(self) -> list[dict[str, str]]:
+        messages = [{"role": "system", "content": self.SYSTEM}]
+        return messages
+
+    # Chat methods
+    async def get(self, context: Context | discord.Interaction) -> dict | None:
+        if isinstance(context, Context):
+            return await self._get(context.author.id, context.channel.id)
+        else:
+            return await self._get(context.user.id, context.channel.id)
+
+    async def perf_db(self, context: Context | discord.Interaction, messages: list[dict[str, str]]) -> None:
+        if isinstance(context, Context):
+            await self._perf_db(context.author.id, context.channel.id, messages)
+        else:
+            await self._perf_db(context.user.id, context.channel.id, messages)
+
+    async def new(self, context: Context | discord.Interaction) -> None:
+        try:
+            await self.stop(context)
+        except:
+            pass
+        
+        messages = self._init_messages()
+        await self.perf_db(context, messages)
+
+    async def stop(self, context: Context | discord.Interaction) -> None:
+        data = await self.get(context)
+
+        if data is None:
+            raise ValueError("Chat session not found. Might have already been deleted.")
+
+        if isinstance(context, Context):
+            await self._delete(context.author.id, context.channel.id)
+        else:
+            await self._delete(context.user.id, context.channel.id)
+
+    async def reply(self, context: Context | discord.Interaction, message: str) -> str:
+        data = await self.get(context)
+
+        if data is None:
+            raise ValueError("Chat session not found. Create one by doing `.new(...)`")
+
+        if data["ttl"] < discord.utils.utcnow():
+            try:
+                await self.stop(context)
+            except:
+                pass
+
+            return
+
+        messages = data["messages"]
+
+        messages.append({"role": "user", "content": message})
+
+        if isinstance(context, Context):
+            user = context.author.id
+        else:
+            user = context.user.id
+
+        resp = await openai.ChatCompletion.acreate(model=self.MODEL, messages=messages, user=str(user), functions=self.FUNCTIONS, function_call="auto")
+
+        response = resp["choices"][0]["message"]
+
+        if response.get("function_call"):
+            available_functions = {"search_google": self.serp.google_search}
+            function_name = response["function_call"]["name"]
+            fuction_to_call = available_functions[function_name]
+            function_args = json.loads(response["function_call"]["arguments"])
+            function_response = fuction_to_call(
+                query=function_args.get("term"),
+            )
+
+            function_content = {
+                "summarized": function_response["knowledge_graph"] or None,
+                "information": [
+                    {"title": x["title"], "description": x["description"]} for x in function_response["results"]
+                ]
+            }
+
+            messages.append(response)
+            messages.append({"role": "function", "name": function_name, "content": function_content})
+            second_resp = await openai.ChatCompletion.acreate(
+                model=self.MODEL,
+                messages=messages,
+            )
+
+            response = second_resp["choices"][0]["message"]
+
+        messages.append({"role": response["role"], "content": response["content"]})
+
+        await self.perf_db(context, messages)
+
+        return response["content"]
+
+    async def __call__(self, context: Context | discord.Interaction, message: str):
+        await self.new(context)
+        x = await self.reply(context, message)
+        await self.stop(context)
+
+        return x
 
 
 class Chat:
@@ -335,6 +523,11 @@ class Chat:
             await self._perf_db(context.user.id, context.channel.id, messages)
 
     async def new(self, context: Context | discord.Interaction, role: str) -> None:
+        try:
+            await self.stop(context)
+        except:
+            pass
+        
         messages = self._init_messages(context, role)
         await self.perf_db(context, messages)
 
