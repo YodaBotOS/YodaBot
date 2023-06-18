@@ -93,7 +93,7 @@ class Bot(commands.Bot):
             help_command=help_command,
             strip_after_prefix=strip_after_prefix,
             tree_cls=tree_cls,
-            case_insensitive=case_insensitive
+            case_insensitive=case_insensitive,
             **kwargs,
         )
 
