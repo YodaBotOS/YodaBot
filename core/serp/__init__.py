@@ -24,5 +24,5 @@ class SerpAPI:
         if location:
             headers["X-Proxy-Location"] = location
 
-        async with self.session.get(self.URL / "search", params=params) as resp:
+        async with self.session.get(self.URL / "search", params=params, headers=headers) as resp:
             return await resp.json()
