@@ -161,9 +161,10 @@ This is limited to:
         response = resp["choices"][0]["message"]
 
         if response.get("function_call"):
-            available_functions = {"search_google": self.serp.google_search}
             function_name = response["function_call"]["name"]
-            fuction_to_call = available_functions[function_name]
+            assert function_name == "search_google", f"Unknown function name: {function_name}"
+
+            fuction_to_call = self.serp.google_search
             function_args = json.loads(response["function_call"]["arguments"])
             function_response = await fuction_to_call(
                 query=function_args.get("term"),
