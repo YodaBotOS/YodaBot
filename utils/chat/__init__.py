@@ -12,6 +12,7 @@ class ChatModal(discord.ui.Modal):
         self.ephemeral: bool = kwargs.pop("ephemeral", False)
         self.view: discord.ui.View = kwargs.pop("view")
         self.prev_msg: discord.Message = kwargs.pop("prev_msg", None)
+        self.is_google: bool = kwargs.pop("google", False)
         super().__init__(*args, **kwargs)
 
     async def on_submit(self, interaction: discord.Interaction):
@@ -30,7 +31,7 @@ class ChatModal(discord.ui.Modal):
             )
 
         embed = discord.Embed(color=interaction.client.color)
-        embed.set_author(name="Chat:", icon_url=interaction.user.display_avatar.url)
+        embed.set_author(name="GoogleGPT Chat:" if self.is_google else "Chat:", icon_url=interaction.user.display_avatar.url)
         embed.add_field(name="Input/Prompt:", value=text_prompt, inline=False)
         embed.add_field(name="Output/Response:", value=text, inline=False)
 
@@ -45,6 +46,7 @@ class ChatView(discord.ui.View):
         self.openai = kwargs.pop("openai")
         self.ephemeral = kwargs.pop("ephemeral", False)
         self.user = kwargs.pop("user")
+        self.is_google = kwargs.pop("google", False)
         self.stopped = False
         self.prev_msg = None
 
@@ -74,11 +76,12 @@ class ChatView(discord.ui.View):
 
         return await interaction.response.send_modal(
             ChatModal(
-                title="Chat",
+                title="GoogleGPT Chat" if self.is_google else "Chat",
                 openai=self.openai,
                 view=self,
                 ephemeral=self.ephemeral,
                 prev_msg=self.prev_msg,
+                google=self.is_google,
             )
         )
 

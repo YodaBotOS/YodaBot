@@ -197,7 +197,7 @@ class Chat(commands.Cog):
                     return await ctx.send(embed=embed)
 
             await self.google.new(ctx)
-            view = ChatView(openai=self.google, user=ctx.author, ephemeral=False)
+            view = ChatView(openai=self.google, user=ctx.author, ephemeral=False, google=True)
 
             prev_msg = await ctx.send(
                 "YodaBot GoogleGPT chat has started. Say `stop`, `goodbye`, `cancel`, `exit` or `end` to end "
@@ -238,7 +238,7 @@ class Chat(commands.Cog):
                         return
 
                     embed = discord.Embed(color=self.bot.color)
-                    embed.set_author(name="Chat:", icon_url=ctx.author.display_avatar.url)
+                    embed.set_author(name="GoogleGPT Chat:", icon_url=ctx.author.display_avatar.url)
                     embed.add_field(name="Input/Prompt:", value=text_prompt, inline=False)
                     embed.add_field(name="Output/Response:", value=text, inline=False)
 
@@ -279,7 +279,7 @@ class Chat(commands.Cog):
                 return await interaction.followup.send(embed=embed)
 
             await self.google.new(ctx)
-            view = ChatView(openai=self.google, user=ctx.author, ephemeral=True)
+            view = ChatView(openai=self.google, user=ctx.author, ephemeral=True, google=True)
 
             await interaction.followup.send(
                 "YodaBot GoogleGPT chat has started. click the `Stop` button to stop chatting.",
