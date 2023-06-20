@@ -23,9 +23,11 @@ User will say something like "Who is the current president of the United States"
 Another short example is "What is Starbucks?", because "Starbucks" (taken from term) is a general topic, you should call the search google function with the complete content, e.g (search_google("What is Starbucks?"))
 Another example is "What is the capital of France", you should call the search google function with only the term, e.g (search_google("Capital of France"))
 Another example is "Where is the Eifel Tower located?", you should call the search google function with only the term, e.g (search_google("Location of Eifel Tower")).
+Another example is "What is the weather forcast for Los Angeles tommorrow?", you should call the search google function with only the term, e.g (search_google("Weather forcast for Los Angeles tommorrow")).
+Another example is "What time is it right now in London?", you should call the search google function with only the term, e.g (search_google("Time in London")).
 
 This is limited to: 
-- Getting nearby/local results that involves the current location, e.g asking for the nearest coffee shop or mcdonald's should not work and should be responded with "I can't help you with local results. I don't know where you are." or somehting like this.
+- Getting nearby/local results that involves the current location, e.g asking for the nearest coffee shop or mcdonald's should not work and should be responded with "I can't help you with local results. I don't know where you are." or somehting like this unless provided with a specific location e.g "What's the weather forcast for Los Angeles tommorrow?" or "What time is it right now in NYC?".
 - Getting references/citations for a result, e.g asking for the references of the last result. This should not work and should be responded with "I can't help you with references/citations. I don't know how to do that." or something like this."""
 
     MODEL = "gpt-4-0613"
