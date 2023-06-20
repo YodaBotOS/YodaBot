@@ -110,6 +110,7 @@ class Chat(commands.Cog):
                     embed.set_author(name="Chat:", icon_url=ctx.author.display_avatar.url)
                     embed.add_field(name="Input/Prompt:", value=text_prompt, inline=False)
                     embed.add_field(name="Output/Response:", value=text, inline=False)
+                    embed.set_footer(text=f"Powered by OpenAI GPT-4.\n\U000026a0: This is on beta and may not be accurate and can spread biases, etc.")
 
                     if view.prev_msg and view.prev_msg.components:
                         await view.prev_msg.edit(view=None)
@@ -241,6 +242,7 @@ class Chat(commands.Cog):
                     embed.set_author(name="GoogleGPT Chat:", icon_url=ctx.author.display_avatar.url)
                     embed.add_field(name="Input/Prompt:", value=text_prompt, inline=False)
                     embed.add_field(name="Output/Response:", value=text, inline=False)
+                    embed.set_footer(text=f"Powered by OpenAI GPT-4 x Google Search.\n\U000026a0: This is on beta and may not be accurate and can spread biases, etc.")
 
                     if view.prev_msg and view.prev_msg.components:
                         await view.prev_msg.edit(view=None)
