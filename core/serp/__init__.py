@@ -1,6 +1,7 @@
+from urllib.parse import quote_plus
+
 import aiohttp
 import yarl
-from urllib.parse import quote_plus
 
 
 class SerpAPI:

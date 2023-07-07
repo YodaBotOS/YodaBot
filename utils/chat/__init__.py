@@ -31,10 +31,14 @@ class ChatModal(discord.ui.Modal):
             )
 
         embed = discord.Embed(color=interaction.client.color)
-        embed.set_author(name="GoogleGPT Chat:" if self.is_google else "Chat:", icon_url=interaction.user.display_avatar.url)
+        embed.set_author(
+            name="GoogleGPT Chat:" if self.is_google else "Chat:", icon_url=interaction.user.display_avatar.url
+        )
         embed.add_field(name="Input/Prompt:", value=text_prompt, inline=False)
         embed.add_field(name="Output/Response:", value=text, inline=False)
-        embed.set_footer(text=f"Powered by OpenAI GPT-4{' x Google Search' if self.is_google else ''}.\n\U000026a0: This is on beta and may not be accurate and can spread biases, etc.")
+        embed.set_footer(
+            text=f"Powered by OpenAI GPT-4{' x Google Search' if self.is_google else ''}.\n\U000026a0: This is on beta and may not be accurate and can spread biases, etc."
+        )
 
         if self.prev_msg:
             await self.prev_msg.edit(view=None)

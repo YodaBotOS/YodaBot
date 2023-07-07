@@ -4,6 +4,7 @@ import asyncio
 import importlib
 import json
 import typing
+import uuid
 from io import BytesIO
 from typing import TYPE_CHECKING
 
@@ -21,6 +22,7 @@ from core.context import Context
 from core.image import GeneratedImages, Size
 from core.image import firefly as core_firefly
 from core.image import midjourney as core_midjourney
+from core.image import utilities
 from utils.converter import ImageConverter, SizeConverter
 from utils.image import (
     DalleArtPaginator,
@@ -106,13 +108,16 @@ class Image(commands.Cog):
 
     async def cog_load(self):
         importlib.reload(core_image)
+        importlib.reload(core_firefly)
         from core.image import ImageUtilities
+        from core.image.utilities import Upscaling
 
         self.image: ImageUtilities = ImageUtilities(
             (self.bot.cdn, "yodabot", "https://cdn.yodabot.xyz"),
             self.bot.session,
             (config.OPENAI_KEY, config.DREAM_KEY, config.REPLICATE_API_KEY, config.FIREFLY_KEY),
         )
+        self.upscaling = Upscaling(config.REPLICATE_API_KEY, self.bot.session)
         app_commands.choices(
             size=[
                 app_commands.Choice(name=f"{k} ({v[0][0]}:{v[0][1]})", value=k)
@@ -988,6 +993,100 @@ class Image(commands.Cog):
             return await ctx.send(embed=embed)
 
         return await self.handle_analyze(interaction, main, self, image)
+
+    async def upscale_image(self, ctx, image):
+        async with ctx.typing():
+            img = await self.upscaling(image)
+
+            key = f"upscaling/{uuid.uuid4().hex}.png"
+
+            self.bot.cdn.upload_fileobj(img, "yodabot", key)
+
+            embed = discord.Embed(title="Image Upscaling Result:", color=self.bot.color)
+            embed.set_image(url=f"https://cdn.yodabot.xyz/{key}")
+
+            return embed
+
+    MAX_CONCURRENCY_UPSCALE = commands.MaxConcurrency(1, per=commands.BucketType.member, wait=False)
+
+    async def handle_upscale_image(self, ctx, func, *args, **kwargs):
+        if isinstance(ctx, discord.Interaction):
+            ctx = await self.bot.get_context(ctx)
+
+        try:
+            await self.MAX_CONCURRENCY_UPSCALE.acquire(ctx)
+
+            try:
+                await func(ctx, *args, **kwargs)
+            finally:
+                await self.MAX_CONCURRENCY_UPSCALE.release(ctx)
+        except commands.MaxConcurrencyReached:
+            await ctx.send(
+                "You are already analyzing an image. Please wait until it's done.",
+                ephemeral=True,
+            )
+            return
+
+    @commands.command("upscale", aliases=["upscale-img", "upscale_img", "upscaleimg", "ui"])
+    async def upscale_cmd(self, ctx, *, image: str = None):
+        """
+        Upscales an image to an insane resolution using AI.
+
+        Warning: This might take a while to process and can result in a really huge filesize.
+
+        Usage: `yoda upscale <image>`.
+
+        - `yoda upscale <Attachment>`
+        - `yoda upscale <URL>`
+        - `yoda analyze-image <Emoji>`
+        - `yoda analyze-image @Someone`
+        """
+
+        async def main(ctx, self, image):
+            image = await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or "")
+
+            if not image:
+                return await ctx.send("Please send an image or provide a URL.")
+
+            embed = await self.upscale_image(ctx, image)
+
+            return await ctx.send(embed=embed)
+
+        return await self.handle_upscale_image(ctx, main, self, image)
+
+    @app_commands.command(name=_T("upscale"))
+    @app_commands.describe(image=_T("The image to be upscaled."), url=_T("The URL of the image to be upscaled."))
+    async def analyze_image_slash(
+        self,
+        interaction: discord.Interaction,
+        image: discord.Attachment = None,
+        url: str = None,
+    ):
+        """
+        Upscales an image to an insane resolution using AI.
+
+        Warning: This might take a while to process and can result in a really huge filesize.
+
+        Usage: `/upscale <image>`.
+
+        - `/upscale <Attachment>`
+        - `/upscale url:<URL>`
+        """
+
+        async def main(ctx, self, image):
+            if image is None and url is None:
+                return await ctx.send("Please send an image or provide a URL.", ephemeral=True)
+
+            if image and url:
+                return await ctx.send("Please only send either an image or a URL.", ephemeral=True)
+
+            image = url or image.url
+
+            embed = await self.analyze_image(ctx, image)
+
+            return await ctx.send(embed=embed)
+
+        return await self.handle_upscale_image(interaction, main, self, image)
 
 
 async def setup(bot: commands.Bot):
