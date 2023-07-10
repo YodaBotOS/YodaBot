@@ -118,12 +118,12 @@ class Image(commands.Cog):
             (config.OPENAI_KEY, config.DREAM_KEY, config.REPLICATE_API_KEY, config.FIREFLY_KEY),
         )
         self.upscaling = Upscaling(config.REPLICATE_API_KEY, self.bot.session)
-        app_commands.choices(
-            size=[
-                app_commands.Choice(name=f"{k} ({v[0][0]}:{v[0][1]})", value=k)
-                for k, v in self.image.firefly.SIZES.items()
-            ]
-        )(self.firefly_slash)
+        # app_commands.choices(
+        #     size=[
+        #         app_commands.Choice(name=f"{k} ({v[0][0]}:{v[0][1]})", value=k)
+        #         for k, v in self.image.firefly.SIZES.items()
+        #     ]
+        # )(self.firefly_slash)
 
     async def cog_unload(self):
         del self.image
