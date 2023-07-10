@@ -15,10 +15,13 @@ class Upscaling:
 
         self.replicate = Replicate(api_token, session=session)
 
-    async def upscale(self, image: str | bytes) -> bytes:
+    async def upscale(self, image: str | bytes, *, scale: int = 2) -> bytes:
+        if 1 > scale or scale > 10:
+            raise ValueError("Scale must be between 1 and 10")
+
         prediction = await self.replicate.run(self.MODEL_VERSION, image=image, wait=True)
         async with self.session.get(prediction.output[0]) as resp:
             return await resp.read()
 
-    async def __call__(self, image: str | bytes) -> BytesIO:
-        return BytesIO(await self.upscale(image))
+    async def __call__(self, image: str | bytes, *, scale: int = 2) -> BytesIO:
+        return BytesIO(await self.upscale(image, scale=scale))

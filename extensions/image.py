@@ -553,27 +553,27 @@ class Image(commands.Cog):
 
         await self.handle(ctx, main, prompt, amount, size)
 
-    @commands.command("firefly", aliases=["ff"])
-    async def firefly_cmd(
-        self,
-        ctx: Context,
-        amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
-        size: core_firefly.FIREFLY_SIZES = "Square",
-        *,
-        prompt: str,
-    ):
-        """
-        Generate an image using Adobe Firefly AI.
+    # @commands.command("firefly", aliases=["ff"])
+    # async def firefly_cmd(
+    #     self,
+    #     ctx: Context,
+    #     amount: typing.Optional[commands.Range[int, 1, 10]] = 5,
+    #     size: core_firefly.FIREFLY_SIZES = "Square",
+    #     *,
+    #     prompt: str,
+    # ):
+    #     """
+    #     Generate an image using Adobe Firefly AI.
 
-        If amount is not provided, it would default to 5. Maximum is 10.
+    #     If amount is not provided, it would default to 5. Maximum is 10.
 
-        Usage: `yoda firefly [amount] [width x height] <prompt>`.
-        """
+    #     Usage: `yoda firefly [amount] [width x height] <prompt>`.
+    #     """
 
-        async def main(ctx, prompt, amount, size):
-            return await self.firefly_text_to_image(ctx, prompt, amount, size)
+    #     async def main(ctx, prompt, amount, size):
+    #         return await self.firefly_text_to_image(ctx, prompt, amount, size)
 
-        await self.handle(ctx, main, prompt, amount, size)
+    #     await self.handle(ctx, main, prompt, amount, size)
 
     gen_art_slash = app_commands.Group(name=_T("generate-art"), description=_T("Generate an image from a prompt."))
 
@@ -799,31 +799,31 @@ class Image(commands.Cog):
 
         await self.handle(interaction, main, prompt, amount, (width, height))
 
-    @app_commands.command(name=_T("firefly"))
-    @app_commands.describe(
-        prompt=_T("Prompt to generate images from"),
-        amount=_T("Amount of images to generate, maximum is 10. Defaults to 5"),
-        size=_T("Size of the image to be generated. Defaults to Square"),
-    )
-    async def firefly_slash(
-        self,
-        interaction: discord.Interaction,
-        prompt: str,
-        amount: typing.Optional[app_commands.Range[int, 1, 10]] = 5,
-        size: str = "Square",
-    ):
-        """
-        Generate an image using Adobe Firefly AI.
+    # @app_commands.command(name=_T("firefly"))
+    # @app_commands.describe(
+    #     prompt=_T("Prompt to generate images from"),
+    #     amount=_T("Amount of images to generate, maximum is 10. Defaults to 5"),
+    #     size=_T("Size of the image to be generated. Defaults to Square"),
+    # )
+    # async def firefly_slash(
+    #     self,
+    #     interaction: discord.Interaction,
+    #     prompt: str,
+    #     amount: typing.Optional[app_commands.Range[int, 1, 10]] = 5,
+    #     size: str = "Square",
+    # ):
+    #     """
+    #     Generate an image using Adobe Firefly AI.
 
-        If amount is not provided, it would default to 5. Maximum is 10.
+    #     If amount is not provided, it would default to 5. Maximum is 10.
 
-        Usage: `yoda firefly [amount] [width x height] <prompt>`.
-        """
+    #     Usage: `yoda firefly [amount] [width x height] <prompt>`.
+    #     """
 
-        async def main(ctx, prompt, amount, size):
-            return await self.firefly_text_to_image(ctx, prompt, amount, size)
+    #     async def main(ctx, prompt, amount, size):
+    #         return await self.firefly_text_to_image(ctx, prompt, amount, size)
 
-        await self.handle(interaction, main, prompt, amount, size)
+    #     await self.handle(interaction, main, prompt, amount, size)
 
     async def analyze_image(self, ctx, url):
         async with ctx.typing():
@@ -994,9 +994,9 @@ class Image(commands.Cog):
 
         return await self.handle_analyze(interaction, main, self, image)
 
-    async def upscale_image(self, ctx, image):
+    async def upscale_image(self, ctx, image, scale):
         async with ctx.typing():
-            img = await self.upscaling(image)
+            img = await self.upscaling(image, scale=scale)
 
             key = f"upscaling/{uuid.uuid4().hex}.png"
 
@@ -1028,18 +1028,18 @@ class Image(commands.Cog):
             return
 
     @commands.command("upscale", aliases=["upscale-img", "upscale_img", "upscaleimg", "ui"])
-    async def upscale_cmd(self, ctx, *, image: str = None):
+    async def upscale_cmd(self, ctx, scale: typing.Optional[commands.Range[int, 1, 10]] = 2, *, image: str = None):
         """
         Upscales an image to an insane resolution using AI.
 
         Warning: This might take a while to process and can result in a really huge filesize.
 
-        Usage: `yoda upscale <image>`.
+        Usage: `yoda upscale [scale] <image>`.
 
-        - `yoda upscale <Attachment>`
-        - `yoda upscale <URL>`
-        - `yoda analyze-image <Emoji>`
-        - `yoda analyze-image @Someone`
+        - `yoda upscale 2 <Attachment>`
+        - `yoda upscale 5 <URL>`
+        - `yoda analyze-image 3 <Emoji>`
+        - `yoda analyze-image 8 @Someone`
         """
 
         async def main(ctx, self, image):
@@ -1048,17 +1048,22 @@ class Image(commands.Cog):
             if not image:
                 return await ctx.send("Please send an image or provide a URL.")
 
-            embed = await self.upscale_image(ctx, image)
+            embed = await self.upscale_image(ctx, image, scale)
 
             return await ctx.send(embed=embed)
 
         return await self.handle_upscale_image(ctx, main, self, image)
 
     @app_commands.command(name=_T("upscale"))
-    @app_commands.describe(image=_T("The image to be upscaled."), url=_T("The URL of the image to be upscaled."))
-    async def analyze_image_slash(
+    @app_commands.describe(
+        scale=_T("The higher, longer wait but the higher resolution"),
+        image=_T("The image to be upscaled."),
+        url=_T("The URL of the image to be upscaled."),
+    )
+    async def upscale_image_slash(
         self,
         interaction: discord.Interaction,
+        scale: app_commands.Range[int, 1, 10] = 2,
         image: discord.Attachment = None,
         url: str = None,
     ):
@@ -1067,10 +1072,10 @@ class Image(commands.Cog):
 
         Warning: This might take a while to process and can result in a really huge filesize.
 
-        Usage: `/upscale <image>`.
+        Usage: `/upscale <image> <scale>`.
 
-        - `/upscale <Attachment>`
-        - `/upscale url:<URL>`
+        - `/upscale <Attachment> 2`
+        - `/upscale url:<URL> 3`
         """
 
         async def main(ctx, self, image):
@@ -1082,7 +1087,7 @@ class Image(commands.Cog):
 
             image = url or image.url
 
-            embed = await self.analyze_image(ctx, image)
+            embed = await self.upscale_image(ctx, image, scale)
 
             return await ctx.send(embed=embed)
 
