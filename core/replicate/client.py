@@ -37,7 +37,8 @@ class Replicate:
         h["Content-Type"] = "application/json"
 
         async with self.session.post(self.URL_PREDICT, data=json.dumps(data), headers=h) as resp:
-            prediction = ReplicateResult(**await resp.json())
+            js = await resp.json()
+            prediction = ReplicateResult(**js)
 
         if wait:
             done, pending = await asyncio.wait(
