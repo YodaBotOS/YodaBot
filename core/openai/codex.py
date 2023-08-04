@@ -130,7 +130,7 @@ class Codex:
         choices = []
 
         for choice in response["choices"]:
-            text = choice["content"].strip()
+            text = choice["message"]["content"].strip()
             choices.append(text)
 
         return list(set(choices))  # remove duplicates (lazy to do it the hard way)
@@ -154,6 +154,6 @@ class Codex:
 
         choice = response["choices"][0]
 
-        text = choice["content"].strip()
+        text = choice["message"]["content"].strip()
 
         return text

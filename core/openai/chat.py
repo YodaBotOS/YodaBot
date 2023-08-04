@@ -30,7 +30,7 @@ This is limited to:
 - Getting nearby/local results that involves the current location, e.g asking for the nearest coffee shop or mcdonald's should not work and should be responded with "I can't help you with local results. I don't know where you are." or somehting like this unless provided with a specific location e.g "What's the weather forcast for Los Angeles tommorrow?" or "What time is it right now in NYC?".
 - Getting references/citations for a result, e.g asking for the references of the last result. This should not work and should be responded with "I can't help you with references/citations. I don't know how to do that." or something like this."""
 
-    MODEL = "gpt-4-0613"
+    MODEL = "gpt-4"
 
     FUNCTIONS = [
         {
