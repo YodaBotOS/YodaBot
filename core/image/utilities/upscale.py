@@ -19,7 +19,7 @@ class Upscaling:
         if 1 > scale or scale > 10:
             raise ValueError("Scale must be between 1 and 10")
 
-        prediction = await self.replicate.run(self.MODEL_VERSION, image=image, wait=True)
+        prediction = await self.replicate.run(self.MODEL_VERSION, img=image, version="General - RealESRGANplus", scale=scale, wait=True)
         async with self.session.get(prediction.output[0]) as resp:
             return await resp.read()
 
