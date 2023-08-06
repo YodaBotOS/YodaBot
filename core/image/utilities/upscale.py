@@ -7,7 +7,7 @@ from core.replicate import Replicate
 
 
 class Upscaling:
-    MODEL_VERSION = "proguy914629bot/real-esrgan:858b0322654132dfecbebda42796a03169b66092d3e3479fc7811d5847799ab7"
+    MODEL_VERSION = "proguy914629bot/real-esrgan:latest"
 
     def __init__(self, api_token: str, session: aiohttp.ClientSession) -> None:
         self.api_token = api_token

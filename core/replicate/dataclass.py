@@ -9,6 +9,14 @@ def from_iso(iso: str = None):
     return datetime.datetime.fromisoformat(iso.rstrip("Z"))
 
 
+class ReplicateError(Exception):
+    def __init__(self, data, status_code):
+        self.detail = data.get("detail", "Unknown error")
+        self.data = data
+
+        return super().__init__('%s - %s: %s' % (status_code, self.detail, data))
+
+
 @dataclass()
 class ReplicateResult:
     id: str
@@ -24,3 +32,10 @@ class ReplicateResult:
     error: str | None = None
     logs: str | None = None
     metrics: dict = field(default_factory=dict, init=True)
+
+
+def create_dataclass(data, status_code: int) -> ReplicateResult:
+    if "detail" in data:
+        raise ReplicateError(data, status_code)
+    
+    return ReplicateResult(**data)

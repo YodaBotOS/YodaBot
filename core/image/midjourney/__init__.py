@@ -11,7 +11,7 @@ WH = typing.Literal[128, 256, 512, 768, 1024]
 
 
 class Midjourney:
-    MODEL_VERSION = "prompthero/openjourney:9936c2001faa2194a261c01381f90e65261879985476014a0a37a334593a05eb"
+    MODEL_VERSION = "prompthero/openjourney:latest"
 
     def __init__(self, api_token: str, *, session: aiohttp.ClientSession, cdn: tuple) -> None:
         self.replicate = Replicate(api_token, session=session)
