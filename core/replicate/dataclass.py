@@ -14,7 +14,7 @@ class ReplicateError(Exception):
         self.detail = data.get("detail", "Unknown error")
         self.data = data
 
-        return super().__init__('%s - %s: %s' % (status_code, self.detail, data))
+        return super().__init__("%s - %s: %s" % (status_code, self.detail, data))
 
 
 @dataclass()
@@ -37,5 +37,5 @@ class ReplicateResult:
 def create_dataclass(data, status_code: int) -> ReplicateResult:
     if "detail" in data:
         raise ReplicateError(data, status_code)
-    
+
     return ReplicateResult(**data)

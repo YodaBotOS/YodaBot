@@ -6,7 +6,7 @@ from typing import Any
 import aiohttp
 import yarl
 
-from .dataclass import create_dataclass, ReplicateResult
+from .dataclass import ReplicateResult, create_dataclass
 
 
 # Keeping it simple cause this is only used to make predictions only, only sole purpose is to make it asynchronous.
@@ -25,7 +25,7 @@ class Replicate:
         Get the latest version of a model.
         """
         async with self.session.get(
-            self.BASE_URL / 'models' / owner / model / 'versions', headers=self._get_headers()
+            self.BASE_URL / "models" / owner / model / "versions", headers=self._get_headers()
         ) as resp:
             data = await resp.json()
 
@@ -52,7 +52,7 @@ class Replicate:
         h = self._get_headers()
         h["Content-Type"] = "application/json"
 
-        async with self.session.post(self.BASE_URL / 'predictions', data=json.dumps(data), headers=h) as resp:
+        async with self.session.post(self.BASE_URL / "predictions", data=json.dumps(data), headers=h) as resp:
             js = await resp.json()
             prediction = create_dataclass(js, resp.status)
 
@@ -70,7 +70,7 @@ class Replicate:
         """
         Get a prediction from Replicate asynchronously.
         """
-        async with self.session.get(self.BASE_URL / 'predictions' / prediction.id, headers=self._get_headers()) as resp:
+        async with self.session.get(self.BASE_URL / "predictions" / prediction.id, headers=self._get_headers()) as resp:
             return create_dataclass(await resp.json(), resp.status)
 
     async def _create_wait_task(self, model: str, version: str, prediction: ReplicateResult) -> ReplicateResult:
