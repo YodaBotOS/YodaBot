@@ -1022,7 +1022,7 @@ class Image(commands.Cog):
                 await self.MAX_CONCURRENCY_UPSCALE.release(ctx)
         except commands.MaxConcurrencyReached:
             await ctx.send(
-                "You are already analyzing an image. Please wait until it's done.",
+                "You are already upscaling an image. Please wait until it's done.",
                 ephemeral=True,
             )
             return
