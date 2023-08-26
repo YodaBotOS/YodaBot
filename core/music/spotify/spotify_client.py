@@ -1,3 +1,4 @@
+import asyncio
 import aiohttp
 
 from core.music.spotify.config import *
@@ -85,28 +86,36 @@ class SpotifyClient:
     async def get_access_token(self, keys=None, sp_dc=None, sp_key=None):
         # session.proxies = self._proxy
         # session.headers = self.__HEADERS
-        headers = self.__HEADERS
-        cookie = {}
-        if keys is not None:
-            cookie = keys
-        if sp_dc is not None:
-            cookie["sp_dc"] = sp_dc
-        if sp_key is not None:
-            cookie["sp_key"] = sp_key
+        # headers = self.__HEADERS
+        # cookie = {}
+        # if keys is not None:
+        #     cookie = keys
+        # if sp_dc is not None:
+        #     cookie["sp_dc"] = sp_dc
+        # if sp_key is not None:
+        #     cookie["sp_key"] = sp_key
         # response = session.get('https://open.spotify.com/get_access_token', verify=self._verify_ssl, cookies=cookie)
         # try:
         #     rj = response.json()
         # except Exception as ex:
         #     raise SpotifyClientException('An error occured when generating an access token!', ex)
 
-        async with self.session.get(
-            "https://open.spotify.com/get_access_token", verify_ssl=self._verify_ssl, cookies=cookie, headers=headers
-        ) as response:
-            try:
-                rj = await response.json()
-            except Exception as ex:
-                # raise SpotifyClientException('An error occured when generating an access token!', ex)
-                raise ex
+        # Seems to not work for some reason...
+        # async with self.session.get(
+        #     "https://open.spotify.com/get_access_token", verify_ssl=self._verify_ssl, cookies=cookie, headers=headers
+        # ) as response:
+        #     try:
+        #         rj = await response.json()
+        #     except Exception as ex:
+        #         # raise SpotifyClientException('An error occured when generating an access token!', ex)
+        #         raise ex
+
+        command = f"curl --cookie \"sp_dc={sp_dc}\" --cookie \"sp_key={sp_key}\" https://open.spotify.com/get_access_token"
+        proc = await asyncio.create_subprocess_shell(
+            command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await proc.communicate()
+        rj = json.loads(stdout.decode("utf-8"))
 
         self.is_anonymous = rj["isAnonymous"]
         return rj["accessToken"], rj["clientId"] if rj["clientId"].lower() != "unknown" else self._client_id
