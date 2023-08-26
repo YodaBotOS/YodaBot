@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 class Music(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot: Bot = bot
-        self.lyrics = Lyrics(
+        self._lyrics = Lyrics(
             Lyrics.local(
                 self.bot.session,
                 (self.bot.cdn, "yodabot", "https://cdn.yodabot.xyz"),
@@ -42,7 +42,7 @@ class Music(commands.Cog):
         """
 
         async with ctx.typing():
-            res = await self.lyrics.search(query)
+            res = await self._lyrics.search(query)
 
             if res == LyricResult.empty() or not res.lyrics:
                 return await ctx.send("No results found.")
@@ -60,7 +60,7 @@ class Music(commands.Cog):
         if not current:
             return []
 
-        suggestions = await self.lyrics.autocomplete(current, slash_autocomplete=True)
+        suggestions = await self._lyrics.autocomplete(current, slash_autocomplete=True)
 
         return suggestions
 
