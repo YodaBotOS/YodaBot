@@ -180,7 +180,7 @@ class Text(commands.Cog):
 
         if text:
             rephrase = text.strip().endswith("--rephrase")
-            text = text.replace("--rephrase").strip()
+            text = text.replace("--rephrase", "").strip()
         else:
             rephrase = False
 
