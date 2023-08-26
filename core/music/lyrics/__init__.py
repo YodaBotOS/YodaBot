@@ -72,7 +72,7 @@ class LyricLocalAPI:
                 f'lyrics/{title.replace(" ", "_")}-{" ".join([a.name.replace(" ", "_") for a in track.artists])}/track.jpg',
             ),
             "background": await self._post_to_cdn(
-                track.album.images[1]["url"],
+                track.artists[0].images[0]["url"] if track.artists[0].images else track.album.images[0]["url"],
                 f'lyrics/{title.replace(" ", "_")}-{" ".join([a.name.replace(" ", "_") for a in track.artists])}/background.jpg',
             ),
         }
