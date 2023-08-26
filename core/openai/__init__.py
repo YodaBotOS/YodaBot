@@ -154,7 +154,7 @@ class OpenAI:
         if raw:
             return response
 
-        return response["choices"][0]["content"].strip()
+        return response["choices"][0]["message"]["content"].strip()
 
     # --- Study Notes ---
     async def study_notes(self, topic: str, *, user: int, amount: int = 5, raw: bool = False) -> str | typing.Any:
@@ -171,7 +171,7 @@ class OpenAI:
         if raw:
             return response
 
-        text = response["choices"][0]["content"].strip()
+        text = response["choices"][0]["message"]["content"].strip()
 
         text = re.sub("\n+", "\n", text)
 
@@ -197,7 +197,7 @@ class OpenAI:
         if raw:
             return response
 
-        text = response["choices"][0]["content"].strip()
+        text = response["choices"][0]["message"]["content"].strip()
 
         text = re.sub("\n+", "\n", text)
 
