@@ -1,4 +1,5 @@
 import asyncio
+
 import aiohttp
 
 from core.music.spotify.config import *
@@ -110,7 +111,7 @@ class SpotifyClient:
         #         # raise SpotifyClientException('An error occured when generating an access token!', ex)
         #         raise ex
 
-        command = f"curl --cookie \"sp_dc={sp_dc}\" --cookie \"sp_key={sp_key}\" https://open.spotify.com/get_access_token"
+        command = f'curl --cookie "sp_dc={sp_dc}" --cookie "sp_key={sp_key}" https://open.spotify.com/get_access_token'
         proc = await asyncio.create_subprocess_shell(
             command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
