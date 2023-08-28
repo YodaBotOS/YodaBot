@@ -32,7 +32,6 @@ install_rich_traceback()
 
 
 EXTENSIONS = [
-    "jishaku",
     "extensions.ocr",
     "extensions.translate",
     "extensions.text",
@@ -40,7 +39,6 @@ EXTENSIONS = [
     "extensions.image",
     "extensions.study_notes",
     "extensions.music",
-    "extensions.events",
     "extensions.utilities",
     "extensions.maps",
     "extensions.code",
@@ -156,7 +154,9 @@ class Bot(commands.Bot):
         # await wavelink.NodePool.connect(client=self, nodes=nodes, spotify=spotify.SpotifyClient(client_id=cfg.SPOTIFY_CLIENT_ID, client_secret=cfg.SPOTIFY_CLIENT_SECRET))
 
         # Load cogs
-        for extension in EXTENSIONS:
+        exts = EXTENSIONS.copy()
+        exts.extend(["jishaku", "extensions.events"])
+        for extension in exts:
             await self.load_extension(extension)
             print("Loaded extension:", extension)
 
