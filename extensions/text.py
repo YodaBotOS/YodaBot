@@ -184,12 +184,7 @@ class Text(commands.Cog):
         else:
             rephrase = False
 
-        if text is None:
-            if not (ref := ctx.message.reference):
-                raise commands.MissingRequiredArgument(
-                    inspect.Parameter("text", inspect.Parameter.KEYWORD_ONLY, annotation=str)
-                )
-
+        if (ref := ctx.message.reference):
             text = ref.resolved.content
 
         if text is None:
