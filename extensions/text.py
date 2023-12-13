@@ -184,7 +184,7 @@ class Text(commands.Cog):
         else:
             rephrase = False
 
-        if (ref := ctx.message.reference):
+        if ref := ctx.message.reference:
             text = ref.resolved.content
 
         if text is None:

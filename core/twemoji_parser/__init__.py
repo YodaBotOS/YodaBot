@@ -1,5 +1,6 @@
-import typing
 import re
+import typing
+
 import emoji
 
 
@@ -21,7 +22,7 @@ class TwemojiParser:
     #         return re.sub(self.vs16_regex, '', raw_emoji)
     #     else:
     #         return raw_emoji
-    
+
     @staticmethod
     def get_twemoji_url(codepoints: str, asset_type: ASSET_TYPE) -> str:
         if asset_type == "png":
@@ -30,19 +31,23 @@ class TwemojiParser:
             return f"https://twemoji.maxcdn.com/v/latest/svg/{codepoints}.svg"
 
     def parse(self, text: str, *, svg: bool = False) -> list[dict[str, str | list[int]]]:
-        asset_type = 'svg' if svg else 'png'
+        asset_type = "svg" if svg else "png"
         emojis = emoji.emoji_list(text)
         entities = []
 
         for emoji_dict in emojis:
             emoji_text = emoji_dict["emoji"]
-            codepoints = "-".join(hex(ord(c))[2:] for c in emoji_text)  # "-".join(hex(ord(c))[2:] for c in self.remove_vs16s(emoji_text))
-            entities.append({
-                "url": self.get_twemoji_url(codepoints, asset_type) if codepoints else "",
-                "indices": [emoji_dict["match_start"], emoji_dict["match_end"]],
-                "text": emoji_text,
-                "type": "emoji"
-            })
+            codepoints = "-".join(
+                hex(ord(c))[2:] for c in emoji_text
+            )  # "-".join(hex(ord(c))[2:] for c in self.remove_vs16s(emoji_text))
+            entities.append(
+                {
+                    "url": self.get_twemoji_url(codepoints, asset_type) if codepoints else "",
+                    "indices": [emoji_dict["match_start"], emoji_dict["match_end"]],
+                    "text": emoji_text,
+                    "type": "emoji",
+                }
+            )
 
         return entities
 
@@ -51,6 +56,6 @@ class TwemojiParser:
             return self.parse(text, svg=svg)[0]
 
         return None
-    
+
     def __call__(self, text: str, *, svg: bool = False) -> list[dict[str, str | list[int]]]:
         return self.parse(text, svg=svg)
