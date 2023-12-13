@@ -1,6 +1,6 @@
-import json
-import os
-import subprocess
+import typing
+import re
+import emoji
 
 
 class TwemojiParser:
@@ -9,66 +9,48 @@ class TwemojiParser:
     parser.parse_emoji("🤔") # {"url": "...", "indices": [...], "text": "...", "type": "emoji"}
     """
 
+    ASSET_TYPE = typing.Literal["png", "svg"]
+
     def __init__(self):
-        if not self.check_node_installed():
-            raise Exception("Node.js is not installed.")
+        # self.vs16_regex = re.compile("\uFE0F")
+        # self.zero_width_joiner = "\u200d"
+        ...
 
-        if not self.check_npm_installed():
-            raise Exception("npm is not installed.")
-
-        self.install_twemoji_parser()
-
+    # def remove_vs16s(self, raw_emoji: str) -> str:
+    #     if self.zero_width_joiner not in raw_emoji:
+    #         return re.sub(self.vs16_regex, '', raw_emoji)
+    #     else:
+    #         return raw_emoji
+    
     @staticmethod
-    def check_node_installed():
-        try:
-            subprocess.Popen(["node", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            return True
-        except FileNotFoundError:
-            return False
-
-    @staticmethod
-    def check_npm_installed():
-        try:
-            subprocess.Popen(["npm", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            return True
-        except FileNotFoundError:
-            return False
-
-    @staticmethod
-    def install_twemoji_parser():
-        process = subprocess.Popen(
-            ["npm", "install", "twemoji-parser"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        return process, process.communicate()
-
-    @staticmethod
-    def get_twemoji_file_path():
-        return os.path.join(os.path.dirname(os.path.abspath(__file__)), "src/parser.js")
-
-    def _run(self, *args):
-        path = self.get_twemoji_file_path()
-
-        process = subprocess.Popen(["node", path, *args], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = process.communicate()
-
-        if stderr:
-            raise Exception(stderr.decode())
-
-        return stdout.decode()
+    def get_twemoji_url(codepoints: str, asset_type: ASSET_TYPE) -> str:
+        if asset_type == "png":
+            return f"https://twemoji.maxcdn.com/v/latest/72x72/{codepoints}.png"
+        else:
+            return f"https://twemoji.maxcdn.com/v/latest/svg/{codepoints}.svg"
 
     def parse(self, text: str, *, svg: bool = False) -> list[dict[str, str | list[int]]]:
-        js = json.loads(self._run(f'"{text}"'))
+        asset_type = 'svg' if svg else 'png'
+        emojis = emoji.emoji_list(text)
+        entities = []
 
-        if not svg:
-            for i in js:
-                i["url"] = i["url"].replace("svg/", "72x72/").replace(".svg", ".png")
+        for emoji_dict in emojis:
+            emoji_text = emoji_dict["emoji"]
+            codepoints = "-".join(hex(ord(c))[2:] for c in emoji_text)  # "-".join(hex(ord(c))[2:] for c in self.remove_vs16s(emoji_text))
+            entities.append({
+                "url": self.get_twemoji_url(codepoints, asset_type) if codepoints else "",
+                "indices": [emoji_dict["match_start"], emoji_dict["match_end"]],
+                "text": emoji_text,
+                "type": "emoji"
+            })
 
-        return js
+        return entities
 
     def full_parse(self, text: str, *, svg: bool = False) -> dict[str, str | list[int]] | None:
         if len(text) == 1:
             return self.parse(text, svg=svg)[0]
 
         return None
+    
+    def __call__(self, text: str, *, svg: bool = False) -> list[dict[str, str | list[int]]]:
+        return self.parse(text, svg=svg)

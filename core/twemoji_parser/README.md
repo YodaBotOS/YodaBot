@@ -1,7 +1,5 @@
 # twemoji-parser
 
-This uses a combination of Javascript and Python.
+A Twemoji Parser for YodaBot in Python
 
-This uses [@twitter/twemoji-parser](https://github.com/twitter/twemoji-parser).
-
-Javascript code can be found in the `src` directory.
+This was inspired by [@twitter/twemoji-parser](https://github.com/twitter/twemoji-parser).

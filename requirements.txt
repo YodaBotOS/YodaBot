@@ -18,3 +18,4 @@ psutil
 wavelink
 rich
 spotipy2
+emoji
