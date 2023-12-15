@@ -22,6 +22,7 @@ class ReplicateResult:
     id: str
     version: str
     status: str
+    model: str
     urls: dict = field(default_factory=dict, init=True)
     created_at: datetime.datetime = field(default_factory=from_iso, init=True)
     started_at: datetime.datetime | None = field(default_factory=from_iso, init=True)

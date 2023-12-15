@@ -52,6 +52,7 @@ This is limited to:
         self.serp = SerpAPI(self.serp_api_key, session=self.bot.session)
 
         openai.api_key = self.openai.key
+        self.client = self.openai.client
 
     # Backend functions
     async def _get(self, user_id: int, channel_id: int) -> dict | None:
@@ -156,44 +157,47 @@ This is limited to:
         else:
             user = context.user.id
 
-        resp = await openai.ChatCompletion.acreate(
-            model=self.MODEL, messages=messages, user=str(user), functions=self.FUNCTIONS, function_call="auto"
+        resp = await self.client.completions.create(
+            model=self.MODEL, messages=messages, user=str(user), tools=self.FUNCTIONS, tool_choice="auto"
         )
 
-        response = resp["choices"][0]["message"]
+        response = resp.choices[0].message
 
-        if response.get("function_call"):
-            function_name = response["function_call"]["name"]
-            assert function_name == "search_google", f"Unknown function name: {function_name}"
+        if tool_calls := response.tool_calls:
+            for tool_call in tool_calls:
+                function_name = tool_call.function.name
+                assert function_name == "search_google", f"Unknown function name: {function_name}"
 
-            fuction_to_call = self.serp.google_search
-            function_args = json.loads(response["function_call"]["arguments"])
-            function_response = await fuction_to_call(
-                query=function_args.get("term"),
-            )
+                fuction_to_call = self.serp.google_search
+                function_args = json.loads(tool_call.function.arguments)
+                function_response = await fuction_to_call(
+                    query=function_args.get("term"),
+                )
 
-            function_content = {
-                "summarized": function_response["knowledge_graph"] or None,
-                "information": [
-                    {"title": x["title"], "description": x["description"]} for x in function_response["results"]
-                ],
-            }
-            function_content = json.dumps(function_content)
+                function_content = {
+                    "summarized": function_response["knowledge_graph"] or None,
+                    "information": [
+                        {"title": x["title"], "description": x["description"]} for x in function_response["results"]
+                    ],
+                }
+                function_content = json.dumps(function_content)
 
-            messages.append(response)
-            messages.append({"role": "function", "name": function_name, "content": function_content})
-            second_resp = await openai.ChatCompletion.acreate(
-                model=self.MODEL,
-                messages=messages,
-            )
+                messages.append(response)
+                messages.append(
+                    {"tool_call_id": tool_call.id, "role": "tool", "name": function_name, "content": function_content}
+                )
+                second_resp = await self.client.completions.create(
+                    model=self.MODEL,
+                    messages=messages,
+                )
 
-            response = second_resp["choices"][0]["message"]
+                response = second_resp.choices[0].message
 
-        messages.append({"role": response["role"], "content": response["content"]})
+        messages.append({"role": response.role, "content": response.content})
 
         await self.perf_db(context, messages)
 
-        return response["content"]
+        return response.content
 
     async def __call__(self, context: Context | discord.Interaction, message: str):
         await self.new(context)
@@ -452,6 +456,7 @@ class Chat:
         self.bot = openai_cls.bot
 
         openai.api_key = self.openai.key
+        self.client = self.openai.client
 
     # Backend functions
     async def _get(self, user_id: int, channel_id: int) -> dict | None:
@@ -543,7 +548,7 @@ class Chat:
         else:
             await self._delete(context.user.id, context.channel.id)
 
-    async def reply(self, context: Context | discord.Interaction, message: str) -> str:
+    async def reply(self, context: Context | discord.Interaction, message: str, msg: discord.Message = None) -> str:
         data = await self.get(context)
 
         if data is None:
@@ -558,26 +563,31 @@ class Chat:
             return
 
         messages = data["messages"]
+        content = [{"type": "text", "text": message}]
+        if attachments := msg.attachments:
+            for attach in attachments:
+                if attach.content_type in ["image/png", "image/jpg", "image/jpeg", "image/webp", "image/gif"]:
+                    content.append({"type": "image", "image_url": {"url": attach.url}})
 
-        messages.append({"role": "user", "content": message})
+        messages.append({"role": "user", "content": content})
 
         if isinstance(context, Context):
             user = context.author.id
         else:
             user = context.user.id
 
-        resp = await openai.ChatCompletion.acreate(model=self.MODEL, messages=messages, user=str(user))
+        resp = await self.client.completions.create(model=self.MODEL, messages=messages, user=str(user))
 
-        response = resp["choices"][0]["message"]
+        response = resp.choices[0].message
 
-        if not response["content"]:
+        if not response.content:
             response = self.DID_NOT_UNDERSTAND
 
-        messages.append({"role": response["role"], "content": response["content"]})
+        messages.append({"role": response.role, "content": response.content})
 
         await self.perf_db(context, messages)
 
-        return response["content"]
+        return response.content
 
     async def __call__(self, context: Context | discord.Interaction, message: str, *, role: str = "assistant"):
         await self.new(context, role)

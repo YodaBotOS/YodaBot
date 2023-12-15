@@ -40,11 +40,11 @@ class Chat(commands.Cog):
 
     CHAT_SLASH_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.member, wait=False)
 
-    @commands.command("chat")
+    @commands.command("chat", aliases=["assistant"])
     # @commands.max_concurrency(1, commands.BucketType.member)
     async def chat(self, ctx: Context, *, text: str = None):
         """
-        Chat with an AI using the new GPT-4 OpenAI Model.
+        Chat with an AI using the latest GPT-4 OpenAI Model.
         """
 
         await self.CHAT_SLASH_MAX_CONCURRENCY.acquire(ctx.message)
@@ -104,7 +104,7 @@ class Chat(commands.Cog):
                     # print(text)
 
                     try:
-                        text = await self.openai.chat.reply(ctx, text_prompt)
+                        text = await self.openai.chat.reply(ctx, text_prompt, msg)
                     except Exception as e:
                         await ctx.send(f"Something went wrong. Try again later.", view=view)
                         self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)

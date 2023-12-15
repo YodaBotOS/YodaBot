@@ -22,6 +22,7 @@ class ImageUtilities:
 
         self.s3, self.bucket, self.host = s3
         self.session = session
+        self.client = openai.AsyncOpenAI(api_key=self.openai_key)
 
     @property
     def style(self):
@@ -60,7 +61,7 @@ class ImageUtilities:
                 Key=f"dalle2-results/{img_id}/{counter}.png",
             )
 
-            image.url = f"{self.host}/dalle2-results/{img_id}/{counter}.png"
+            image.url = f"{self.host}/dalle3-results/{img_id}/{counter}.png"
 
             counter += 1
 
@@ -70,7 +71,7 @@ class ImageUtilities:
 
         s = size.get_size()
 
-        response = openai.Image.create(prompt=prompt, n=n, size=s, user=user)
+        response = await self.client.images.generate(prompt=prompt, n=n, size=s, user=user, model="dall-e-3")
 
         gen = GeneratedImages(self, response)
         await self._upload_to_cdn(gen)
@@ -90,7 +91,7 @@ class ImageUtilities:
         elif isinstance(image, io.BytesIO):
             image = image.getvalue()
 
-        response = openai.Image.create_variation(image=image, n=n, size=s, user=user)
+        response = await self.client.images.create_variation(image=image, n=n, size=s, user=user)
 
         gen = GeneratedImages(self, response)
         await self._upload_to_cdn(gen)

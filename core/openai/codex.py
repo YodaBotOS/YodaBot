@@ -3,6 +3,9 @@ import typing
 
 import openai
 
+if typing.TYPE_CHECKING:
+    from . import OpenAI
+
 SUPPORTED_LANGUAGES = [
     "Bash",
     "C",
@@ -90,6 +93,9 @@ class Codex:
         # "stop": ['"""'],
     }
 
+    def __init__(self, openai: OpenAI):
+        self.client = openai.client
+
     @staticmethod
     def _do_comments(language: SUPPORTED_LANGUAGES_LITERAL, text: str) -> str:
         s = ""
@@ -109,12 +115,13 @@ class Codex:
 
         return s.strip()
 
-    @staticmethod
-    async def completion(language: SUPPORTED_LANGUAGES_LITERAL, prompt: str, *, user: int, n: int = 1) -> list[str]:
+    async def completion(
+        self, language: SUPPORTED_LANGUAGES_LITERAL, prompt: str, *, user: int, n: int = 1
+    ) -> list[str]:
         if language not in SUPPORTED_LANGUAGES:
             raise ValueError(f"Language {language} is not supported")
 
-        response = await openai.ChatCompletion.acreate(
+        response = await self.client.completions.create(
             **Codex.COMPLETION_KWARGS,
             messages=[
                 {
@@ -135,12 +142,11 @@ class Codex:
 
         return list(set(choices))  # remove duplicates (lazy to do it the hard way)
 
-    @staticmethod
-    async def explain(language: SUPPORTED_LANGUAGES_LITERAL, code: str, *, user: int) -> str:
+    async def explain(self, language: SUPPORTED_LANGUAGES_LITERAL, code: str, *, user: int) -> str:
         if language not in SUPPORTED_LANGUAGES:
             raise ValueError(f"Language {language} is not supported")
 
-        response = await openai.ChatCompletion.acreate(
+        response = await self.client.completions.create(
             **Codex.EXPLAIN_KWARGS,
             messages=[
                 {
