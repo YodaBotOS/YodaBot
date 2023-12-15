@@ -134,7 +134,7 @@ class Bot(commands.Bot):
         else:
             self.pool = None
 
-        await self.pool.set_type_codec("json", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
+        # await self.pool.set_type_codec("json", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
 
         if not self.is_selfhosted:
             with open("schema.sql") as f:
