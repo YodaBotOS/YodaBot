@@ -576,7 +576,7 @@ class Chat:
         else:
             user = context.user.id
 
-        resp = await self.client.chat.completions.create(model=self.MODEL, messages=messages, user=str(user))
+        resp = await self.client.chat.completions.create(model=self.MODEL, messages=messages, user=str(user), max_tokens=4096)
 
         response = resp.choices[0].message
 
