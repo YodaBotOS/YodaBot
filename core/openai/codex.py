@@ -123,7 +123,7 @@ class Codex:
         if language not in SUPPORTED_LANGUAGES:
             raise ValueError(f"Language {language} is not supported")
 
-        response = await self.client.completions.create(
+        response = await self.client.chat.completions.create(
             **Codex.COMPLETION_KWARGS,
             messages=[
                 {
@@ -148,7 +148,7 @@ class Codex:
         if language not in SUPPORTED_LANGUAGES:
             raise ValueError(f"Language {language} is not supported")
 
-        response = await self.client.completions.create(
+        response = await self.client.chat.completions.create(
             **Codex.EXPLAIN_KWARGS,
             messages=[
                 {

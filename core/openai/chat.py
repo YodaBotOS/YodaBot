@@ -157,7 +157,7 @@ This is limited to:
         else:
             user = context.user.id
 
-        resp = await self.client.completions.create(
+        resp = await self.client.chat.completions.create(
             model=self.MODEL, messages=messages, user=str(user), tools=self.FUNCTIONS, tool_choice="auto"
         )
 
@@ -186,7 +186,7 @@ This is limited to:
                 messages.append(
                     {"tool_call_id": tool_call.id, "role": "tool", "name": function_name, "content": function_content}
                 )
-                second_resp = await self.client.completions.create(
+                second_resp = await self.client.chat.completions.create(
                     model=self.MODEL,
                     messages=messages,
                 )
@@ -449,7 +449,7 @@ class Chat:
         ),
     }
 
-    MODEL = "gpt-4"
+    MODEL = "gpt-4-vision-preview"
 
     def __init__(self, openai_cls: OpenAI):
         self.openai = openai_cls
@@ -576,7 +576,7 @@ class Chat:
         else:
             user = context.user.id
 
-        resp = await self.client.completions.create(model=self.MODEL, messages=messages, user=str(user))
+        resp = await self.client.chat.completions.create(model=self.MODEL, messages=messages, user=str(user))
 
         response = resp.choices[0].message
 

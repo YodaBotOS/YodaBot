@@ -143,7 +143,7 @@ class OpenAI:
 
         prompt = prompt.format(text=text)
 
-        response = await self.client.completions.create(
+        response = await self.client.chat.completions.create(
             **self.GRAMMAR_CORRECTION_PARAMS,
             messages=[
                 {"role": "system", "content": self.GRAMMAR_CORRECTION_SYSTEM},
@@ -163,7 +163,7 @@ class OpenAI:
 
         prompt = self.STUDY_NOTES_START_STRING.format(topic=topic, amount=amount)
 
-        response = await self.client.completions.create(
+        response = await self.client.chat.completions.create(
             **self.STUDY_NOTES_PARAMS,
             messages=[{"role": "system", "content": self.STUDY_NOTES_SYSTEM}, {"role": "user", "content": prompt}],
             user=str(user),
@@ -189,7 +189,7 @@ class OpenAI:
 
         prompt = self.WORDTUNES_START_STRING.format(text=text, amount=amount, tones=tones)
 
-        response = await self.client.completions.create(
+        response = await self.client.chat.completions.create(
             **self.WORDTUNES_PARAMS,
             messages=[{"role": "system", "content": self.WORDTUNES_SYSTEM}, {"role": "user", "content": prompt}],
             user=str(user),
