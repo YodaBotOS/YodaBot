@@ -16,7 +16,7 @@ import wavelink
 from discord import app_commands
 from discord.ext import commands
 from rich.traceback import install as install_rich_traceback
-from wavelink.ext import spotify
+# from wavelink.ext import spotify
 
 import config as cfg
 from core.context import Context
@@ -134,7 +134,7 @@ class Bot(commands.Bot):
         else:
             self.pool = None
 
-        # await self.pool.set_type_codec("json", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
+        await self.pool.set_type_codec("json", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
 
         if not self.is_selfhosted:
             with open("schema.sql") as f:
