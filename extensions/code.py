@@ -14,7 +14,7 @@ from discord.ext import commands
 
 from core.context import Context
 from core.openai import codex as core_codex
-from core.openai import openai
+from core.openai import openai, OpenAI
 from utils.converter import CodeblockConverter
 
 # from guesslang.guess import Guess
@@ -37,7 +37,7 @@ class CodeUtils(commands.Cog):
 
         openai.api_key = self.bot.config.OPENAI_KEY
 
-        self.codex: CodexClass = codex.Codex()
+        self.codex: CodexClass = codex.Codex(OpenAI(self.bot.config.OPENAI_KEY, bot=self.bot))
         self.bot.codex = self.codex
         # self.guesslang = Guess()
         # self.bot.guesslang = self.guesslang
