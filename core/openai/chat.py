@@ -503,15 +503,12 @@ class Chat:
         # Where all the personalization for the chatbot goes such as who are you, what server/channel you are in, etc.
         role = role.lower()
 
-        if not role in self.CHAT_ROLES:
-            raise ValueError(f"Invalid role: {role}")
-
         if isinstance(context, Context):
             personalize = f"Your name is YodaBot and you are chatting with a person with the username {context.author} with the user id {context.author.id} in the server {context.guild} with the server id {context.guild.id} in the channel {context.channel} with the channel id {context.channel.id}."
         else:
             personalize = f"Your name is YodaBot and you are chatting with a person with the username {context.user} with the user id {context.user.id} in the server {context.guild} with the server id {context.guild.id} in the channel {context.channel} with the channel id {context.channel.id}."
 
-        messages = [{"role": "system", "content": self.CHAT_ROLES[role]}, {"role": "system", "content": personalize}]
+        messages = [{"role": "system", "content": self.CHAT_ROLES.get(role.lower(), role)}, {"role": "system", "content": personalize}]
 
         return messages
 
@@ -564,7 +561,7 @@ class Chat:
 
         messages = data["messages"]
         content = [{"type": "text", "text": message}]
-        if attachments := msg.attachments:
+        if msg and (attachments := msg.attachments):
             for attach in attachments:
                 if attach.content_type in ["image/png", "image/jpg", "image/jpeg", "image/webp", "image/gif"]:
                     content.append({"type": "image", "image_url": {"url": attach.url}})

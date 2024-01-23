@@ -1,3 +1,4 @@
+import asyncio
 import io
 import uuid
 
@@ -71,7 +72,7 @@ class ImageUtilities:
 
         s = size.get_size()
 
-        response = await self.client.images.generate(prompt=prompt, n=n, size=s, user=user, model="dall-e-3")
+        response = await asyncio.gather(*[self.client.images.generate(prompt=prompt, n=1, size=s, user=user, model="dall-e-3") for _ in range(n)])  # dall-e-3 does not support n > 1
 
         gen = GeneratedImages(self, response)
         await self._upload_to_cdn(gen)
