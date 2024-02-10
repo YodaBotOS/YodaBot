@@ -118,7 +118,12 @@ class Codex:
         return s.strip()
 
     async def completion(
-        self, language: SUPPORTED_LANGUAGES_LITERAL, prompt: str, *, user: int, n: int = 1
+        self,
+        language: SUPPORTED_LANGUAGES_LITERAL,
+        prompt: str,
+        *,
+        user: int,
+        n: int = 1,
     ) -> list[str]:
         if language not in SUPPORTED_LANGUAGES:
             raise ValueError(f"Language {language} is not supported")
@@ -144,7 +149,9 @@ class Codex:
 
         return list(set(choices))  # remove duplicates (lazy to do it the hard way)
 
-    async def explain(self, language: SUPPORTED_LANGUAGES_LITERAL, code: str, *, user: int) -> str:
+    async def explain(
+        self, language: SUPPORTED_LANGUAGES_LITERAL, code: str, *, user: int
+    ) -> str:
         if language not in SUPPORTED_LANGUAGES:
             raise ValueError(f"Language {language} is not supported")
 

@@ -13,8 +13,9 @@ from discord.app_commands import locale_str as _T
 from discord.ext import commands
 
 from core.context import Context
+from core.openai import OpenAI
 from core.openai import codex as core_codex
-from core.openai import openai, OpenAI
+from core.openai import openai
 from utils.converter import CodeblockConverter
 
 # from guesslang.guess import Guess
@@ -37,7 +38,9 @@ class CodeUtils(commands.Cog):
 
         openai.api_key = self.bot.config.OPENAI_KEY
 
-        self.codex: CodexClass = codex.Codex(OpenAI(self.bot.config.OPENAI_KEY, bot=self.bot))
+        self.codex: CodexClass = codex.Codex(
+            OpenAI(self.bot.config.OPENAI_KEY, bot=self.bot)
+        )
         self.bot.codex = self.codex
         # self.guesslang = Guess()
         # self.bot.guesslang = self.guesslang
@@ -48,11 +51,18 @@ class CodeUtils(commands.Cog):
 
     @commands.hybrid_command(_T("generate-code"), aliases=["generatecode", "gencode"])
     @app_commands.describe(
-        language=_T("The language to generate code in"), prompt=_T("The prompt to generate code from")
+        language=_T("The language to generate code in"),
+        prompt=_T("The prompt to generate code from"),
     )
     @commands.max_concurrency(1, commands.BucketType.member)
     @commands.cooldown(1, 20, commands.BucketType.member)
-    async def generate_code(self, ctx: Context, language: core_codex.SUPPORTED_LANGUAGES_LITERAL, *, prompt: str):
+    async def generate_code(
+        self,
+        ctx: Context,
+        language: core_codex.SUPPORTED_LANGUAGES_LITERAL,
+        *,
+        prompt: str,
+    ):
         """
         Generate code from a prompt.
 
@@ -67,19 +77,26 @@ class CodeUtils(commands.Cog):
         async with ctx.typing():
             try:
                 async with timeout(self.TIMEOUT_LIMIT):
-                    completion = await self.codex.completion(language, prompt, user=ctx.author.id, n=1)
+                    completion = await self.codex.completion(
+                        language, prompt, user=ctx.author.id, n=1
+                    )
                     completion = completion[0]
 
                     embed = discord.Embed(color=self.bot.color)
                     embed.title = "Code Generation Result:"
 
-                    embed.description = f"**Language:** {language}\n**Prompt:** {prompt}\n\n"
+                    embed.description = (
+                        f"**Language:** {language}\n**Prompt:** {prompt}\n\n"
+                    )
 
                     if len(completion) > 3000:
                         paste = await self.bot.mystbin.create_paste(
-                            filename=f"code.{self.codex.FILE[language]}", content=completion
+                            filename=f"code.{self.codex.FILE[language]}",
+                            content=completion,
                         )
-                        embed.description += f"**Result:** {paste} (Too long to display)"
+                        embed.description += (
+                            f"**Result:** {paste} (Too long to display)"
+                        )
                     else:
                         embed.description += f"**Result:** ```{self.codex.FILE[language]}\n{completion}\n```"
 
@@ -147,13 +164,21 @@ class CodeUtils(commands.Cog):
                         paste = await self.bot.mystbin.create_paste(
                             filename=f"code.{self.codex.FILE[language]}", content=code
                         )
-                        embed.description = f"**Code: ({lang})** {paste} (Too long to display)\n\n"
+                        embed.description = (
+                            f"**Code: ({lang})** {paste} (Too long to display)\n\n"
+                        )
                     else:
-                        embed.description = f"**Code: ({lang})** ```{lang.lower()}\n{code}\n```\n\n"
+                        embed.description = (
+                            f"**Code: ({lang})** ```{lang.lower()}\n{code}\n```\n\n"
+                        )
 
                     if len(explain) > 2000:
-                        paste = await self.bot.mystbin.create_paste(filename=f"explaination.txt", content=explain)
-                        embed.description += f"**Result:** {paste} (Too long to display)"
+                        paste = await self.bot.mystbin.create_paste(
+                            filename=f"explaination.txt", content=explain
+                        )
+                        embed.description += (
+                            f"**Result:** {paste} (Too long to display)"
+                        )
                     else:
                         embed.description += f"**Result:**\n{explain}"
 

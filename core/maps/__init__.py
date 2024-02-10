@@ -58,7 +58,9 @@ class GoogleMapsAPI:
         self.api_key = api_key
         self.session = session or aiohttp.ClientSession()
 
-    def _get_params(self, keyword: str, data: dict, *, with_language: bool = True) -> dict:
+    def _get_params(
+        self, keyword: str, data: dict, *, with_language: bool = True
+    ) -> dict:
         params = {
             "key": self.api_key,
         }
@@ -90,7 +92,9 @@ class GoogleMapsAPI:
 
             return js["candidates"]
 
-    async def autocomplete(self, query: str, *, text_only: bool = False, **kwargs) -> dict:
+    async def autocomplete(
+        self, query: str, *, text_only: bool = False, **kwargs
+    ) -> dict:
         params = {
             "input": query,
         }
@@ -103,11 +107,16 @@ class GoogleMapsAPI:
             js = await resp.json()
 
             if text_only:
-                return [{"place": res["description"], "id": res["place_id"]} for res in js["predictions"]]
+                return [
+                    {"place": res["description"], "id": res["place_id"]}
+                    for res in js["predictions"]
+                ]
 
             return js["predictions"]
 
-    async def place_details(self, place_id: str, *, fields: list[str] = None, **kwargs) -> dict:
+    async def place_details(
+        self, place_id: str, *, fields: list[str] = None, **kwargs
+    ) -> dict:
         params = {
             "place_id": place_id,
         }
@@ -218,7 +227,9 @@ class GoogleMapsAPI:
         orientation: typing.Literal["landscape", "portrait"],
         format: typing.Literal["image", "video"],
     ) -> bytes | None:
-        params = self._get_params("aerial_view", {"address": address}, with_language=False)
+        params = self._get_params(
+            "aerial_view", {"address": address}, with_language=False
+        )
 
         async with self.session.get(self.AERIAL_VIEW, params=params) as resp:
             js = await resp.json()
@@ -232,7 +243,9 @@ class GoogleMapsAPI:
                 pass  # Let Google do the rest.
 
             return None
-        elif js.get("state", "PROCESSING") == "PROCESSING" or js.get("state") != "ACTIVE":
+        elif (
+            js.get("state", "PROCESSING") == "PROCESSING" or js.get("state") != "ACTIVE"
+        ):
             return None
 
         if "uris" not in js:
@@ -308,10 +321,16 @@ class SlashMaps:
     async def find_place(self, query: str, *, fields: list[str] = None) -> list[dict]:
         return await self.maps_obj.find_place(query, fields=fields)
 
-    async def autocomplete(self, query: str, *, text_only: bool = False, **kwargs) -> list[dict]:
-        return await self.maps_obj.autocomplete(query, text_only=text_only, sessiontoken=self.session_token, **kwargs)
+    async def autocomplete(
+        self, query: str, *, text_only: bool = False, **kwargs
+    ) -> list[dict]:
+        return await self.maps_obj.autocomplete(
+            query, text_only=text_only, sessiontoken=self.session_token, **kwargs
+        )
 
-    async def discord_slash_autocomplete(self, query: str, limit: int = None) -> list[app_commands.Choice]:
+    async def discord_slash_autocomplete(
+        self, query: str, limit: int = None
+    ) -> list[app_commands.Choice]:
         place = await self.autocomplete(query, text_only=True)
 
         if limit is not None:
@@ -331,8 +350,12 @@ class SlashMaps:
 
         return choices
 
-    async def place_details(self, place_id: str, *, fields: list[str] = None, **kwargs) -> dict:
-        return await self.maps_obj.place_details(place_id, fields=fields, sessiontoken=self.session_token, **kwargs)
+    async def place_details(
+        self, place_id: str, *, fields: list[str] = None, **kwargs
+    ) -> dict:
+        return await self.maps_obj.place_details(
+            place_id, fields=fields, sessiontoken=self.session_token, **kwargs
+        )
 
     async def get_geometry(self, place_id: str) -> tuple[dict, dict]:
         return await self.maps_obj.get_geometry(place_id)
@@ -351,7 +374,12 @@ class SlashMaps:
         **kwargs,
     ):
         return await self.maps_obj.render(
-            place_id, size=size, map_type=map_type, map_theme=map_theme, geometry=geometry, **kwargs
+            place_id,
+            size=size,
+            map_type=map_type,
+            map_theme=map_theme,
+            geometry=geometry,
+            **kwargs,
         )
 
     async def get_photo(self, photo_reference: str) -> bytes:

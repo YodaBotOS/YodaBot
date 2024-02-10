@@ -95,7 +95,9 @@ class Image(commands.Cog):
             "key": config.PERSPECTIVE_KEY,
         }
 
-        async with self.bot.session.post(url, data=json.dumps(body), params=params) as resp:
+        async with self.bot.session.post(
+            url, data=json.dumps(body), params=params
+        ) as resp:
             js = await resp.json()
 
             if raw:
@@ -115,7 +117,12 @@ class Image(commands.Cog):
         self.image: ImageUtilities = ImageUtilities(
             (self.bot.cdn, "yodabot", "https://cdn.yodabot.xyz"),
             self.bot.session,
-            (config.OPENAI_KEY, config.DREAM_KEY, config.REPLICATE_API_KEY, config.FIREFLY_KEY),
+            (
+                config.OPENAI_KEY,
+                config.DREAM_KEY,
+                config.REPLICATE_API_KEY,
+                config.FIREFLY_KEY,
+            ),
         )
         self.upscaling = Upscaling(config.REPLICATE_API_KEY, self.bot.session)
         # app_commands.choices(
@@ -159,10 +166,14 @@ class Image(commands.Cog):
 
             if not check:
                 await m.delete()
-                return await ctx.send("Text seems inappropriate. Aborting.", ephemeral=True)
+                return await ctx.send(
+                    "Text seems inappropriate. Aborting.", ephemeral=True
+                )
 
         try:
-            result = await self.image.create_image(prompt, amount, size=size, user=str(ctx.author.id))
+            result = await self.image.create_image(
+                prompt, amount, size=size, user=str(ctx.author.id)
+            )
         except Exception as e:
             if m:
                 await m.delete()
@@ -172,7 +183,9 @@ class Image(commands.Cog):
             if isinstance(e, openai.error.InvalidRequestError):
                 return await ctx.send(f"Invalid prompt. {e}", ephemeral=True)
 
-            return await ctx.send(f"Something went wrong, try again later.", ephemeral=True)
+            return await ctx.send(
+                f"Something went wrong, try again later.", ephemeral=True
+            )
 
         if m:
             await m.delete()
@@ -195,7 +208,9 @@ class Image(commands.Cog):
             m = await ctx.send(f"⌛ Generating `{amount}` variation(s)...")
 
         try:
-            result = await self.image.create_image_variations(img, amount, size=size, user=str(ctx.author.id))
+            result = await self.image.create_image_variations(
+                img, amount, size=size, user=str(ctx.author.id)
+            )
         except Exception as e:
             if m:
                 await m.delete()
@@ -205,7 +220,9 @@ class Image(commands.Cog):
             if isinstance(e, openai.error.InvalidRequestError):
                 return await ctx.send(f"Invalid image. {e}", ephemeral=True)
 
-            return await ctx.send(f"Something went wrong, try again later.", ephemeral=True)
+            return await ctx.send(
+                f"Something went wrong, try again later.", ephemeral=True
+            )
 
         if m:
             await m.delete()
@@ -220,24 +237,32 @@ class Image(commands.Cog):
             await ctx.defer()
             m = None
         else:
-            m = await ctx.send(f"⌛ Generating `{amount}` image(s) with style `{style.name}`...")
+            m = await ctx.send(
+                f"⌛ Generating `{amount}` image(s) with style `{style.name}`..."
+            )
 
         if not await self.bot.is_owner(ctx.author):
             check = await self.text_check(prompt)
 
             if not check:
                 await m.delete()
-                return await ctx.send("Text seems inappropriate. Aborting.", ephemeral=True)
+                return await ctx.send(
+                    "Text seems inappropriate. Aborting.", ephemeral=True
+                )
 
         try:
-            result = await self.image.style.generate(prompt, style, amount, height=height, width=width)
+            result = await self.image.style.generate(
+                prompt, style, amount, height=height, width=width
+            )
         except Exception as e:
             if m:
                 await m.delete()
 
             self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
 
-            return await ctx.send(f"Something went wrong, try again later.", ephemeral=True)
+            return await ctx.send(
+                f"Something went wrong, try again later.", ephemeral=True
+            )
 
         if m:
             await m.delete()
@@ -259,17 +284,23 @@ class Image(commands.Cog):
 
             if not check:
                 await m.delete()
-                return await ctx.send("Text seems inappropriate. Aborting.", ephemeral=True)
+                return await ctx.send(
+                    "Text seems inappropriate. Aborting.", ephemeral=True
+                )
 
         try:
-            result = await self.image.midjourney.generate(prompt, amount, height=height, width=width)
+            result = await self.image.midjourney.generate(
+                prompt, amount, height=height, width=width
+            )
         except Exception as e:
             if m:
                 await m.delete()
 
             self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
 
-            return await ctx.send(f"Something went wrong, try again later.", ephemeral=True)
+            return await ctx.send(
+                f"Something went wrong, try again later.", ephemeral=True
+            )
 
         if m:
             await m.delete()
@@ -291,30 +322,40 @@ class Image(commands.Cog):
 
             if not check:
                 await m.delete()
-                return await ctx.send("Text seems inappropriate. Aborting.", ephemeral=True)
+                return await ctx.send(
+                    "Text seems inappropriate. Aborting.", ephemeral=True
+                )
 
         width = self.image.firefly.SIZES[size][1]
         height = self.image.firefly.SIZES[size][2]
 
         try:
-            results = await self.image.firefly.text_to_image(prompt, amount, width=width, height=height, styles=styles)
+            results = await self.image.firefly.text_to_image(
+                prompt, amount, width=width, height=height, styles=styles
+            )
         except Exception as e:
             if m:
                 await m.delete()
 
             self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
 
-            return await ctx.send(f"Something went wrong, try again later.", ephemeral=True)
+            return await ctx.send(
+                f"Something went wrong, try again later.", ephemeral=True
+            )
 
         if m:
             await m.delete()
 
-        source = FireflyTextToImagePaginator(results, prompt, res_high=(size in ["Ultrawide", "Ultrawide Portrait"]))
+        source = FireflyTextToImagePaginator(
+            results, prompt, res_high=(size in ["Ultrawide", "Ultrawide Portrait"])
+        )
         menu = YodaMenuPages(source)
 
         return await menu.start(ctx)
 
-    MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.member, wait=False)
+    MAX_CONCURRENCY = commands.MaxConcurrency(
+        1, per=commands.BucketType.member, wait=False
+    )
 
     async def handle(self, ctx, func, *args, **kwargs):
         if isinstance(ctx, discord.Interaction):
@@ -440,10 +481,14 @@ class Image(commands.Cog):
         """
 
         async def main(ctx, amount, size, image):
-            image = await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or "")
+            image = await ImageConverter(with_member=True, with_emoji=True).convert(
+                ctx, image or ""
+            )
 
             if not image:
-                return await ctx.send("Please send an image or provide a URL.", ephemeral=True)
+                return await ctx.send(
+                    "Please send an image or provide a URL.", ephemeral=True
+                )
 
             if size == "small":
                 size = Size.SMALL
@@ -497,7 +542,9 @@ class Image(commands.Cog):
                     embed.description += f"- {style.name}\n"
 
                 if original_style:
-                    return await ctx.send("Style not found.", embed=embed, ephemeral=True)
+                    return await ctx.send(
+                        "Style not found.", embed=embed, ephemeral=True
+                    )
                 else:
                     return await ctx.send(embed=embed, ephemeral=True)
 
@@ -508,11 +555,15 @@ class Image(commands.Cog):
                 width, height = size
 
                 if width > 1024 or height > 1024:
-                    return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
+                    return await ctx.send(
+                        "Maximum width and height is 1024 pixels.", ephemeral=True
+                    )
             else:
                 width, height = None, None
 
-            return await self.generate_image_style(ctx, prompt, style, amount, width, height)
+            return await self.generate_image_style(
+                ctx, prompt, style, amount, width, height
+            )
 
         await self.handle(ctx, main, prompt, style, amount, size)
 
@@ -540,7 +591,9 @@ class Image(commands.Cog):
                 width, height = size
 
                 if width > 1024 or height > 1024:
-                    return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
+                    return await ctx.send(
+                        "Maximum width and height is 1024 pixels.", ephemeral=True
+                    )
             else:
                 width, height = 512, 512
 
@@ -575,7 +628,9 @@ class Image(commands.Cog):
 
     #     await self.handle(ctx, main, prompt, amount, size)
 
-    gen_art_slash = app_commands.Group(name=_T("generate-art"), description=_T("Generate an image from a prompt."))
+    gen_art_slash = app_commands.Group(
+        name=_T("generate-art"), description=_T("Generate an image from a prompt.")
+    )
 
     @gen_art_slash.command(name=_T("image"))
     @app_commands.describe(
@@ -646,10 +701,14 @@ class Image(commands.Cog):
 
         async def main(ctx, amount, size, image, url):
             if image is None and url is None:
-                return await ctx.send("Please send an image or provide a URL.", ephemeral=True)
+                return await ctx.send(
+                    "Please send an image or provide a URL.", ephemeral=True
+                )
 
             if image and url:
-                return await ctx.send("Please only send either an image or a URL.", ephemeral=True)
+                return await ctx.send(
+                    "Please only send either an image or a URL.", ephemeral=True
+                )
 
             image = url or image.url
 
@@ -710,7 +769,9 @@ class Image(commands.Cog):
                     embed.description += f"- {style.name}\n"
 
                 if original_style:
-                    return await ctx.send("Style not found.", embed=embed, ephemeral=True)
+                    return await ctx.send(
+                        "Style not found.", embed=embed, ephemeral=True
+                    )
                 else:
                     return await ctx.send(embed=embed, ephemeral=True)
 
@@ -724,7 +785,9 @@ class Image(commands.Cog):
                 width, height = await SizeConverter().convert(ctx, size)
 
                 if width > 1024 or height > 1024:
-                    return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
+                    return await ctx.send(
+                        "Maximum width and height is 1024 pixels.", ephemeral=True
+                    )
             except:
                 if size:
                     return await ctx.send(
@@ -734,12 +797,16 @@ class Image(commands.Cog):
 
                 width, height = None, None
 
-            return await self.generate_image_style(ctx, prompt, style, amount, width, height)
+            return await self.generate_image_style(
+                ctx, prompt, style, amount, width, height
+            )
 
         await self.handle(interaction, main, prompt, style, amount, size)
 
     @gen_art_style_slash.autocomplete("style")
-    async def gen_art_style_slash_autocomplete(self, interaction: discord.Interaction, current: str):
+    async def gen_art_style_slash_autocomplete(
+        self, interaction: discord.Interaction, current: str
+    ):
         if not current:
             return [
                 app_commands.Choice(name=style.name, value=style.name)
@@ -786,7 +853,9 @@ class Image(commands.Cog):
                 width, height = size
 
                 if width > 1024 or height > 1024:
-                    return await ctx.send("Maximum width and height is 1024 pixels.", ephemeral=True)
+                    return await ctx.send(
+                        "Maximum width and height is 1024 pixels.", ephemeral=True
+                    )
             else:
                 width, height = 512, 512
 
@@ -851,18 +920,33 @@ class Image(commands.Cog):
 
             embed.add_field(
                 name="Categories/Tags:",
-                value="- " + "\n- ".join([f"`{x.name}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.tags])
-                if result.tags
-                else "None",
+                value=(
+                    "- "
+                    + "\n- ".join(
+                        [
+                            f"`{x.name}` - Confidence: `{round(x.confidence, 1)}%`"
+                            for x in result.tags
+                        ]
+                    )
+                    if result.tags
+                    else "None"
+                ),
                 inline=False,
             )
 
             embed.add_field(
                 name="Description/Caption:",
-                value="- "
-                + "\n- ".join([f"`{x.text}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.captions])
-                if result.captions
-                else "None",
+                value=(
+                    "- "
+                    + "\n- ".join(
+                        [
+                            f"`{x.text}` - Confidence: `{round(x.confidence, 1)}%`"
+                            for x in result.captions
+                        ]
+                    )
+                    if result.captions
+                    else "None"
+                ),
                 inline=False,
             )
 
@@ -890,19 +974,33 @@ class Image(commands.Cog):
 
             embed.add_field(
                 name="Brands:",
-                value="- "
-                + "\n- ".join([f"`{x.name}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.brands])
-                if result.brands
-                else "None",
+                value=(
+                    "- "
+                    + "\n- ".join(
+                        [
+                            f"`{x.name}` - Confidence: `{round(x.confidence, 1)}%`"
+                            for x in result.brands
+                        ]
+                    )
+                    if result.brands
+                    else "None"
+                ),
                 inline=False,
             )
 
             embed.add_field(
                 name="Objects:",
-                value="- "
-                + "\n- ".join([f"`{x.object}` - Confidence: `{round(x.confidence, 1)}%`" for x in result.objects])
-                if result.objects
-                else "None",
+                value=(
+                    "- "
+                    + "\n- ".join(
+                        [
+                            f"`{x.object}` - Confidence: `{round(x.confidence, 1)}%`"
+                            for x in result.objects
+                        ]
+                    )
+                    if result.objects
+                    else "None"
+                ),
                 inline=False,
             )
 
@@ -917,7 +1015,9 @@ class Image(commands.Cog):
 
         return embed
 
-    MAX_CONCURRENCY_ANALYZE = commands.MaxConcurrency(1, per=commands.BucketType.member, wait=False)
+    MAX_CONCURRENCY_ANALYZE = commands.MaxConcurrency(
+        1, per=commands.BucketType.member, wait=False
+    )
 
     async def handle_analyze(self, ctx, func, *args, **kwargs):
         if isinstance(ctx, discord.Interaction):
@@ -937,7 +1037,9 @@ class Image(commands.Cog):
             )
             return
 
-    @commands.command("analyze-image", aliases=["analyze-img", "analyze_img", "analyze_image"])
+    @commands.command(
+        "analyze-image", aliases=["analyze-img", "analyze_img", "analyze_image"]
+    )
     async def analyze_image_cmd(self, ctx, *, image: str = None):
         """
         Analyze an image including its colors, categories, brands, and more!
@@ -951,7 +1053,9 @@ class Image(commands.Cog):
         """
 
         async def main(ctx, self, image):
-            image = await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or "")
+            image = await ImageConverter(with_member=True, with_emoji=True).convert(
+                ctx, image or ""
+            )
 
             if not image:
                 return await ctx.send("Please send an image or provide a URL.")
@@ -963,7 +1067,9 @@ class Image(commands.Cog):
         return await self.handle_analyze(ctx, main, self, image)
 
     @app_commands.command(name=_T("analyze-image"))
-    @app_commands.describe(image=_T("The image to analyze."), url=_T("The URL of the image to analyze."))
+    @app_commands.describe(
+        image=_T("The image to analyze."), url=_T("The URL of the image to analyze.")
+    )
     async def analyze_image_slash(
         self,
         interaction: discord.Interaction,
@@ -981,10 +1087,14 @@ class Image(commands.Cog):
 
         async def main(ctx, self, image):
             if image is None and url is None:
-                return await ctx.send("Please send an image or provide a URL.", ephemeral=True)
+                return await ctx.send(
+                    "Please send an image or provide a URL.", ephemeral=True
+                )
 
             if image and url:
-                return await ctx.send("Please only send either an image or a URL.", ephemeral=True)
+                return await ctx.send(
+                    "Please only send either an image or a URL.", ephemeral=True
+                )
 
             image = url or image.url
 
@@ -1007,7 +1117,9 @@ class Image(commands.Cog):
 
             return embed
 
-    MAX_CONCURRENCY_UPSCALE = commands.MaxConcurrency(1, per=commands.BucketType.member, wait=False)
+    MAX_CONCURRENCY_UPSCALE = commands.MaxConcurrency(
+        1, per=commands.BucketType.member, wait=False
+    )
 
     async def handle_upscale_image(self, ctx, func, *args, **kwargs):
         if isinstance(ctx, discord.Interaction):
@@ -1027,8 +1139,16 @@ class Image(commands.Cog):
             )
             return
 
-    @commands.command("upscale", aliases=["upscale-img", "upscale_img", "upscaleimg", "ui"])
-    async def upscale_cmd(self, ctx, scale: typing.Optional[commands.Range[int, 1, 10]] = 2, *, image: str = None):
+    @commands.command(
+        "upscale", aliases=["upscale-img", "upscale_img", "upscaleimg", "ui"]
+    )
+    async def upscale_cmd(
+        self,
+        ctx,
+        scale: typing.Optional[commands.Range[int, 1, 10]] = 2,
+        *,
+        image: str = None,
+    ):
         """
         Upscales an image to an insane resolution using AI.
 
@@ -1043,7 +1163,9 @@ class Image(commands.Cog):
         """
 
         async def main(ctx, self, image):
-            image = await ImageConverter(with_member=True, with_emoji=True).convert(ctx, image or "")
+            image = await ImageConverter(with_member=True, with_emoji=True).convert(
+                ctx, image or ""
+            )
 
             if not image:
                 return await ctx.send("Please send an image or provide a URL.")
@@ -1080,10 +1202,14 @@ class Image(commands.Cog):
 
         async def main(ctx, self, image):
             if image is None and url is None:
-                return await ctx.send("Please send an image or provide a URL.", ephemeral=True)
+                return await ctx.send(
+                    "Please send an image or provide a URL.", ephemeral=True
+                )
 
             if image and url:
-                return await ctx.send("Please only send either an image or a URL.", ephemeral=True)
+                return await ctx.send(
+                    "Please only send either an image or a URL.", ephemeral=True
+                )
 
             image = url or image.url
 

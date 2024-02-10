@@ -27,15 +27,25 @@ class ImageUtilities:
 
     @property
     def style(self):
-        return GenerateStyleArt((self.s3, self.bucket, self.host), self.session, self.dream_key)
+        return GenerateStyleArt(
+            (self.s3, self.bucket, self.host), self.session, self.dream_key
+        )
 
     @property
     def midjourney(self):
-        return Midjourney(self.replicate_key, session=self.session, cdn=(self.s3, self.bucket, self.host))
+        return Midjourney(
+            self.replicate_key,
+            session=self.session,
+            cdn=(self.s3, self.bucket, self.host),
+        )
 
     @property
     def firefly(self):
-        return Firefly(self.firefly_key, session=self.session, cdn=(self.s3, self.bucket, self.host))
+        return Firefly(
+            self.firefly_key,
+            session=self.session,
+            cdn=(self.s3, self.bucket, self.host),
+        )
 
     def _get_headers(self):
         return {
@@ -66,13 +76,22 @@ class ImageUtilities:
 
             counter += 1
 
-    async def create_image(self, prompt: str, n: int, *, size: Size, user: str = None) -> GeneratedImages:
+    async def create_image(
+        self, prompt: str, n: int, *, size: Size, user: str = None
+    ) -> GeneratedImages:
         if 1 > n or n > 10:
             raise ValueError("n must be between 1 and 10")
 
         s = size.get_size()
 
-        response = await asyncio.gather(*[self.client.images.generate(prompt=prompt, n=1, size=s, user=user, model="dall-e-3") for _ in range(n)])  # dall-e-3 does not support n > 1
+        response = await asyncio.gather(
+            *[
+                self.client.images.generate(
+                    prompt=prompt, n=1, size=s, user=user, model="dall-e-3"
+                )
+                for _ in range(n)
+            ]
+        )  # dall-e-3 does not support n > 1
 
         gen = GeneratedImages(self, response)
         await self._upload_to_cdn(gen)
@@ -92,7 +111,9 @@ class ImageUtilities:
         elif isinstance(image, io.BytesIO):
             image = image.getvalue()
 
-        response = await self.client.images.create_variation(image=image, n=n, size=s, user=user)
+        response = await self.client.images.create_variation(
+            image=image, n=n, size=s, user=user
+        )
 
         gen = GeneratedImages(self, response)
         await self._upload_to_cdn(gen)
@@ -108,7 +129,9 @@ class ImageUtilities:
         data = aiohttp.FormData()
         data.add_field("image", image)
 
-        async with self.session.post("https://api.yodabot.xyz/api/image/analyze", data=data) as resp:
+        async with self.session.post(
+            "https://api.yodabot.xyz/api/image/analyze", data=data
+        ) as resp:
             js = await resp.json()
 
         return AnalyzeResult(js)

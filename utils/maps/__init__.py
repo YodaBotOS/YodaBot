@@ -53,7 +53,14 @@ class PhotosPaginator(MenuSource):
 
 
 class MapsView(ui.View):
-    def __init__(self, maps: SlashMaps, place_id: str, photos: dict, landscape_aerial_view, portrait_aerial_view):
+    def __init__(
+        self,
+        maps: SlashMaps,
+        place_id: str,
+        photos: dict,
+        landscape_aerial_view,
+        portrait_aerial_view,
+    ):
         self.maps = maps
         self.place_id = place_id
         self.photos = photos
@@ -78,11 +85,19 @@ class MapsView(ui.View):
 
         return menu
 
-    @ui.button(label="Show Photos", emoji="\N{FRAME WITH PICTURE}", style=discord.ButtonStyle.blurple)
+    @ui.button(
+        label="Show Photos",
+        emoji="\N{FRAME WITH PICTURE}",
+        style=discord.ButtonStyle.blurple,
+    )
     async def show_photos(self, interaction: discord.Interaction, button: ui.Button):
         await self.menu.start(interaction)
 
-    @ui.button(label="Show 3D Image (Portrait)", emoji="\N{CITYSCAPE}", style=discord.ButtonStyle.blurple)
+    @ui.button(
+        label="Show 3D Image (Portrait)",
+        emoji="\N{CITYSCAPE}",
+        style=discord.ButtonStyle.blurple,
+    )
     async def show_portrait(self, interaction: discord.Interaction, button: ui.Button):
         img, vid = self.portrait_aerial_view
         files = [
@@ -90,9 +105,15 @@ class MapsView(ui.View):
             discord.File(io.BytesIO(vid), filename="portrait.mp4"),
         ]
 
-        await interaction.response.send_message("3D Portrait Image and Video:", files=files, ephemeral=True)
+        await interaction.response.send_message(
+            "3D Portrait Image and Video:", files=files, ephemeral=True
+        )
 
-    @ui.button(label="Show 3D Image (Landscape)", emoji="\N{CITYSCAPE}", style=discord.ButtonStyle.blurple)
+    @ui.button(
+        label="Show 3D Image (Landscape)",
+        emoji="\N{CITYSCAPE}",
+        style=discord.ButtonStyle.blurple,
+    )
     async def show_landscape(self, interaction: discord.Interaction, button: ui.Button):
         img, vid = self.landscape_aerial_view
         files = [
@@ -100,4 +121,6 @@ class MapsView(ui.View):
             discord.File(io.BytesIO(vid), filename="landscape.mp4"),
         ]
 
-        await interaction.response.send_message("3D Landscape Image and Video:", files=files, ephemeral=True)
+        await interaction.response.send_message(
+            "3D Landscape Image and Video:", files=files, ephemeral=True
+        )

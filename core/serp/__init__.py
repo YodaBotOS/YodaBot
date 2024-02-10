@@ -5,26 +5,20 @@ import yarl
 
 
 class SerpAPI:
-    URL = yarl.URL("https://seo-api.p.rapidapi.com/v1/")
+    URL = yarl.URL("https://api.tavily.com/")
 
     def __init__(self, api_key: str, *, session: aiohttp.ClientSession):
         self.api_key = api_key
         self.session = session
 
-    async def google_search(
-        self, query: str, *, location: str = "US"
-    ) -> dict:  # Purpose of location is just for language
-        # params = {
-        #     "q": query,
-        # }
-
-        headers = {
-            "X-User-Agent": "desktop",
-            "X-RapidAPI-Key": self.api_key,
+    async def google_search(self, query: str) -> dict:
+        params = {
+            "query": query,
+            "api_key": self.api_key,
+            "search_depth": "advanced",
+            "include_answer": True,
+            "max_results": 20,
         }
 
-        if location:
-            headers["X-Proxy-Location"] = location
-
-        async with self.session.get(self.URL / f"search/q={quote_plus(query)}", headers=headers) as resp:
+        async with self.session.get(self.URL / "search", params=params) as resp:
             return await resp.json()

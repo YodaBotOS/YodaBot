@@ -12,9 +12,7 @@ class Translate:
     PARENT = "projects/{project_id}"
     URL = "https://translation.googleapis.com/v3/{parent}"
     SCORE_CUTOFF = 50  # For get_language. If the score is lower than this, return None.
-    INPUT_TOOLS_URI = (
-        "https://inputtools.google.com/request"  # ?text={text}&itc={language_code}-t-i0-und&num={num_choices}
-    )
+    INPUT_TOOLS_URI = "https://inputtools.google.com/request"  # ?text={text}&itc={language_code}-t-i0-und&num={num_choices}
     INPUT_TOOLS_ITC = {
         "zh-CN": "zh-t-i0-pinyin",
         "zh-TW": "zh-t-i0-pinyin",
@@ -40,7 +38,9 @@ class Translate:
             "sv-SE": "sv",
         }
 
-    async def get_languages(self, *, force_call=False, add_to_cache=True) -> list[dict[str, str | bool]]:
+    async def get_languages(
+        self, *, force_call=False, add_to_cache=True
+    ) -> list[dict[str, str | bool]]:
         if not force_call and self.languages:
             return self.languages
 
@@ -49,7 +49,9 @@ class Translate:
         params = {"displayLanguageCode": "en"}
         headers = {"Authorization": f"Bearer {key}"}
 
-        async with self.session.get(self.url + "/supportedLanguages", params=params, headers=headers) as resp:
+        async with self.session.get(
+            self.url + "/supportedLanguages", params=params, headers=headers
+        ) as resp:
             resp.raise_for_status()
 
             js = await resp.json()
@@ -79,7 +81,9 @@ class Translate:
 
         return self.languages
 
-    def get_language(self, query: str, *, use_difflib=True) -> dict[str, str | int | float] | None:
+    def get_language(
+        self, query: str, *, use_difflib=True
+    ) -> dict[str, str | int | float] | None:
         if not self.languages:
             raise Exception("Languages not loaded")
 
@@ -88,7 +92,9 @@ class Translate:
         if use_difflib:
             res = find_one_difflib(query.lower(), lang_names)
         else:
-            res = find_one_fuzzy(query.lower(), lang_names, score_cutoff=self.SCORE_CUTOFF)
+            res = find_one_fuzzy(
+                query.lower(), lang_names, score_cutoff=self.SCORE_CUTOFF
+            )
 
         if not res:
             return None
@@ -108,16 +114,34 @@ class Translate:
         for lang_data in self.languages:
             if only:
                 if only == "displayName":
-                    langs.append(lang_data["displayName"].lower() if lowered else lang_data["displayName"])
+                    langs.append(
+                        lang_data["displayName"].lower()
+                        if lowered
+                        else lang_data["displayName"]
+                    )
                 elif only == "languageCode":
-                    langs.append(lang_data["languageCode"].lower() if lowered else lang_data["languageCode"])
+                    langs.append(
+                        lang_data["languageCode"].lower()
+                        if lowered
+                        else lang_data["languageCode"]
+                    )
             else:
-                langs.append(lang_data["displayName"].lower() if lowered else lang_data["displayName"])
-                langs.append(lang_data["languageCode"].lower() if lowered else lang_data["displayName"])
+                langs.append(
+                    lang_data["displayName"].lower()
+                    if lowered
+                    else lang_data["displayName"]
+                )
+                langs.append(
+                    lang_data["languageCode"].lower()
+                    if lowered
+                    else lang_data["displayName"]
+                )
 
         return langs
 
-    async def detect_language(self, text: str, *, raw=False) -> dict[str, str | int | float] | None:
+    async def detect_language(
+        self, text: str, *, raw=False
+    ) -> dict[str, str | int | float] | None:
         key = get_gcp_token(from_gcloud=True)
 
         headers = {"Authorization": f"Bearer {key}"}
@@ -128,7 +152,9 @@ class Translate:
 
         data = json.dumps(data)
 
-        async with self.session.post(self.url + ":detectLanguage", data=data, headers=headers) as resp:
+        async with self.session.post(
+            self.url + ":detectLanguage", data=data, headers=headers
+        ) as resp:
             resp.raise_for_status()
 
             js = await resp.json()
@@ -247,7 +273,9 @@ class Translate:
 
         data = json.dumps(data)
 
-        async with self.session.post(self.url + ":translateText", data=data, headers=headers) as resp:
+        async with self.session.post(
+            self.url + ":translateText", data=data, headers=headers
+        ) as resp:
             resp.raise_for_status()
 
             js = await resp.json()

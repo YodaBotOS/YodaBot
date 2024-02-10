@@ -26,7 +26,12 @@ class Context(commands.Context):
         **kwargs,
     ):
         root_parent = self.command.root_parent if self.command else None
-        if root_parent != self.bot.get_command("jishaku") and embed_content and not embed and not embeds:
+        if (
+            root_parent != self.bot.get_command("jishaku")
+            and embed_content
+            and not embed
+            and not embeds
+        ):
             embed = discord.Embed(description=content, color=self.bot.color)
             content = None
 

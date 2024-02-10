@@ -27,7 +27,9 @@ class OpenAI:
     }
 
     STUDY_NOTES_SYSTEM = "You are a helpful assistant that can make some key points when studying about a certain topic. Do not explain the topic in detail, but rather make some key points that you should know when studying about it. If the user asks for multiple of them, send them in a numbered list."
-    STUDY_NOTES_START_STRING = "What are {amount} key points I should know when studying {topic}?"
+    STUDY_NOTES_START_STRING = (
+        "What are {amount} key points I should know when studying {topic}?"
+    )
     STUDY_NOTES_PARAMS = {
         "model": "gpt-4",
         # "temperature": 0.3,
@@ -158,14 +160,19 @@ class OpenAI:
         return response["choices"][0]["message"]["content"].strip()
 
     # --- Study Notes ---
-    async def study_notes(self, topic: str, *, user: int, amount: int = 5, raw: bool = False) -> str | typing.Any:
+    async def study_notes(
+        self, topic: str, *, user: int, amount: int = 5, raw: bool = False
+    ) -> str | typing.Any:
         amount = min(max(1, amount), 10)  # only numbers between 1-10 only allowed
 
         prompt = self.STUDY_NOTES_START_STRING.format(topic=topic, amount=amount)
 
         response = await self.client.chat.completions.create(
             **self.STUDY_NOTES_PARAMS,
-            messages=[{"role": "system", "content": self.STUDY_NOTES_SYSTEM}, {"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": self.STUDY_NOTES_SYSTEM},
+                {"role": "user", "content": prompt},
+            ],
             user=str(user),
         )
 
@@ -180,18 +187,29 @@ class OpenAI:
 
     # --- Wordtune ---
     async def wordtune(
-        self, text: str, tones: list[str], amount: int = 5, *, user: int, raw: bool = False
+        self,
+        text: str,
+        tones: list[str],
+        amount: int = 5,
+        *,
+        user: int,
+        raw: bool = False,
     ) -> str | typing.Any:
         amount = min(max(1, amount), 10)  # only numbers between 1-10 only allowed
 
         if isinstance(tones, list):
             tones = ", ".join(tones)
 
-        prompt = self.WORDTUNES_START_STRING.format(text=text, amount=amount, tones=tones)
+        prompt = self.WORDTUNES_START_STRING.format(
+            text=text, amount=amount, tones=tones
+        )
 
         response = await self.client.chat.completions.create(
             **self.WORDTUNES_PARAMS,
-            messages=[{"role": "system", "content": self.WORDTUNES_SYSTEM}, {"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": self.WORDTUNES_SYSTEM},
+                {"role": "user", "content": prompt},
+            ],
             user=str(user),
         )
 

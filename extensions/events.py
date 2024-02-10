@@ -26,7 +26,9 @@ class Events(commands.Cog):
     async def on_ready(self):
         if not self.bot.connected:
             self.bot.connected = True
-            print(f"Bot ({self.bot.user} with ID {self.bot.user.id}) is ready and online!")
+            print(
+                f"Bot ({self.bot.user} with ID {self.bot.user.id}) is ready and online!"
+            )
             print(f'Prefix is: "{self.bot.main_prefix}"')
         else:
             print("Bot reconnected!")
@@ -41,7 +43,9 @@ class Events(commands.Cog):
 
         if not self.bot.is_selfhosted:
             if re.fullmatch(rf"<@!?{self.bot.user.id}>", msg.content):
-                return await msg.channel.send(f"My prefix is `{self.bot.main_prefix}`! You can also mention me!")
+                return await msg.channel.send(
+                    f"My prefix is `{self.bot.main_prefix}`! You can also mention me!"
+                )
 
     @commands.Cog.listener()
     async def on_message_edit(self, b, a):
@@ -51,7 +55,14 @@ class Events(commands.Cog):
         return await self.bot.process_commands(a)
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx: Context, error: Exception, *, force: bool = False, send_msg: bool = True):
+    async def on_command_error(
+        self,
+        ctx: Context,
+        error: Exception,
+        *,
+        force: bool = False,
+        send_msg: bool = True,
+    ):
         ignored = (commands.CommandNotFound,)
 
         if not force:

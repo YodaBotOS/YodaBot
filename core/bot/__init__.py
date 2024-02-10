@@ -16,7 +16,6 @@ import wavelink
 from discord import app_commands
 from discord.ext import commands
 from rich.traceback import install as install_rich_traceback
-# from wavelink.ext import spotify
 
 import config as cfg
 from core.context import Context
@@ -24,6 +23,9 @@ from core.openai import OpenAI
 from core.ping import Ping
 from utils.app_commands import CommandTree
 from utils.translator import Translator
+
+# from wavelink.ext import spotify
+
 
 if TYPE_CHECKING:
     from mypy_boto3_s3 import Client as S3Client
@@ -74,11 +76,15 @@ class Bot(commands.Bot):
         description: str = kwargs.pop("description", None) or cfg.DESCRIPTION
         activity: discord.Activity = (
             kwargs.pop("activity", None)
-            or discord.Activity(type=discord.ActivityType.listening, name=f'"{self.main_prefix}help"')
+            or discord.Activity(
+                type=discord.ActivityType.listening, name=f'"{self.main_prefix}help"'
+            )
             if not self.is_selfhosted
             else None
         )
-        help_command: commands.HelpCommand = kwargs.pop("help_command", None) or commands.MinimalHelpCommand()
+        help_command: commands.HelpCommand = (
+            kwargs.pop("help_command", None) or commands.MinimalHelpCommand()
+        )
         strip_after_prefix: bool = kwargs.pop("strip_after_prefix", None) or True
         tree_cls: app_commands.CommandTree = kwargs.pop("tree_cls", None) or CommandTree
         case_insensitive: bool = kwargs.pop("case_insensitive", True)
@@ -111,7 +117,9 @@ class Bot(commands.Bot):
 
         self.config = cfg
 
-        if google_credentials_path := getattr(cfg, "GOOGLE_APPLICATION_CREDENTIALS_PATH", None):
+        if google_credentials_path := getattr(
+            cfg, "GOOGLE_APPLICATION_CREDENTIALS_PATH", None
+        ):
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = google_credentials_path
 
         os.environ["OPENAI_API_KEY"] = cfg.OPENAI_KEY

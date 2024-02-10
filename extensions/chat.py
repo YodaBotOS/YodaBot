@@ -38,7 +38,9 @@ class Chat(commands.Cog):
     async def cog_unload(self):
         del self.openai
 
-    CHAT_SLASH_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.member, wait=False)
+    CHAT_SLASH_MAX_CONCURRENCY = commands.MaxConcurrency(
+        1, per=commands.BucketType.member, wait=False
+    )
 
     @commands.command("chat", aliases=["assistant"])
     # @commands.max_concurrency(1, commands.BucketType.member)
@@ -56,12 +58,18 @@ class Chat(commands.Cog):
                         text = await self.openai.chat(ctx, text)
                     except Exception as e:
                         await ctx.send(f"Something went wrong, try again later.")
-                        self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
+                        self.bot.dispatch(
+                            "command_error", ctx, e, force=True, send_msg=False
+                        )
                         return
 
                     embed = discord.Embed(color=self.bot.color)
-                    embed.set_author(name="Chat:", icon_url=ctx.author.display_avatar.url)
-                    embed.add_field(name="Input/Prompt:", value=text_prompt, inline=False)
+                    embed.set_author(
+                        name="Chat:", icon_url=ctx.author.display_avatar.url
+                    )
+                    embed.add_field(
+                        name="Input/Prompt:", value=text_prompt, inline=False
+                    )
                     embed.add_field(name="Output/Response:", value=text, inline=False)
                     embed.set_footer(
                         text=f"Powered by OpenAI GPT-4.\n\U000026a0: This is on beta and may not be accurate and can spread biases, etc."
@@ -106,13 +114,21 @@ class Chat(commands.Cog):
                     try:
                         text = await self.openai.chat.reply(ctx, text_prompt, msg)
                     except Exception as e:
-                        await ctx.send(f"Something went wrong. Try again later.", view=view)
-                        self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
+                        await ctx.send(
+                            f"Something went wrong. Try again later.", view=view
+                        )
+                        self.bot.dispatch(
+                            "command_error", ctx, e, force=True, send_msg=False
+                        )
                         return
 
                     embed = discord.Embed(color=self.bot.color)
-                    embed.set_author(name="Chat:", icon_url=ctx.author.display_avatar.url)
-                    embed.add_field(name="Input/Prompt:", value=text_prompt, inline=False)
+                    embed.set_author(
+                        name="Chat:", icon_url=ctx.author.display_avatar.url
+                    )
+                    embed.add_field(
+                        name="Input/Prompt:", value=text_prompt, inline=False
+                    )
                     embed.add_field(name="Output/Response:", value=text, inline=False)
                     embed.set_footer(
                         text=f"Powered by OpenAI GPT-4.\n\U000026a0: This is on beta and may not be accurate and can spread biases, etc."
@@ -127,8 +143,16 @@ class Chat(commands.Cog):
             await self.CHAT_SLASH_MAX_CONCURRENCY.release(ctx.message)
 
     @app_commands.command(name=_T("chat"))
-    @app_commands.describe(text="The text to chat with the AI (once)", role="The role you want the chatbot to be")
-    async def chat_slash(self, interaction: discord.Interaction, text: str = None, role: str = "assistant"):
+    @app_commands.describe(
+        text="The text to chat with the AI (once)",
+        role="The role you want the chatbot to be",
+    )
+    async def chat_slash(
+        self,
+        interaction: discord.Interaction,
+        text: str = None,
+        role: str = "assistant",
+    ):
         """
         Chat with an AI using the new GPT-4 OpenAI Model.
         """
@@ -145,11 +169,15 @@ class Chat(commands.Cog):
                 try:
                     text = await self.openai.chat(interaction, text, role=role)
                 except Exception as e:
-                    await interaction.followup.send(f"Something went wrong, try again later.", ephemeral=True)
+                    await interaction.followup.send(
+                        f"Something went wrong, try again later.", ephemeral=True
+                    )
                     await self.bot.tree.on_error(interaction, (e, False))
 
                 embed = discord.Embed(color=interaction.client.color)
-                embed.set_author(name="Chat:", icon_url=interaction.user.display_avatar.url)
+                embed.set_author(
+                    name="Chat:", icon_url=interaction.user.display_avatar.url
+                )
                 embed.description = text
 
                 return await interaction.followup.send(embed=embed)
@@ -168,17 +196,32 @@ class Chat(commands.Cog):
             await self.CHAT_SLASH_MAX_CONCURRENCY.release(ctx.message)
 
     @chat_slash.autocomplete("role")
-    async def chat_slash_autocomplete(self, interaction: discord.Interaction, role: str):
+    async def chat_slash_autocomplete(
+        self, interaction: discord.Interaction, role: str
+    ):
         roles = [x.title() for x in self.openai.chat.CHAT_ROLES.keys()]
 
-        results = [x for x in roles if x.lower().startswith(role.lower()) or role.lower() in x.lower()][:25]
+        results = [
+            x
+            for x in roles
+            if x.lower().startswith(role.lower()) or role.lower() in x.lower()
+        ][:25]
 
         results = results or roles[:25]
 
         return [app_commands.Choice(name=x, value=x) for x in results]
 
     @commands.command(
-        "googlegpt", aliases=["googlechat", "bard", "google-gpt", "google_gpt", "google-chat", "google_chat", "gg"]
+        "googlegpt",
+        aliases=[
+            "googlechat",
+            "bard",
+            "google-gpt",
+            "google_gpt",
+            "google-chat",
+            "google_chat",
+            "gg",
+        ],
     )
     async def google_gpt(self, ctx: Context, *, text: str = None):
         """
@@ -194,12 +237,18 @@ class Chat(commands.Cog):
                         text = await self.google(ctx, text)
                     except Exception as e:
                         await ctx.send(f"Something went wrong, try again later.")
-                        self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
+                        self.bot.dispatch(
+                            "command_error", ctx, e, force=True, send_msg=False
+                        )
                         return
 
                     embed = discord.Embed(color=self.bot.color)
-                    embed.set_author(name="GoogleGPT Chat:", icon_url=ctx.author.display_avatar.url)
-                    embed.add_field(name="Input/Prompt:", value=text_prompt, inline=False)
+                    embed.set_author(
+                        name="GoogleGPT Chat:", icon_url=ctx.author.display_avatar.url
+                    )
+                    embed.add_field(
+                        name="Input/Prompt:", value=text_prompt, inline=False
+                    )
                     embed.add_field(name="Output/Response:", value=text, inline=False)
                     embed.set_footer(
                         text=f"Powered by OpenAI GPT-4 x Google Search.\n\U000026a0: This is on beta and may not be accurate and can spread biases, etc."
@@ -208,7 +257,9 @@ class Chat(commands.Cog):
                     return await ctx.send(embed=embed)
 
             await self.google.new(ctx)
-            view = ChatView(openai=self.google, user=ctx.author, ephemeral=False, google=True)
+            view = ChatView(
+                openai=self.google, user=ctx.author, ephemeral=False, google=True
+            )
 
             prev_msg = await ctx.send(
                 "YodaBot GoogleGPT chat has started. Say `stop`, `goodbye`, `cancel`, `exit` or `end` to end "
@@ -244,13 +295,21 @@ class Chat(commands.Cog):
                     try:
                         text = await self.google.reply(ctx, text_prompt)
                     except Exception as e:
-                        await ctx.send(f"Something went wrong. Try again later.", view=view)
-                        self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
+                        await ctx.send(
+                            f"Something went wrong. Try again later.", view=view
+                        )
+                        self.bot.dispatch(
+                            "command_error", ctx, e, force=True, send_msg=False
+                        )
                         return
 
                     embed = discord.Embed(color=self.bot.color)
-                    embed.set_author(name="GoogleGPT Chat:", icon_url=ctx.author.display_avatar.url)
-                    embed.add_field(name="Input/Prompt:", value=text_prompt, inline=False)
+                    embed.set_author(
+                        name="GoogleGPT Chat:", icon_url=ctx.author.display_avatar.url
+                    )
+                    embed.add_field(
+                        name="Input/Prompt:", value=text_prompt, inline=False
+                    )
                     embed.add_field(name="Output/Response:", value=text, inline=False)
                     embed.set_footer(
                         text=f"Powered by OpenAI GPT-4 x Google Search.\n\U000026a0: This is on beta and may not be accurate and can spread biases, etc."
@@ -266,7 +325,9 @@ class Chat(commands.Cog):
 
     @app_commands.command(name="google-gpt")
     @app_commands.describe(text="The text to chat with the AI (once)")
-    async def google_gpt_slash(self, interaction: discord.Interaction, text: str = None):
+    async def google_gpt_slash(
+        self, interaction: discord.Interaction, text: str = None
+    ):
         """
         OpenAI GPT-4 x Google Search. ON BETA!!
         """
@@ -283,17 +344,23 @@ class Chat(commands.Cog):
                 try:
                     text = await self.google(interaction, text)
                 except Exception as e:
-                    await interaction.followup.send(f"Something went wrong, try again later.", ephemeral=True)
+                    await interaction.followup.send(
+                        f"Something went wrong, try again later.", ephemeral=True
+                    )
                     await self.bot.tree.on_error(interaction, (e, False))
 
                 embed = discord.Embed(color=interaction.client.color)
-                embed.set_author(name="GoogleGPT Chat:", icon_url=interaction.user.display_avatar.url)
+                embed.set_author(
+                    name="GoogleGPT Chat:", icon_url=interaction.user.display_avatar.url
+                )
                 embed.description = text
 
                 return await interaction.followup.send(embed=embed)
 
             await self.google.new(ctx)
-            view = ChatView(openai=self.google, user=ctx.author, ephemeral=True, google=True)
+            view = ChatView(
+                openai=self.google, user=ctx.author, ephemeral=True, google=True
+            )
 
             await interaction.followup.send(
                 "YodaBot GoogleGPT chat has started. click the `Stop` button to stop chatting.",

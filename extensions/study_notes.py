@@ -37,7 +37,9 @@ class StudyNotes(commands.Cog):
     async def cog_unload(self):
         del self.openai
 
-    STUDY_NOTES_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.member, wait=False)
+    STUDY_NOTES_MAX_CONCURRENCY = commands.MaxConcurrency(
+        1, per=commands.BucketType.member, wait=False
+    )
 
     @commands.command("study-notes")
     @commands.cooldown(1, 5, commands.BucketType.member)
@@ -59,13 +61,17 @@ class StudyNotes(commands.Cog):
 
         try:
             try:
-                notes = await self.openai.study_notes(topic, user=ctx.author.id, amount=amount)
+                notes = await self.openai.study_notes(
+                    topic, user=ctx.author.id, amount=amount
+                )
             except Exception as e:
                 self.bot.dispatch("command_error", ctx, e, force=True, send_msg=False)
                 return await ctx.send(f"Something went wrong, try again later.")
 
             embed = discord.Embed(color=self.bot.color)
-            embed.set_author(name="Study Notes:", icon_url=ctx.author.display_avatar.url)
+            embed.set_author(
+                name="Study Notes:", icon_url=ctx.author.display_avatar.url
+            )
             embed.title = f"Study Notes about {topic}:"
             embed.description = notes
 
@@ -95,19 +101,27 @@ class StudyNotes(commands.Cog):
         await self.STUDY_NOTES_MAX_CONCURRENCY.acquire(ctx.message)
 
         if len(topic) > 500:
-            return await interaction.followup.send("Topic must be less than 500 characters.", ephemeral=True)
+            return await interaction.followup.send(
+                "Topic must be less than 500 characters.", ephemeral=True
+            )
 
         await interaction.response.defer()
 
         try:
             try:
-                notes = await self.openai.study_notes(topic, user=interaction.user.id, amount=amount)
+                notes = await self.openai.study_notes(
+                    topic, user=interaction.user.id, amount=amount
+                )
             except Exception as e:
                 self.bot.tree.on_error(interaction, (e, False))
-                return await interaction.followup.send(f"Something went wrong, try again later.", ephemeral=True)
+                return await interaction.followup.send(
+                    f"Something went wrong, try again later.", ephemeral=True
+                )
 
             embed = discord.Embed(color=self.bot.color)
-            embed.set_author(name="Study Notes:", icon_url=ctx.author.display_avatar.url)
+            embed.set_author(
+                name="Study Notes:", icon_url=ctx.author.display_avatar.url
+            )
             embed.title = f"Study Notes about {topic}:"
             embed.description = notes
 

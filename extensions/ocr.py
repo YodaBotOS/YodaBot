@@ -55,8 +55,12 @@ class OCR(commands.Cog):
         del self.bot.ocr
         del self.bot.trocr
 
-        self.bot.tree.remove_command(self.ctx_menu_ocr.name, type=self.ctx_menu_ocr.type)
-        self.bot.tree.remove_command(self.ctx_menu_trocr.name, type=self.ctx_menu_trocr.type)
+        self.bot.tree.remove_command(
+            self.ctx_menu_ocr.name, type=self.ctx_menu_ocr.type
+        )
+        self.bot.tree.remove_command(
+            self.ctx_menu_trocr.name, type=self.ctx_menu_trocr.type
+        )
 
     async def ocr_image(self, image) -> discord.ui.View | discord.Embed:
         text = await self.ocr.request(image)
@@ -65,7 +69,11 @@ class OCR(commands.Cog):
             url = await self.bot.mystbin.create_paste("result.txt", text, syntax="txt")
 
             view = discord.ui.View()
-            view.add_item(discord.ui.Button(style=discord.ButtonStyle.url, label="View on mystb.in", url=url))
+            view.add_item(
+                discord.ui.Button(
+                    style=discord.ButtonStyle.url, label="View on mystb.in", url=url
+                )
+            )
 
             return view
 
@@ -75,7 +83,9 @@ class OCR(commands.Cog):
 
         return embed
 
-    async def translate_ocr(self, image, lang: str, *, with_original_text: bool = True) -> discord.Embed:
+    async def translate_ocr(
+        self, image, lang: str, *, with_original_text: bool = True
+    ) -> discord.Embed:
         res = await self.trocr.run(image, lang)
 
         embed = discord.Embed(color=self.bot.color)
@@ -86,16 +96,22 @@ class OCR(commands.Cog):
 
         if with_original_text:
             if len(res.original_text) > 2000:
-                url = await self.bot.mystbin.create_paste(filename="original-text.txt", content=res.original_text)
+                url = await self.bot.mystbin.create_paste(
+                    filename="original-text.txt", content=res.original_text
+                )
 
                 embed.description += f"**Original Text:**\n{url} (result is too long to be displayed)\n\n"
             else:
                 embed.description += f"**Original Text:**\n{res.original_text}\n\n"
 
         if len(res.translated_text) > 2000:
-            url = await self.bot.mystbin.create_paste(filename="translated-text.txt", content=res.translated_text)
+            url = await self.bot.mystbin.create_paste(
+                filename="translated-text.txt", content=res.translated_text
+            )
 
-            embed.description += f"**Translated Text:**\n{url} (result is too long to be displayed)"
+            embed.description += (
+                f"**Translated Text:**\n{url} (result is too long to be displayed)"
+            )
         else:
             embed.description += f"**Translated Text:**\n{res.translated_text}"
 
@@ -123,10 +139,14 @@ class OCR(commands.Cog):
             url = url.strip()
 
         if image is None and url is None:
-            return await interaction.response.send_message("Please provide an image or a URL!", ephemeral=True)
+            return await interaction.response.send_message(
+                "Please provide an image or a URL!", ephemeral=True
+            )
 
         if image and url:
-            return await interaction.response.send_message("Please provide only one of image or url!", ephemeral=True)
+            return await interaction.response.send_message(
+                "Please provide only one of image or url!", ephemeral=True
+            )
 
         if image is not None:
             image = image.url
@@ -137,7 +157,9 @@ class OCR(commands.Cog):
             ):
                 image = match.group(0)
             else:
-                return await interaction.response.send_message("Please provide a valid URL!", ephemeral=True)
+                return await interaction.response.send_message(
+                    "Please provide a valid URL!", ephemeral=True
+                )
 
         await interaction.response.defer()
 
@@ -171,7 +193,9 @@ class OCR(commands.Cog):
             else:
                 return await ctx.send(embed=resp)
 
-    async def image_to_text_context_menu(self, interaction: discord.Interaction, message: discord.Message):
+    async def image_to_text_context_menu(
+        self, interaction: discord.Interaction, message: discord.Message
+    ):
         url = None
 
         if attach := message.attachments:
@@ -191,14 +215,18 @@ class OCR(commands.Cog):
             url = match.group(0)
 
         if not url:
-            return await interaction.response.send_message("There is no image to convert to text!", ephemeral=True)
+            return await interaction.response.send_message(
+                "There is no image to convert to text!", ephemeral=True
+            )
 
         await interaction.response.defer(ephemeral=True)
 
         resp = await self.ocr_image(url)
 
         if isinstance(resp, discord.ui.View):
-            return await interaction.followup.send("Result too long.", view=resp, ephemeral=True)
+            return await interaction.followup.send(
+                "Result too long.", view=resp, ephemeral=True
+            )
         else:
             return await interaction.followup.send(embed=resp, ephemeral=True)
 
@@ -224,10 +252,14 @@ class OCR(commands.Cog):
             url = url.strip()
 
         if image is None and url is None:
-            return await interaction.response.send_message("Please provide an image or a URL!", ephemeral=True)
+            return await interaction.response.send_message(
+                "Please provide an image or a URL!", ephemeral=True
+            )
 
         if image and url:
-            return await interaction.response.send_message("Please provide only one of image or url!", ephemeral=True)
+            return await interaction.response.send_message(
+                "Please provide only one of image or url!", ephemeral=True
+            )
 
         if image is not None:
             image = image.url
@@ -238,12 +270,16 @@ class OCR(commands.Cog):
             ):
                 image = match.group(0)
             else:
-                return await interaction.response.send_message("Please provide a valid URL!", ephemeral=True)
+                return await interaction.response.send_message(
+                    "Please provide a valid URL!", ephemeral=True
+                )
 
         lang = await self.trocr.get_language(language)
 
         if not lang:
-            return await interaction.response.send_message("Please provide a valid language!", ephemeral=True)
+            return await interaction.response.send_message(
+                "Please provide a valid language!", ephemeral=True
+            )
 
         await interaction.response.defer()
 
@@ -252,7 +288,9 @@ class OCR(commands.Cog):
         return await interaction.followup.send(embed=embed)
 
     @trocr_slash.autocomplete("language")
-    async def trocr_autocomplete_language(self, interaction: discord.Interaction, current: str):
+    async def trocr_autocomplete_language(
+        self, interaction: discord.Interaction, current: str
+    ):
         amount = 25
 
         if not current:
@@ -262,7 +300,9 @@ class OCR(commands.Cog):
 
         langs = langs[amount:]
 
-        return [app_commands.Choice(name=lang["name"], value=lang["name"]) for lang in langs][amount:]
+        return [
+            app_commands.Choice(name=lang["name"], value=lang["name"]) for lang in langs
+        ][amount:]
 
     @commands.group(
         name="translate-image",
@@ -292,7 +332,9 @@ class OCR(commands.Cog):
 
     @app_commands.command(name=_T("translate-image-languages"))
     @app_commands.describe(query=_T("The language you want to search for."))
-    async def trocr_languages_slash(self, interaction: discord.Interaction, query: str = None):
+    async def trocr_languages_slash(
+        self, interaction: discord.Interaction, query: str = None
+    ):
         """
         Shows a list of languages that can be translated to.
         """
@@ -305,7 +347,9 @@ class OCR(commands.Cog):
             lang = await self.trocr.search_language(query)
 
             if not lang:
-                return await interaction.followup.send(f"Language `{query}` not found.", ephemeral=True)
+                return await interaction.followup.send(
+                    f"Language `{query}` not found.", ephemeral=True
+                )
 
             lang = lang[0]
 
@@ -315,7 +359,9 @@ class OCR(commands.Cog):
             embed = discord.Embed(color=self.bot.color)
             embed.title = lang_name
 
-            embed.description = f"**Language Name:** {lang_name}\n**Language Code:** {lang_code}"
+            embed.description = (
+                f"**Language Name:** {lang_name}\n**Language Code:** {lang_code}"
+            )
 
             return await interaction.followup.send(embed=embed)
 
@@ -328,7 +374,9 @@ class OCR(commands.Cog):
         return await menu.start(ctx, channel=interaction.followup)
 
     @trocr_languages_slash.autocomplete("query")
-    async def trocr_languages_autocomplete_query(self, interaction: discord.Interaction, current: str):
+    async def trocr_languages_autocomplete_query(
+        self, interaction: discord.Interaction, current: str
+    ):
         amount = 25
 
         if not current:
@@ -338,7 +386,9 @@ class OCR(commands.Cog):
 
         langs = langs[amount:]
 
-        return [app_commands.Choice(name=lang["name"], value=lang["name"]) for lang in langs][amount:]
+        return [
+            app_commands.Choice(name=lang["name"], value=lang["name"]) for lang in langs
+        ][amount:]
 
     @trocr_command.command(name="languages")
     async def trocr_languages_slash(self, ctx: Context, query: str = None):
@@ -362,7 +412,9 @@ class OCR(commands.Cog):
             embed = discord.Embed(color=self.bot.color)
             embed.title = lang_name
 
-            embed.description = f"**Language Name:** {lang_name}\n**Language Code:** {lang_code}"
+            embed.description = (
+                f"**Language Name:** {lang_name}\n**Language Code:** {lang_code}"
+            )
 
             return await ctx.send(embed=embed)
 
@@ -372,7 +424,9 @@ class OCR(commands.Cog):
         menu = YodaMenuPages(source, delete_message_after=True)
         return await menu.start(ctx)
 
-    async def trocr_context_menu(self, interaction: discord.Interaction, message: discord.Message):
+    async def trocr_context_menu(
+        self, interaction: discord.Interaction, message: discord.Message
+    ):
         url = None
 
         if attach := message.attachments:
@@ -392,10 +446,14 @@ class OCR(commands.Cog):
             url = match.group(0)
 
         if not url:
-            return await interaction.response.send_message("There is no image!", ephemeral=True)
+            return await interaction.response.send_message(
+                "There is no image!", ephemeral=True
+            )
 
         class Modal(discord.ui.Modal, title="Translate OCR"):
-            language = discord.ui.TextInput(label="Language", placeholder="Enter a Language")
+            language = discord.ui.TextInput(
+                label="Language", placeholder="Enter a Language"
+            )
 
             def __init__(self, cls):
                 super().__init__()
@@ -407,7 +465,9 @@ class OCR(commands.Cog):
                 lang = await self.cls.trocr.get_language(language)
 
                 if not lang:
-                    return await interaction.response.send_message("Please provide a valid language!", ephemeral=True)
+                    return await interaction.response.send_message(
+                        "Please provide a valid language!", ephemeral=True
+                    )
 
                 await interaction.response.defer(ephemeral=True)
 

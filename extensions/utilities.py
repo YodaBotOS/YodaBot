@@ -46,12 +46,29 @@ class Utilities(commands.Cog):
             embed = discord.Embed(title="Ping/Latency:")
 
             if ctx.author.is_on_mobile():
-                embed.add_field(name=f'{self.bot.ping.EMOJIS["bot"]} Bot (Websocket)', value=f"{bot_p}ms")
-                embed.add_field(name=f'{self.bot.ping.EMOJIS["discord"]} Discord (API)', value=f"{discord_p}ms")
-                embed.add_field(name=f'{self.bot.ping.EMOJIS["typing"]} Discord (Typing)', value=f"{typing_p}ms")
-                embed.add_field(name=f'{self.bot.ping.EMOJIS["yodabot-api"]} API (YodaBot)', value=f"{yodabot_api_p}ms")
-                embed.add_field(name=f'{self.bot.ping.EMOJIS["postgresql"]} Database', value=f"{psql_p}ms")
-                embed.add_field(name=f'{self.bot.ping.EMOJIS["r2"]} CDN (R2)', value=f"{r2_p}ms")
+                embed.add_field(
+                    name=f'{self.bot.ping.EMOJIS["bot"]} Bot (Websocket)',
+                    value=f"{bot_p}ms",
+                )
+                embed.add_field(
+                    name=f'{self.bot.ping.EMOJIS["discord"]} Discord (API)',
+                    value=f"{discord_p}ms",
+                )
+                embed.add_field(
+                    name=f'{self.bot.ping.EMOJIS["typing"]} Discord (Typing)',
+                    value=f"{typing_p}ms",
+                )
+                embed.add_field(
+                    name=f'{self.bot.ping.EMOJIS["yodabot-api"]} API (YodaBot)',
+                    value=f"{yodabot_api_p}ms",
+                )
+                embed.add_field(
+                    name=f'{self.bot.ping.EMOJIS["postgresql"]} Database',
+                    value=f"{psql_p}ms",
+                )
+                embed.add_field(
+                    name=f'{self.bot.ping.EMOJIS["r2"]} CDN (R2)', value=f"{r2_p}ms"
+                )
             else:
                 spaces = 18
 
@@ -99,7 +116,9 @@ class Utilities(commands.Cog):
         else:
             obj = self.bot.get_command(command)
             if obj is None:
-                return await ctx.send("Could not find command.", embed_content=False, ephemeral=True)
+                return await ctx.send(
+                    "Could not find command.", embed_content=False, ephemeral=True
+                )
 
             src = obj.callback.__code__
             module = obj.callback.__module__
@@ -141,10 +160,13 @@ class Utilities(commands.Cog):
         return await ctx.send(final_url, embed_content=False)
 
     @source.autocomplete("command")
-    async def source_command_autocomplete(self, interaction: discord.Interaction, current: str):
+    async def source_command_autocomplete(
+        self, interaction: discord.Interaction, current: str
+    ):
         if not current:
             return [
-                app_commands.Choice(name=x.qualified_name, value=x.qualified_name) for x in self.bot.walk_commands()
+                app_commands.Choice(name=x.qualified_name, value=x.qualified_name)
+                for x in self.bot.walk_commands()
             ][:25]
 
         _commands = self.bot.all_commands
@@ -182,7 +204,10 @@ class Utilities(commands.Cog):
 
         commands_match = {_commands[x] for x in match}
 
-        return [app_commands.Choice(name=x.qualified_name, value=x.qualified_name) for x in commands_match][:25]
+        return [
+            app_commands.Choice(name=x.qualified_name, value=x.qualified_name)
+            for x in commands_match
+        ][:25]
 
     @commands.hybrid_command("owner")
     async def owner(self, ctx: Context):
@@ -236,7 +261,9 @@ class Utilities(commands.Cog):
             else:
                 synced = await ctx.bot.tree.sync()
 
-            await ctx.send(f"Synced {len(synced)} commands {'globally' if spec is None else 'to the current guild.'}")
+            await ctx.send(
+                f"Synced {len(synced)} commands {'globally' if spec is None else 'to the current guild.'}"
+            )
             return
 
         ret = 0

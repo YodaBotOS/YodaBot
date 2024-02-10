@@ -92,7 +92,9 @@ class Maps(commands.Cog):
 
         if business_status := place.get("business_status"):
             embed.add_field(
-                name="Business Status:", value=f"`{business_status.lower().replace('_', ' ').title()}`", inline=False
+                name="Business Status:",
+                value=f"`{business_status.lower().replace('_', ' ').title()}`",
+                inline=False,
             )
 
         timezone = None
@@ -118,7 +120,9 @@ class Maps(commands.Cog):
 
                 timezone = f"`UTC{sign}{thr}:{tmin}`"
 
-            timezone_dt = datetime.timezone(datetime.timedelta(hours=int(thr), minutes=int(tmin)))
+            timezone_dt = datetime.timezone(
+                datetime.timedelta(hours=int(thr), minutes=int(tmin))
+            )
 
             timezone_now = datetime.datetime.now(timezone_dt)
             timezone_now_str = timezone_now.strftime(r"%A, %-d %B %Y - %-I:%M %p")
@@ -174,11 +178,16 @@ Periods:
             inline=False,
         )
 
-        embed.set_footer(text=f"Powered by Google Maps", icon_url="https://cdn.yodabot.xyz/google-maps-icon.png")
+        embed.set_footer(
+            text=f"Powered by Google Maps",
+            icon_url="https://cdn.yodabot.xyz/google-maps-icon.png",
+        )
 
         return embed
 
-    MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.member, wait=False)
+    MAX_CONCURRENCY = commands.MaxConcurrency(
+        1, per=commands.BucketType.member, wait=False
+    )
 
     async def handle(self, ctx, func, *args, **kwargs):
         if isinstance(ctx, discord.Interaction):
@@ -204,7 +213,12 @@ Periods:
                 fields=self.NECESSARY_FIELDS,
             )
 
-            img = await maps.render(place_id, map_type=map_type, map_theme=map_theme, geometry=place["geometry"])
+            img = await maps.render(
+                place_id,
+                map_type=map_type,
+                map_theme=map_theme,
+                geometry=place["geometry"],
+            )
             f = discord.File(io.BytesIO(img), filename="map.png")
 
             maps.delete_session()
@@ -216,10 +230,12 @@ Periods:
 
             addr = place["formatted_address"]
             ls = await asyncio.gather(
-                maps.aerial_view(addr, "landscape", "image"), maps.aerial_view(addr, "landscape", "video")
+                maps.aerial_view(addr, "landscape", "image"),
+                maps.aerial_view(addr, "landscape", "video"),
             )
             pr = await asyncio.gather(
-                maps.aerial_view(addr, "portrait", "image"), maps.aerial_view(addr, "portrait", "video")
+                maps.aerial_view(addr, "portrait", "image"),
+                maps.aerial_view(addr, "portrait", "video"),
             )
 
             view = MapsView(maps, place_id, place["photos"], ls, pr)
@@ -248,7 +264,9 @@ Periods:
 
             async def interaction_check(self, interaction: discord.Interaction):
                 if interaction.user != ctx.author:
-                    await interaction.response.send_message("You are not the author of this command!", ephemeral=True)
+                    await interaction.response.send_message(
+                        "You are not the author of this command!", ephemeral=True
+                    )
                     return False
 
                 return True

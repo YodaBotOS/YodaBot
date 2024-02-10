@@ -36,7 +36,13 @@ class LyricAutocompleteSuggestions:
 
 class LyricLocalAPI:
     def __init__(
-        self, session: aiohttp.ClientSession, cdn: tuple, client_id: str, client_secret: str, sp_dc: str, sp_key: str
+        self,
+        session: aiohttp.ClientSession,
+        cdn: tuple,
+        client_id: str,
+        client_secret: str,
+        sp_dc: str,
+        sp_key: str,
     ):
         self.session = session
         self.cdn, self.bucket, self.host = cdn
@@ -48,7 +54,9 @@ class LyricLocalAPI:
         self._client = SpotifyScraper(sp_dc=sp_dc, sp_key=sp_key, session=session)
         self.spotify = Spotify(ClientCredentialsFlow(client_id, client_secret))
 
-    async def get_lyrics(self, track_id_or_query: str, *, raw: bool = False) -> dict | None:
+    async def get_lyrics(
+        self, track_id_or_query: str, *, raw: bool = False
+    ) -> dict | None:
         try:
             track = await self.get_track_info(track_id_or_query)
         except:
@@ -72,7 +80,11 @@ class LyricLocalAPI:
                 f'lyrics/{title.replace(" ", "_")}-{" ".join([a.name.replace(" ", "_") for a in track.artists])}/track.jpg',
             ),
             "background": await self._post_to_cdn(
-                track.artists[0].images[0]["url"] if track.artists[0].images else track.album.images[0]["url"],
+                (
+                    track.artists[0].images[0]["url"]
+                    if track.artists[0].images
+                    else track.album.images[0]["url"]
+                ),
                 f'lyrics/{title.replace(" ", "_")}-{" ".join([a.name.replace(" ", "_") for a in track.artists])}/background.jpg',
             ),
         }
@@ -82,7 +94,10 @@ class LyricLocalAPI:
     async def search_autocomplete(self, query: str, limit: int = 10) -> list[dict]:
         x = await self.spotify.search(query, types=[spotipy2.types.Track], limit=limit)
         items = x["tracks"].items
-        return [{"title": i.name, "artists": [a.name for a in i.artists], "id": i.id} for i in items]
+        return [
+            {"title": i.name, "artists": [a.name for a in i.artists], "id": i.id}
+            for i in items
+        ]
 
     async def get_track_info(self, track_id: str):
         x = await self.spotify.get_track(track_id)
@@ -125,7 +140,9 @@ class Lyrics:
 
         self._local = local
 
-    async def __call__(self, query: str, *, cache: bool = True, get_from_cache: bool | None = None):
+    async def __call__(
+        self, query: str, *, cache: bool = True, get_from_cache: bool | None = None
+    ):
         return self.search(query, cache=cache, get_from_cache=get_from_cache)
 
     def set_cache(self, key, value, ttl=24 * 60 * 60):
@@ -160,7 +177,9 @@ class Lyrics:
 
         return d
 
-    async def search(self, query: str, *, cache: bool = True, get_from_cache: bool | None = None):
+    async def search(
+        self, query: str, *, cache: bool = True, get_from_cache: bool | None = None
+    ):
         q_lower = query.lower()
 
         if (cached := self.get_cache(q_lower)) and get_from_cache is not False:
@@ -181,7 +200,9 @@ class Lyrics:
 
         return res
 
-    async def autocomplete(self, query: str, amount: int = 10, *, slash_autocomplete: bool = False):
+    async def autocomplete(
+        self, query: str, amount: int = 10, *, slash_autocomplete: bool = False
+    ):
         if 1 > amount or amount > 20:
             raise ValueError("Amount must be between 1 and 20")
 
@@ -189,10 +210,15 @@ class Lyrics:
             if self._local:
                 d = await self._local.search_autocomplete(query, limit=amount)
                 if d:
-                    suggestions = [LyricAutocompleteSuggestions(**suggestion) for suggestion in d][:amount]
+                    suggestions = [
+                        LyricAutocompleteSuggestions(**suggestion) for suggestion in d
+                    ][:amount]
 
                     if slash_autocomplete:
-                        return [Choice(name=str(suggestion), value=str(suggestion.id)) for suggestion in suggestions]
+                        return [
+                            Choice(name=str(suggestion), value=str(suggestion.id))
+                            for suggestion in suggestions
+                        ]
 
                     return suggestions
         except:
@@ -203,9 +229,14 @@ class Lyrics:
         async with self.session.get(self.url + "/suggest", params=params) as resp:
             d = await resp.json()
 
-        suggestions = [LyricAutocompleteSuggestions(**suggestion) for suggestion in d][:amount]
+        suggestions = [LyricAutocompleteSuggestions(**suggestion) for suggestion in d][
+            :amount
+        ]
 
         if slash_autocomplete:
-            return [Choice(name=str(suggestion), value=str(suggestion)) for suggestion in suggestions]
+            return [
+                Choice(name=str(suggestion), value=str(suggestion))
+                for suggestion in suggestions
+            ]
 
         return suggestions

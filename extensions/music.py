@@ -56,7 +56,9 @@ class Music(commands.Cog):
             return await menu.start(ctx)
 
     @lyrics.autocomplete("query")
-    async def lyrics_query_autocomplete(self, interaction: discord.Interaction, current: str):
+    async def lyrics_query_autocomplete(
+        self, interaction: discord.Interaction, current: str
+    ):
         if not current:
             return []
 
@@ -82,11 +84,15 @@ class Music(commands.Cog):
                 value=f"**Confidence:** `{confidence}%`",
             )
 
-        embed.set_footer(text=f"Time Elapsed: {round(elapsed, 1)}s\nPowered by Yoda API")
+        embed.set_footer(
+            text=f"Time Elapsed: {round(elapsed, 1)}s\nPowered by Yoda API"
+        )
 
         return embed
 
-    PREDICT_GENRE_MAX_CONCURRENCY = commands.MaxConcurrency(1, per=commands.BucketType.member, wait=False)
+    PREDICT_GENRE_MAX_CONCURRENCY = commands.MaxConcurrency(
+        1, per=commands.BucketType.member, wait=False
+    )
 
     @commands.command(
         "predict-genre",

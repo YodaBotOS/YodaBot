@@ -77,7 +77,9 @@ class TranslateOCR:
         if use_difflib:
             res = find_match_difflib(query.lower(), langs, amount)
         else:
-            res = find_match_fuzzy(query.lower(), langs, score_cutoff=self.SCORE_CUTOFF, limit=amount)
+            res = find_match_fuzzy(
+                query.lower(), langs, score_cutoff=self.SCORE_CUTOFF, limit=amount
+            )
 
             res = [x[0] for x in res]
 
@@ -100,7 +102,9 @@ class TranslateOCR:
 
         params = {"lang": lang}
 
-        async with self.session.post(self.url + "/render", data=data, params=params) as resp:
+        async with self.session.post(
+            self.url + "/render", data=data, params=params
+        ) as resp:
             data = await resp.json()
 
         return data
@@ -124,5 +128,7 @@ class TranslateOCR:
 
         return TranslateOCRResult(**passed_data)
 
-    async def __call__(self, img: str | bytes | io.BytesIO, lang: str) -> TranslateOCRResult:
+    async def __call__(
+        self, img: str | bytes | io.BytesIO, lang: str
+    ) -> TranslateOCRResult:
         return await self.run(img, lang)

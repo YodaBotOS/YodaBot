@@ -185,7 +185,9 @@ class Translator(app_commands.Translator):
             return self.do_check(trans, context)
 
         try:
-            trans = await self._translate.translate(message, target, source_language="en", check_duplicate=True)
+            trans = await self._translate.translate(
+                message, target, source_language="en", check_duplicate=True
+            )
         except:
             return None
 
@@ -213,7 +215,10 @@ class Translator(app_commands.Translator):
             if oldest["ttl"] < datetime.datetime.utcnow():
                 try:
                     trans = await self._translate.translate(
-                        oldest["message"], oldest["target"], source_language="en", check_duplicate=True
+                        oldest["message"],
+                        oldest["target"],
+                        source_language="en",
+                        check_duplicate=True,
                     )
                 except:
                     return None
@@ -224,7 +229,9 @@ class Translator(app_commands.Translator):
 
                 res = res2 or res
 
-                await self.add_to_persistent_cache(oldest["target"], oldest["message"], res)
+                await self.add_to_persistent_cache(
+                    oldest["target"], oldest["message"], res
+                )
 
                 q = "SELECT * FROM translations ORDER BY ttl ASC LIMIT 1;"
                 oldest = await self.bot.pool.fetchrow(q)

@@ -30,7 +30,9 @@ class TwemojiParser:
         else:
             return f"https://twemoji.maxcdn.com/v/latest/svg/{codepoints}.svg"
 
-    def parse(self, text: str, *, svg: bool = False) -> list[dict[str, str | list[int]]]:
+    def parse(
+        self, text: str, *, svg: bool = False
+    ) -> list[dict[str, str | list[int]]]:
         asset_type = "svg" if svg else "png"
         emojis = emoji.emoji_list(text)
         entities = []
@@ -42,7 +44,11 @@ class TwemojiParser:
             )  # "-".join(hex(ord(c))[2:] for c in self.remove_vs16s(emoji_text))
             entities.append(
                 {
-                    "url": self.get_twemoji_url(codepoints, asset_type) if codepoints else "",
+                    "url": (
+                        self.get_twemoji_url(codepoints, asset_type)
+                        if codepoints
+                        else ""
+                    ),
                     "indices": [emoji_dict["match_start"], emoji_dict["match_end"]],
                     "text": emoji_text,
                     "type": "emoji",
@@ -51,11 +57,15 @@ class TwemojiParser:
 
         return entities
 
-    def full_parse(self, text: str, *, svg: bool = False) -> dict[str, str | list[int]] | None:
+    def full_parse(
+        self, text: str, *, svg: bool = False
+    ) -> dict[str, str | list[int]] | None:
         if len(text) == 1:
             return self.parse(text, svg=svg)[0]
 
         return None
 
-    def __call__(self, text: str, *, svg: bool = False) -> list[dict[str, str | list[int]]]:
+    def __call__(
+        self, text: str, *, svg: bool = False
+    ) -> list[dict[str, str | list[int]]]:
         return self.parse(text, svg=svg)

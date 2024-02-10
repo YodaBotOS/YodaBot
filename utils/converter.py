@@ -70,7 +70,9 @@ class ImageConverter(Converter):
                 user_id = int(mention.group(1))
 
                 try:
-                    user = ctx.bot.get_user(user_id) or await ctx.bot.fetch_user(user_id)
+                    user = ctx.bot.get_user(user_id) or await ctx.bot.fetch_user(
+                        user_id
+                    )
                 except:
                     user = None
 
@@ -115,7 +117,9 @@ class ImageConverter(Converter):
 
 
 class AttachmentConverter(Converter):
-    URL_REGEX = re.compile(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
+    URL_REGEX = re.compile(
+        r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+    )
 
     async def convert(self, ctx: Context, argument: str) -> str:
         if match := self.URL_REGEX.fullmatch(argument):

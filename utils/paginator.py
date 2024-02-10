@@ -6,7 +6,14 @@ from core.context import Context
 
 
 class YodaMenuPages(ui.View, menus.MenuPages):
-    def __init__(self, source, *, delete_message_after=False, allow_other_users=False, ephemeral=False):
+    def __init__(
+        self,
+        source,
+        *,
+        delete_message_after=False,
+        allow_other_users=False,
+        ephemeral=False,
+    ):
         super().__init__(timeout=None)
         self._source = source
         self.current_page = 0
@@ -48,10 +55,14 @@ class YodaMenuPages(ui.View, menus.MenuPages):
     async def interaction_check(self, interaction):
         """Only allow the author that invoke the command to be able to use the interaction"""
 
-        original = self.ctx.author if isinstance(self.ctx, commands.Context) else self.ctx.user
+        original = (
+            self.ctx.author if isinstance(self.ctx, commands.Context) else self.ctx.user
+        )
 
         if not self.allow_other_users and interaction.user != original:
-            await interaction.response.send_message("This is not your interaction!", ephemeral=True)
+            await interaction.response.send_message(
+                "This is not your interaction!", ephemeral=True
+            )
             return False
 
         return True
@@ -80,7 +91,9 @@ class YodaMenuPages(ui.View, menus.MenuPages):
                 self.next_page.disabled = True
                 self.last_page.disabled = True
 
-            self.stop_page.label = f"Page {self.current_page + 1} of {self._source.get_max_pages()}"
+            self.stop_page.label = (
+                f"Page {self.current_page + 1} of {self._source.get_max_pages()}"
+            )
 
         await self.message.edit(view=self)
 
@@ -160,7 +173,9 @@ class YodaMenuPages(ui.View, menus.MenuPages):
                     )
                     return
                 else:
-                    await interaction.response.send_message(f"Sure! Showing page {page}.", ephemeral=True)
+                    await interaction.response.send_message(
+                        f"Sure! Showing page {page}.", ephemeral=True
+                    )
 
                 await self.cls.update_buttons()
 

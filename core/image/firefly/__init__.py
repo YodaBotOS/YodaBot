@@ -24,8 +24,15 @@ class _Latin1MultipartReader(aiohttp.multipart.MultipartReader):
 
 
 FIREFLY_SIZES = typing.Literal[
-    "Portrait", "Landscape", "Square", "Widescreen", "Vertical", "Ultrawide", "Ultrawide Portrait"
+    "Portrait",
+    "Landscape",
+    "Square",
+    "Widescreen",
+    "Vertical",
+    "Ultrawide",
+    "Ultrawide Portrait",
 ]
+
 
 # Hacky way, idc.
 class Firefly:
@@ -68,7 +75,10 @@ class Firefly:
         fix_face: bool = True,
         seed: int = None,
     ) -> dict:
-        advanced_options = {"style_prompt": style_prompt, "anchor_prompt": anchor_prompt}
+        advanced_options = {
+            "style_prompt": style_prompt,
+            "anchor_prompt": anchor_prompt,
+        }
 
         seed = seed or random.randint(0, 100000)
         seed = [{"name": "0", "value": seed, "type": "scalar"}]
@@ -154,9 +164,13 @@ class Firefly:
         style_prompt = ", ".join(style_prompt)
         anchor_prompt = ", ".join(anchor_prompt)
 
-        settings = self.generate_settings(prompt, width, height, style_prompt, anchor_prompt, fix_face, seed)
+        settings = self.generate_settings(
+            prompt, width, height, style_prompt, anchor_prompt, fix_face, seed
+        )
 
-        images = await asyncio.gather(*[self._text_to_image_inner_task(settings) for _ in range(amount)])
+        images = await asyncio.gather(
+            *[self._text_to_image_inner_task(settings) for _ in range(amount)]
+        )
         return [self.post_to_cdn(i, folder="firefly/text-to-image") for i in images]
 
     async def _text_to_image_inner_task(self, settings: dict):

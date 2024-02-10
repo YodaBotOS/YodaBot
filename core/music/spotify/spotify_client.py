@@ -35,7 +35,9 @@ class SpotifyClient:
         self.session = session
 
     async def get_tokens(self, sp_dc=None, sp_key=None):
-        self._access_token, self._client_id = await self.get_access_token(sp_dc=sp_dc, sp_key=sp_key)
+        self._access_token, self._client_id = await self.get_access_token(
+            sp_dc=sp_dc, sp_key=sp_key
+        )
         self._client_token = await self.get_client_token(self._client_id)
 
     async def refresh_tokens(self):
@@ -74,7 +76,10 @@ class SpotifyClient:
         #     raise SpotifyClientException('Failed to parse client token response as json!', ex)
 
         async with self.session.post(
-            "https://clienttoken.spotify.com/v1/clienttoken", json=data, verify_ssl=self._verify_ssl, headers=headers
+            "https://clienttoken.spotify.com/v1/clienttoken",
+            json=data,
+            verify_ssl=self._verify_ssl,
+            headers=headers,
         ) as response:
             try:
                 rj = await response.json()
@@ -119,7 +124,9 @@ class SpotifyClient:
         rj = json.loads(stdout.decode("utf-8"))
 
         self.is_anonymous = rj["isAnonymous"]
-        return rj["accessToken"], rj["clientId"] if rj["clientId"].lower() != "unknown" else self._client_id
+        return rj["accessToken"], (
+            rj["clientId"] if rj["clientId"].lower() != "unknown" else self._client_id
+        )
 
     async def get(self, url: str) -> dict:
         # with requests.session() as session:
@@ -136,8 +143,15 @@ class SpotifyClient:
         await self.refresh_tokens()
 
         headers = self.__HEADERS.copy()
-        headers.update({"Client-Token": self._client_token, "Authorization": f"Bearer {self._access_token}"})
-        async with self.session.get(url, verify_ssl=self._verify_ssl, headers=headers) as resp:
+        headers.update(
+            {
+                "Client-Token": self._client_token,
+                "Authorization": f"Bearer {self._access_token}",
+            }
+        )
+        async with self.session.get(
+            url, verify_ssl=self._verify_ssl, headers=headers
+        ) as resp:
             return await resp.json()
 
     # def post(self, url: str, payload=None) -> Response:

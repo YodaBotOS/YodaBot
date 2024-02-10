@@ -38,7 +38,9 @@ class Translate(commands.Cog):
         importlib.reload(translate)
         from core.translate import Translate
 
-        self.bot.translate = Translate(self.bot.config.PROJECT_ID, session=self.bot.session)
+        self.bot.translate = Translate(
+            self.bot.config.PROJECT_ID, session=self.bot.session
+        )
         await self.bot.translate.get_languages(force_call=True, add_to_cache=True)
         self.translate: Translate = self.bot.translate
 
@@ -53,7 +55,9 @@ class Translate(commands.Cog):
     async def translate_func(self, ctx, text, to, _from) -> discord.Embed | str:
         newline = "\n"
 
-        text = await commands.clean_content(fix_channel_mentions=True, escape_markdown=True).convert(ctx, text)
+        text = await commands.clean_content(
+            fix_channel_mentions=True, escape_markdown=True
+        ).convert(ctx, text)
 
         if len(text) > 1024:
             return "TEXT_TOO_LARGE"
@@ -79,7 +83,9 @@ class Translate(commands.Cog):
 
         if from_lang["languageCode"] == to_lang["languageCode"]:
             # Do input tools instead
-            input_tools = await self.translate.input_tools(text, from_lang["languageCode"])
+            input_tools = await self.translate.input_tools(
+                text, from_lang["languageCode"]
+            )
 
             embed = discord.Embed(color=self.bot.color)
             embed.title = "Translation Result:"
@@ -100,7 +106,9 @@ class Translate(commands.Cog):
         input_tools = await self.translate.input_tools(text, from_lang["languageCode"])
         original_text = text
         text = input_tools["choices"][0]
-        trans = await self.translate.translate(text, to_lang["languageCode"], source_language=from_lang["languageCode"])
+        trans = await self.translate.translate(
+            text, to_lang["languageCode"], source_language=from_lang["languageCode"]
+        )
 
         embed = discord.Embed(color=self.bot.color)
         embed.title = "Translation Result:"
@@ -126,7 +134,9 @@ class Translate(commands.Cog):
         to=_T("The language to translate to"),
         _from=_T("The language to translate from"),
     )
-    async def translate_slash(self, interaction: discord.Interaction, text: str, to: str, _from: str = None):
+    async def translate_slash(
+        self, interaction: discord.Interaction, text: str, to: str, _from: str = None
+    ):
         """
         Tries to Translate a text to another language.
         """
@@ -141,16 +151,26 @@ class Translate(commands.Cog):
             return await interaction.followup.send(embed=result)
 
         if result == "TEXT_TOO_LARGE":
-            return await interaction.followup.send("Text is too large to translate.", ephemeral=True)
+            return await interaction.followup.send(
+                "Text is too large to translate.", ephemeral=True
+            )
         elif result == "TO_LANG_INVALID":
-            return await interaction.followup.send(f"Language `{to}` not found.", ephemeral=True)
+            return await interaction.followup.send(
+                f"Language `{to}` not found.", ephemeral=True
+            )
         elif result == "FROM_LANG_INVALID":
-            return await interaction.followup.send(f"Language `{_from}` not found.", ephemeral=True)
+            return await interaction.followup.send(
+                f"Language `{_from}` not found.", ephemeral=True
+            )
         else:
-            return await interaction.followup.send(f"An error occurred, please report this error: {result}")
+            return await interaction.followup.send(
+                f"An error occurred, please report this error: {result}"
+            )
 
     @translate_slash.autocomplete("to")
-    async def translate_to_autocomplete(self, interaction: discord.Interaction, current: str):
+    async def translate_to_autocomplete(
+        self, interaction: discord.Interaction, current: str
+    ):
         langs = self.translate.get_all_languages(only="displayName")
 
         if not current:
@@ -163,7 +183,11 @@ class Translate(commands.Cog):
         match = self.translate.get_language(current)
 
         if match:
-            choices.append(app_commands.Choice(name=match["displayName"], value=match["displayName"]))
+            choices.append(
+                app_commands.Choice(
+                    name=match["displayName"], value=match["displayName"]
+                )
+            )
 
         for lang in langs:
             if len(choices) >= 25:
@@ -217,7 +241,9 @@ class Translate(commands.Cog):
         return choices[:25]
 
     @translate_slash.autocomplete("_from")
-    async def translate_from_autocomplete(self, interaction: discord.Interaction, current: str):
+    async def translate_from_autocomplete(
+        self, interaction: discord.Interaction, current: str
+    ):
         langs = self.translate.get_all_languages()
 
         if not current:
@@ -228,7 +254,11 @@ class Translate(commands.Cog):
         match = self.translate.get_language(current)
 
         if match:
-            choices.append(app_commands.Choice(name=match["displayName"], value=match["displayName"]))
+            choices.append(
+                app_commands.Choice(
+                    name=match["displayName"], value=match["displayName"]
+                )
+            )
 
         for lang in langs:
             if len(choices) >= 25:
@@ -283,7 +313,9 @@ class Translate(commands.Cog):
 
     @app_commands.command(name=_T("translate-languages"))
     @app_commands.describe(query=_T("The language you want to search for."))
-    async def translate_languages_slash(self, interaction: discord.Interaction, query: str = None):
+    async def translate_languages_slash(
+        self, interaction: discord.Interaction, query: str = None
+    ):
         """
         Shows a list of languages that can be translated to.
         """
@@ -296,7 +328,9 @@ class Translate(commands.Cog):
             lang = self.translate.get_language(query)
 
             if not lang:
-                return await interaction.followup.send(f"Language `{query}` not found.", ephemeral=True)
+                return await interaction.followup.send(
+                    f"Language `{query}` not found.", ephemeral=True
+                )
 
             lang_code = lang["languageCode"]
             lang_name = lang["displayName"]
@@ -304,7 +338,9 @@ class Translate(commands.Cog):
             embed = discord.Embed(color=self.bot.color)
             embed.title = lang_name
 
-            embed.description = f"**Language Name:** {lang_name}\n**Language Code:** {lang_code}"
+            embed.description = (
+                f"**Language Name:** {lang_name}\n**Language Code:** {lang_code}"
+            )
 
             return await interaction.followup.send(embed=embed)
 
@@ -315,7 +351,9 @@ class Translate(commands.Cog):
         return await menu.start(ctx, channel=interaction.followup)
 
     @translate_languages_slash.autocomplete("query")
-    async def translate_languages_slash_query_autocomplete(self, interaction: discord.Interaction, current: str):
+    async def translate_languages_slash_query_autocomplete(
+        self, interaction: discord.Interaction, current: str
+    ):
         langs = self.translate.get_all_languages(only="displayName")
 
         if not current:
@@ -328,7 +366,11 @@ class Translate(commands.Cog):
         match = self.translate.get_language(current)
 
         if match:
-            choices.append(app_commands.Choice(name=match["displayName"], value=match["displayName"]))
+            choices.append(
+                app_commands.Choice(
+                    name=match["displayName"], value=match["displayName"]
+                )
+            )
 
         for lang in langs:
             if len(choices) >= 25:
@@ -400,7 +442,9 @@ class Translate(commands.Cog):
         if text is None:
             if not (ref := ctx.message.reference):
                 raise commands.MissingRequiredArgument(
-                    inspect.Parameter("text", inspect.Parameter.KEYWORD_ONLY, annotation=str)
+                    inspect.Parameter(
+                        "text", inspect.Parameter.KEYWORD_ONLY, annotation=str
+                    )
                 )
 
             text = ref.resolved.content
@@ -424,11 +468,15 @@ class Translate(commands.Cog):
             # elif result == "FROM_LANG_INVALID":
             #     return await ctx.send(f"Language `{_from}` not found.", ephemeral=True)
             else:
-                return await ctx.send(f"An error occurred, please report this error: {result}")
+                return await ctx.send(
+                    f"An error occurred, please report this error: {result}"
+                )
 
     @translate.command(name="from", usage="<from> <to> [text]")
     @commands.cooldown(1, 5, commands.BucketType.member)
-    async def translate_from(self, ctx: Context, _from: str, to: str, *, text: str = None):
+    async def translate_from(
+        self, ctx: Context, _from: str, to: str, *, text: str = None
+    ):
         """
         Tries to Translate a text to another language, with the specified source (original text) language.
 
@@ -441,7 +489,9 @@ class Translate(commands.Cog):
         if text is None:
             if not (ref := ctx.message.reference):
                 raise commands.MissingRequiredArgument(
-                    inspect.Parameter("text", inspect.Parameter.KEYWORD_ONLY, annotation=str)
+                    inspect.Parameter(
+                        "text", inspect.Parameter.KEYWORD_ONLY, annotation=str
+                    )
                 )
 
             text = ref.resolved.content
@@ -459,7 +509,9 @@ class Translate(commands.Cog):
             elif result == "FROM_LANG_INVALID":
                 return await ctx.send(f"Language `{_from}` not found.", ephemeral=True)
             else:
-                return await ctx.send(f"An error occurred, please report this error: {result}")
+                return await ctx.send(
+                    f"An error occurred, please report this error: {result}"
+                )
 
     @translate.command(name="languages")
     async def translate_languages(self, ctx: Context, *, query: str = None):
@@ -476,7 +528,9 @@ class Translate(commands.Cog):
                 lang = self.translate.get_language(query)
 
                 if not lang:
-                    return await ctx.send(f"Language `{query}` not found.", ephemeral=True)
+                    return await ctx.send(
+                        f"Language `{query}` not found.", ephemeral=True
+                    )
 
                 lang_code = lang["languageCode"]
                 lang_name = lang["displayName"]
@@ -484,7 +538,9 @@ class Translate(commands.Cog):
                 embed = discord.Embed(color=self.bot.color)
                 embed.title = lang_name
 
-                embed.description = f"**Language Name:** {lang_name}\n**Language Code:** {lang_code}"
+                embed.description = (
+                    f"**Language Name:** {lang_name}\n**Language Code:** {lang_code}"
+                )
 
                 return await ctx.send(embed=embed)
 
@@ -492,7 +548,9 @@ class Translate(commands.Cog):
         menu = YodaMenuPages(source, delete_message_after=True)
         return await menu.start(ctx)
 
-    async def translate_context_menu(self, interaction: discord.Interaction, message: discord.Message):
+    async def translate_context_menu(
+        self, interaction: discord.Interaction, message: discord.Message
+    ):
         text = message.content
 
         from_lang = await self.translate.detect_language(text)
@@ -529,15 +587,25 @@ class Translate(commands.Cog):
                     return await interaction.followup.send(embed=result, ephemeral=True)
 
                 if result == "TEXT_TOO_LARGE":
-                    return await interaction.followup.send("Text is too large to translate.", ephemeral=True)
+                    return await interaction.followup.send(
+                        "Text is too large to translate.", ephemeral=True
+                    )
                 elif result == "TO_LANG_INVALID":
-                    return await interaction.followup.send(f"Language `{to}` not found.", ephemeral=True)
+                    return await interaction.followup.send(
+                        f"Language `{to}` not found.", ephemeral=True
+                    )
                 elif result == "FROM_LANG_INVALID":
-                    return await interaction.followup.send(f"Language `{_from}` not found.", ephemeral=True)
+                    return await interaction.followup.send(
+                        f"Language `{_from}` not found.", ephemeral=True
+                    )
                 else:
-                    return await interaction.followup.send(f"An error occurred, please report this error: {result}")
+                    return await interaction.followup.send(
+                        f"An error occurred, please report this error: {result}"
+                    )
 
-        return await interaction.response.send_modal(Modal(title="Translate", translate=self, interaction=interaction))
+        return await interaction.response.send_modal(
+            Modal(title="Translate", translate=self, interaction=interaction)
+        )
 
 
 async def setup(bot: commands.Bot):

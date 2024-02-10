@@ -48,7 +48,9 @@ class GenrePrediction:
 
         return data
 
-    async def run_fast(self, file: bytes) -> tuple[dict[str, int | float], float, float, int | float]:
+    async def run_fast(
+        self, file: bytes
+    ) -> tuple[dict[str, int | float], float, float, int | float]:
         mode: FAST_BEST = "fast"
 
         start = time.perf_counter()
@@ -57,7 +59,9 @@ class GenrePrediction:
 
         return res, start, end, end - start
 
-    async def run_best(self, file: bytes) -> tuple[dict[str, int | float], float, float, int | float]:
+    async def run_best(
+        self, file: bytes
+    ) -> tuple[dict[str, int | float], float, float, int | float]:
         mode: FAST_BEST = "best"
 
         start = time.perf_counter()

@@ -50,7 +50,9 @@ class OCR:
 
         data = json.dumps(data)
 
-        async with self.session.post(self.URL, headers=headers, data=data, params=params) as resp:
+        async with self.session.post(
+            self.URL, headers=headers, data=data, params=params
+        ) as resp:
             resp.raise_for_status()  # Check status
 
             js = await resp.json()

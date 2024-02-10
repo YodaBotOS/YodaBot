@@ -19,7 +19,9 @@ class Style:
     model_type: typing.Literal["stable", "vqgan", "diffusion"] | None = None
     created_at: datetime.datetime = field(default_factory=fromisoformat, init=True)
     updated_at: datetime.datetime = field(default_factory=fromisoformat, init=True)
-    deleted_at: datetime.datetime | None = field(default_factory=fromisoformat, init=True)
+    deleted_at: datetime.datetime | None = field(
+        default_factory=fromisoformat, init=True
+    )
 
 
 @dataclass
