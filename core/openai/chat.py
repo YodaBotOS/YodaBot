@@ -191,14 +191,14 @@ This is limited to:
                 "name": "search_google",
                 "description": "Searches Google for the given term and returns the result for real-time data.",
                 "parameters": {
-                "type": "object",
-                "properties": {
-                    "term": {
-                        "type": "string",
-                        "description": "The term/query to search for in Google.",
-                    }
-                },
-                "required": ["term"],
+                    "type": "object",
+                    "properties": {
+                        "term": {
+                            "type": "string",
+                            "description": "The term/query to search for in Google.",
+                        }
+                    },
+                    "required": ["term"],
                 },
             }
             
