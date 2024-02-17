@@ -213,9 +213,11 @@ This is limited to:
     ) -> dict | None:
         results = super().get(context)
         if (
-            results and is_google and results.get("is_google") == is_google
+            results and is_google and results.get("is_google") != is_google
         ):  # if is_google is True, it's forced to be google chat. If it's False, it's not forced to be google chat (can be normal chat).
-            return results
+            return None
+        
+        return results
 
     async def reply(self, context: Context | discord.Interaction, message: str) -> str:
         data = await self.get(context)
