@@ -252,6 +252,7 @@ This is limited to:
             user=str(user),
             tools=self.FUNCTIONS,
             tool_choice="auto",
+            max_tokens=700,
         )
 
         response = resp.choices[0].message
@@ -285,6 +286,7 @@ This is limited to:
                 second_resp = await self.client.chat.completions.create(
                     model=self.MODEL,
                     messages=messages,
+                    max_tokens=700,
                 )
 
                 response = second_resp.choices[0].message
@@ -377,7 +379,7 @@ class Chat(ChatBase):  # GPT
             user = context.user.id
 
         resp = await self.client.chat.completions.create(
-            model=self.MODEL, messages=messages, user=str(user), max_tokens=4096
+            model=self.MODEL, messages=messages, user=str(user), max_tokens=700,
         )
 
         response = resp.choices[0].message
