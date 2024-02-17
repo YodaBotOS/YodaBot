@@ -16,7 +16,7 @@ class SerpAPI:
             "query": query,
             "api_key": self.api_key,
             "search_depth": "advanced",
-            "include_answer": True,
+            "include_answer": "true",
             "max_results": 20,
         }
 
