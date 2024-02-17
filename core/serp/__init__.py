@@ -17,7 +17,7 @@ class SerpAPI:
             "api_key": self.api_key,
             "search_depth": "advanced",
             "include_answer": True,
-            "max_results": 3,
+            "max_results": 2,
         }
 
         async with self.session.post(self.URL / "search", json=body) as resp:
