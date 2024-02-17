@@ -186,9 +186,11 @@ This is limited to:
 
     FUNCTIONS = [
         {
-            "name": "search_google",
-            "description": "Searches Google for the given term and returns the result for real-time data.",
-            "parameters": {
+            "type": "function",
+            "function": {
+                "name": "search_google",
+                "description": "Searches Google for the given term and returns the result for real-time data.",
+                "parameters": {
                 "type": "object",
                 "properties": {
                     "term": {
@@ -197,7 +199,9 @@ This is limited to:
                     }
                 },
                 "required": ["term"],
-            },
+                },
+            }
+            
         }
     ]
 
