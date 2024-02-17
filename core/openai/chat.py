@@ -211,7 +211,7 @@ This is limited to:
     async def get(
         self, context: Context | discord.Interaction, *, is_google: bool = False
     ) -> dict | None:
-        results = super().get(context)
+        results = await super().get(context)
         if (
             results and is_google and results.get("is_google") != is_google
         ):  # if is_google is True, it's forced to be google chat. If it's False, it's not forced to be google chat (can be normal chat).
