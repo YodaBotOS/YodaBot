@@ -271,9 +271,9 @@ This is limited to:
 
                 function_response.pop("query")
                 function_response.pop("images")
-                function_content = json.dumps(function_content)
+                function_content = json.dumps(function_response)
 
-                messages.append(response)
+                messages.append(response.model_dump(exclude_unset=True))
                 messages.append(
                     {
                         "tool_call_id": tool_call.id,

@@ -136,17 +136,13 @@ class Bot(commands.Bot):
             aws_access_key_id=cfg.CDN_ACCESS_KEY,
             aws_secret_access_key=cfg.CDN_SECRET_KEY,
         )
-
-        if not self.is_selfhosted:
-            self.pool: asyncpg.Pool = await asyncpg.create_pool(cfg.POSTGRESQL_DSN)
-        else:
-            self.pool = None
+        
+        self.pool: asyncpg.Pool = await asyncpg.create_pool(cfg.POSTGRESQL_DSN)
 
         # await self.pool.set_type_codec("json", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
-
-        if not self.is_selfhosted:
-            with open("schema.sql") as f:
-                await self.pool.execute(f.read())
+        
+        with open("schema.sql") as f:
+            await self.pool.execute(f.read())
 
         self.ping = Ping(self)
 

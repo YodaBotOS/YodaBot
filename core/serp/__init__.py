@@ -12,13 +12,13 @@ class SerpAPI:
         self.session = session
 
     async def google_search(self, query: str) -> dict:
-        params = {
+        body = {
             "query": query,
             "api_key": self.api_key,
             "search_depth": "advanced",
-            "include_answer": "true",
-            "max_results": 20,
+            "include_answer": True,
+            "max_results": 3,
         }
 
-        async with self.session.get(self.URL / "search", params=params) as resp:
+        async with self.session.post(self.URL / "search", json=body) as resp:
             return await resp.json()
